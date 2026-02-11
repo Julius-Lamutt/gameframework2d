@@ -7,7 +7,7 @@ Level* level_new()
 {
 	Level* level;
 	level = gfc_allocate_array(sizeof(Level), 1);
-	if (!level) returnn NULL;
+	if (!level) return NULL;
 	return level;
 }
 
@@ -48,8 +48,8 @@ void level_create(const char* background,
 	level->tileMap = gfc_allocate_array(sizeof(Uint8), width * height);
 	level->width = width;
 	level->height = height;
-	level->tileWidth = titleWidth;
-	level->tileHeight = tileHeight;
+	//level->tileWidth = tileWidth;
+	//level->tileHeight = tileHeight;
 	return level;
 }
 

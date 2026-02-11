@@ -1,11 +1,13 @@
 #ifndef __LEVEL_H__
 #define __LEVEL_H__
 
+#include "gf2d_sprite.h"
+
 typedef struct
 {
-	Sprite* background;
-	Sprite* tileSet;
-	Uint8* tileMap;
+	Sprite*		background;
+	Sprite*		tileSet;
+	Uint8*		tileMap;
 	Uint32		width, height;
 } Level;
 
