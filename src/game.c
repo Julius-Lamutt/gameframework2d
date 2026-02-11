@@ -1,11 +1,8 @@
 #include <SDL.h>
 #include "simple_logger.h"
-
 #include "gfc_input.h"
-
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
-
 #include "entity.h"
 #include "player.h"
 

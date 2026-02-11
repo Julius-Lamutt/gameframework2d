@@ -8,7 +8,6 @@
 #include "gfc_pak.h"
 
 #include "gf2d_graphics.h"
-
 #include "gf2d_sprite.h"
 
 typedef struct

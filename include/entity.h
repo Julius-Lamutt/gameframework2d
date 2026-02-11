@@ -11,6 +11,7 @@ typedef struct Entity_S
 	GFC_TextLine	name;
 	GFC_Vector2D	position;
 	GFC_Vector2D    scale;
+	GFC_Vector2D    velocity;
 	float           rotation;
 	Sprite			*sprite;
 	float			frame;
