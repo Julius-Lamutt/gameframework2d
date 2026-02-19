@@ -1,10 +1,25 @@
 #include "simple_logger.h"
 #include "gfc_vector.h"
 #include "player.h"
+#include "bullet.h"
 
+/**
+ * @brief run the think function for the player
+ */
 void player_think(Entity* self);
+
+/**
+ * @brief run the update function for the player
+ */
 void player_update(Entity* self);
+
+/**
+ * @brief free the player
+ */
 void player_free(Entity* self);
+
+Bool pressed = false;
+Bool released = true;
 
 Entity *player_new()
 {
@@ -23,7 +38,8 @@ Entity *player_new()
 		16,
 		0);
 	self->frame = 0;
-	self->position = gfc_vector2d(500,0);
+	self->position = gfc_vector2d(500,200);
+	self->proj = NULL;
 
 	self->think = player_think;
 	self->update = player_update;
@@ -34,10 +50,12 @@ Entity *player_new()
 
 void player_think(Entity* self)
 {
+	if (!self) return;
+
+	Entity* bullet;
+	SDL_Event ev;
 	GFC_Vector2D dir = {0};
 	Sint32 mx = 0, my = 0;
-
-	if (!self) return;
 
 	// move player toward mouse
 	SDL_GetMouseState(&mx, &my);
@@ -48,7 +66,51 @@ void player_think(Entity* self)
 	gfc_vector2d_normalize(&dir);
 	gfc_vector2d_scale(self->velocity, dir, 3);
 
-	
+	while (SDL_PollEvent(&ev) != 0) {
+		// check event type
+		switch (ev.type)
+		{
+			case SDL_KEYDOWN:
+				// key was pressed
+				switch (ev.key.keysym.sym)
+				{
+					case SDLK_t:
+						if (released)
+						{
+							if (!self->proj)
+							{
+								bullet = bullet_new(self, self->position);
+								self->proj = bullet;
+							}
+							else
+							{
+								slog("can you see me");
+								bullet = self->proj;
+								self->position = bullet->position;
+								gf2d_sprite_free(bullet);
+								entity_free(bullet);
+								self->proj = NULL;
+							}
+							pressed = true;
+							released = false;
+							slog("pressed t");
+						}
+						break;
+				}
+				break;
+
+			case SDL_KEYUP:
+				// key was released
+				switch (ev.key.keysym.sym)
+				{
+					case SDLK_t:
+						released = true;
+						slog("released t");
+						break;
+				}
+				break;
+		}
+	}
 }
 
 void player_update(Entity* self)

@@ -46,12 +46,6 @@ void entity_system_close()
 	slog("closed entity system");
 }
 
-void entity_free(Entity* self);
-
-/**
- * @brief clean up all active entities
- * @param ignore do not clean up this entity
- */
 void entity_clear_all(Entity *ignore)
 {
 	int i;
@@ -64,10 +58,6 @@ void entity_clear_all(Entity *ignore)
 	}
 }
 
-/**
- * @brief get a blank entity for use
- * @returns NULL on no more room or error, a blank entity otherwise
- */
 Entity *entity_new()
 {
 	int i;
@@ -90,15 +80,11 @@ Entity *entity_new()
 	return NULL;
 }
 
-/**
- * @brief clean up an entity and free its spot for future use
- * @param self the entity to free
- */
 void entity_free(Entity *self)
 {
 	if (!self) return;
 	gf2d_sprite_free(self->sprite);
-	// anything else we allocate for our would get cleaned up here
+	// anything else we allocate for our entity would get cleaned up here
 	if (self->free) self->free(self->data);
 }
 
@@ -108,9 +94,6 @@ void entity_think(Entity *self)
 	if (self->think) self->think(self);
 }
 
-/**
- * @brief run the think function for all active entities
- */
 void entity_system_think()
 {
 	int i;
@@ -127,9 +110,6 @@ void entity_update(Entity *self)
 	if (self->update) self->update(self);
 }
 
-/**
- * @brief run the update function for all active entities
- */
 void entity_system_update()
 {
 	int i;
@@ -140,9 +120,6 @@ void entity_system_update()
 	}
 }
 
-/**
- * @brief draw all active entities
- */
 void entity_draw(Entity *self)
 {
 	if (!self) return;

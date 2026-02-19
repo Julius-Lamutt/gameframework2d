@@ -14,7 +14,11 @@ typedef struct Entity_S
 	GFC_Vector2D    velocity;
 	float           rotation;
 	Sprite			*sprite;
-	float			frame;
+	float			frame; 
+	struct Entity	*owner; // entity that shot the projectile
+	struct Entity	*proj;
+	struct Entity	*victim; // entity that was hit with the projectile
+	float           range; // how far a projectile can travel before disappearing
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);

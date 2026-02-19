@@ -4,17 +4,12 @@
 #include <SDL.h>
 #include "entity.h"
 
-typedef struct
-{
-	Entity* owner;
-	Entity* victim;
-	float   range;
-} Bullet;
-
 /**
 * @brief spawn a bullet
+* @param owner - the one who shot the bullet
+* @param pos - spawn position of the bullet
 * return NULL on error, a pointer to the player otherwise
 */
-Entity* bullet_new();
+Entity* bullet_new(Entity* owner, GFC_Vector2D pos);
 
 #endif
