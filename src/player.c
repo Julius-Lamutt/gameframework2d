@@ -87,7 +87,6 @@ void player_think(Entity* self)
 								slog("can you see me");
 								bullet = self->proj;
 								self->position = bullet->position;
-								gf2d_sprite_free(bullet);
 								entity_free(bullet);
 								self->proj = NULL;
 							}
