@@ -94,7 +94,7 @@ void level_draw(Level* level)
 	if (!level) return;
 	if (level->background)
 	{
-
+	
 	}
 
 }
