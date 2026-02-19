@@ -97,7 +97,7 @@ Entity *entity_new()
 void entity_free(Entity *self)
 {
 	if (!self) return;
-	gf2d_sprite_free(self->sprite);
+	gf2d_sprite_free(self); // HACK: free self, not self->sprite?
 	// anything else we allocate for our would get cleaned up here
 	if (self->free) self->free(self->data);
 }

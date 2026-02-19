@@ -47,8 +47,6 @@ void player_think(Entity* self)
 	if (self->position.y > my) dir.y = -1;
 	gfc_vector2d_normalize(&dir);
 	gfc_vector2d_scale(self->velocity, dir, 3);
-
-	
 }
 
 void player_update(Entity* self)
