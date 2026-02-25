@@ -53,8 +53,7 @@ void entity_clear_all(Entity *ignore)
 	{
 		if (&_entity_manager.entity_list[i] == ignore) continue;
 		if (!_entity_manager.entity_list[i]._inuse) continue;
-		gf2d_sprite_free(_entity_manager.entity_list[i].sprite);
-		if (_entity_manager.entity_list[i].free) _entity_manager.entity_list[i].free(_entity_manager.entity_list[i].data);
+		entity_free(&_entity_manager.entity_list[i]);
 	}
 }
 
@@ -83,7 +82,9 @@ Entity *entity_new()
 void entity_free(Entity *self)
 {
 	if (!self) return;
-	gf2d_sprite_free(self); // HACK: free self, not self->sprite?
+	self->_inuse = 0; // save this spot for future entities
+	gf2d_sprite_free(self->sprite);
+
 	// anything else we allocate for our would get cleaned up here
 	if (self->free) self->free(self->data);
 }

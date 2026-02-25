@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     float mf = 0;
     Sprite *mouse;
     GFC_Color mouseGFC_Color = gfc_color8(255,100,255,200);
-    Entity *player;
+    Entity* player;
     
     /*program initializtion*/
     init_logger("gf2d.log",0);
