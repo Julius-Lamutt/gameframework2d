@@ -5,9 +5,22 @@
 #include "gfc_text.h"
 #include "gf2d_sprite.h"
 
+typedef enum
+{
+	EL_NONE = 0,
+	EL_PLAYER = 1,
+	EL_MONSTER = 2,
+	EL_ITEM = 4,
+	EL_WORLD = 8,
+	EL_PROJECTILES = 16,
+	EL_ALL = 31
+} Entity_Layers;
+
 typedef struct Entity_S
 {
 	Uint8			_inuse; // no touchy
+	Uint32			id;
+	Uint32			layer;
 	GFC_TextLine	name;
 	GFC_Vector2D	position;
 	GFC_Vector2D    scale;

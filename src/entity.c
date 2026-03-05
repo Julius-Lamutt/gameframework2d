@@ -3,8 +3,9 @@
 
 typedef struct
 {
-	Entity* entity_list;
+	Entity  *entity_list;
 	Uint32	entity_max;
+	Uint32  entity_pool;
 } EntityManager;
 
 void entity_system_close();
@@ -70,12 +71,29 @@ Entity *entity_new()
 		if (_entity_manager.entity_list[i]._inuse) continue;
 		memset(&_entity_manager.entity_list[i], 0, sizeof(Entity));
 		_entity_manager.entity_list[i]._inuse = 1;
+		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
 		//set defaults
 		_entity_manager.entity_list[i].scale.x = 1;
 		_entity_manager.entity_list[i].scale.y = 1;
 		return &_entity_manager.entity_list[i];
 	}
 	slog("no more available entities");
+	return NULL;
+}
+
+Entity* entity_get_by_id(Uint32 id)
+{
+	int i;
+	if (!_entity_manager.entity_list)
+	{
+		slog("entity system has not been initialized");
+		return NULL;
+	}
+	for (i = 0; i < _entity_manager.entity_max; i++)
+	{
+		if (!_entity_manager.entity_list[i]._inuse) continue;
+		if (_entity_manager.entity_list[i].id) 
+	}
 	return NULL;
 }
 
