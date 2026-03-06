@@ -21,6 +21,13 @@ typedef struct
 void world_build_tile_layer(World* world);
 
 /**
+* @brief load the world from a config file
+* @param the name of the world file to load
+* @return NULL on error, a usable world otherwise
+*/
+World *world_load(const char *filename);
+
+/**
 * @brief test function to see if world works
 * @return NULL on error, a blank world otherwise
 */
