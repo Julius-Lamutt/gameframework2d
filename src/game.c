@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     
     /*demo setup*/
     //sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
-    world = world_test_new();
+    world = world_load("maps/testworld.json");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
     slog("press [escape] to quit");
