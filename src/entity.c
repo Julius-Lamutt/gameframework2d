@@ -92,7 +92,6 @@ Entity* entity_get_by_id(Uint32 id)
 	for (i = 0; i < _entity_manager.entity_max; i++)
 	{
 		if (!_entity_manager.entity_list[i]._inuse) continue;
-		if (_entity_manager.entity_list[i].id) 
 	}
 	return NULL;
 }
