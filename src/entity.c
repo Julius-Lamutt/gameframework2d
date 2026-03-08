@@ -140,12 +140,15 @@ void entity_system_update()
 
 void entity_draw(Entity *self)
 {
+	GFC_Vector2D pos;
+
 	if (!self) return;
 	if (self->sprite)
 	{
+		pos = gfc_vector2d(self->position.x - (0.5 * self->sprite->frame_w), self->position.y - (0.5 * self->sprite->frame_h));
 		gf2d_sprite_render(
 			self->sprite,
-			self->position,
+			pos,
 			NULL,
 			NULL,
 			NULL,
