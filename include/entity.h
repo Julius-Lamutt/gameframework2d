@@ -2,6 +2,7 @@
 #define  __ENTITY_H__
 
 #include <SDL.h>
+#include "gfc_shape.h"
 #include "gfc_text.h"
 #include "gf2d_sprite.h"
 
@@ -18,7 +19,7 @@ typedef enum
 
 typedef struct Entity_S
 {
-	Uint8			_inuse; // no touchy
+	Uint8			_inuse;		// no touchy
 	Uint32			id;
 	Uint32			layer;
 	GFC_TextLine	name;
@@ -28,10 +29,10 @@ typedef struct Entity_S
 	float           rotation;
 	Sprite			*sprite;
 	float			frame; 
-	struct Entity	*owner; // entity that shot the projectile
+	struct Entity	*owner;		// entity that shot the projectile
 	struct Entity	*proj;
-	struct Entity	*victim; // entity that was hit with the projectile
-	float           range; // how far a projectile can travel before disappearing
+	struct Entity	*victim;	// entity that was hit with the projectile
+	float           range;		// how far a projectile can travel before disappearing
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);

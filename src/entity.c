@@ -1,5 +1,9 @@
 #include "simple_logger.h"
+#include "gf2d_draw.h"
+#include "gfc_shape.h"
 #include "entity.h"
+
+const static Bool f_collision_draw = true;
 
 typedef struct
 {
@@ -140,7 +144,8 @@ void entity_system_update()
 
 void entity_draw(Entity *self)
 {
-	GFC_Vector2D pos;
+	GFC_Vector2D	pos;
+	GFC_Rect		rect;
 
 	if (!self) return;
 	if (self->sprite)
@@ -156,6 +161,11 @@ void entity_draw(Entity *self)
 			NULL,
 			NULL,
 			(Uint32)self->frame);
+
+		// draw bounding boxes if the collision draw flag is raised
+		rect = gfc_rect(self->position.x - (0.5 * self->sprite->frame_w), self->position.y - (0.5 * self->sprite->frame_h),
+			self->sprite->frame_w, self->sprite->frame_h);
+		if (f_collision_draw) gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
 	}
 }
 

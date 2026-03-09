@@ -1,7 +1,9 @@
 #include "simple_logger.h"
+#include "gfc_shape.h"
 #include "gfc_vector.h"
-#include "player.h"
 #include "bullet.h"
+#include "collision.h"
+#include "player.h"
 
 /**
  * @brief run the think function for the player
@@ -23,7 +25,7 @@ Bool released = true;
 
 Entity *player_new()
 {
-	Entity *self;
+	Entity		*self;
 
 	self = entity_new();
 	if (!self)
@@ -40,7 +42,6 @@ Entity *player_new()
 	self->frame = 0;
 	self->position = gfc_vector2d(500,200);
 	self->proj = NULL;
-
 	self->think = player_think;
 	self->update = player_update;
 	self->free = player_free;

@@ -1,5 +1,7 @@
 #include "simple_logger.h"
 #include "simple_json.h"
+#include "gfc_shape.h"
+#include "gf2d_draw.h"
 #include "gf2d_graphics.h"
 #include "world.h"
 
@@ -8,6 +10,7 @@ void world_build_tile_layer(World* world)
 	int i, j;
 	Uint32 frame, index;
 	GFC_Vector2D position;
+	GFC_Rect rect;
 
 	if (!world) return;
 	if (!world->tileSet) return;
