@@ -71,7 +71,7 @@ void player_think(Entity* self)
 
 	// check for collision
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	if (move_collide_with_world(self, self->world))
+	if (collide_with_world(self, self->world))
 	{
 		self->velocity = gfc_vector2d(0, 0);
 		self->newPosition = self->position;
