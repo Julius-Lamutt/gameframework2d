@@ -5,12 +5,13 @@
 #include "gf2d_graphics.h"
 #include "world.h"
 
+static Bool f_collision_draw = true;
+
 void world_build_tile_layer(World* world)
 {
 	int i, j;
-	Uint32 frame, index;
+	Uint32 frame, index, tile_count = 0;
 	GFC_Vector2D position;
-	GFC_Rect rect;
 
 	if (!world) return;
 	if (!world->tileSet) return;
@@ -40,8 +41,8 @@ void world_build_tile_layer(World* world)
 		{
 			index = i + (j * world->tileWidth);
 			if (world->tileMap[index] == 0) continue;
-			position.x = i * world->tileSet->frame_w;
-			position.y = j * world->tileSet->frame_h;
+			tile_count++; // increment number of solid tiles
+			position = gfc_vector2d(i * world->tileSet->frame_w, j * world->tileSet->frame_h);
 			frame = world->tileMap[index] - 1;
 
 			gf2d_sprite_draw_to_surface(
@@ -60,6 +61,43 @@ void world_build_tile_layer(World* world)
 	{
 		slog("failed to convert world tile layer to texture");
 		return;
+	}
+	world->tileCount = tile_count;
+	world_build_physics_layer(world); // build physics layer once tile layer is complete
+}
+
+void world_build_physics_layer(World *world)
+{
+	int i, j;
+	Uint32 t_index, p_index = 0;
+	GFC_Vector2D position;
+	GFC_Rect rect;
+
+	if (!world) return;
+	if (!world->tileCount) return; // may slog later
+	if (!world->tileSet) return;
+	if (!world->tileLayer) return;
+	if (world->physicsLayer)
+	{
+		free(world->physicsLayer);
+	}
+	world->physicsLayer = gfc_allocate_array(sizeof(GFC_Rect), world->tileCount);
+	if (!world->physicsLayer)
+	{
+		slog("failed to allocate a physics layer");
+		return;
+	}
+	for (j = 0; j < world->tileHeight; j++)
+	{
+		for (i = 0; i < world->tileWidth; i++)
+		{
+			t_index = i + (j * world->tileWidth);
+			if (world->tileMap[t_index] == 0) continue;
+			position = gfc_vector2d(i * world->tileSet->frame_w, j * world->tileSet->frame_h);
+			rect = gfc_rect(position.x, position.y, world->tileSet->frame_w, world->tileSet->frame_h);
+			world->physicsLayer[p_index] = rect;
+			p_index++;
+		}
 	}
 }
 
@@ -139,36 +177,6 @@ World *world_load(const char *filename)
 	return world;
 }
 
-World *world_test_new()
-{
-	int i;
-	int width = 75, height = 45;
-	World *world;
-
-	world = world_new(width, height);
-	if (!world) return NULL;
-	world->background = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
-	world->tileSet = gf2d_sprite_load_all(
-		"images/backgrounds/tileset.png",
-		16,
-		16,
-		1,
-		1
-	);
-	for (i = 0; i < width; i++)
-	{
-		world->tileMap[i] = 1;
-		world->tileMap[i + ((height - 1) * width)] = 1;
-	}
-	for (i = 0; i < height; i++)
-	{
-		world->tileMap[i * width] = 1;
-		world->tileMap[i * width + (width - 1)] = 1;
-	}
-	world_build_tile_layer(world);
-	return world;
-}
-
 World *world_new(Uint32 width, Uint32 height)
 {
 	World *world;
@@ -200,7 +208,19 @@ void world_free(World *world)
 	gf2d_sprite_free(world->tileSet);
 	gf2d_sprite_free(world->tileLayer);
 	free(world->tileMap);
+	free(world->physicsLayer);
 	free(world);
+}
+
+void world_draw_physics_layer(World *world)
+{
+	int i;
+
+	if (!world) return;
+	for (i = 0; i < world->tileCount; i++)
+	{
+		gf2d_draw_rect(world->physicsLayer[i], GFC_COLOR_MAGENTA);
+	}
 }
 
 void world_draw(World *world)
@@ -208,4 +228,5 @@ void world_draw(World *world)
 	if (!world) return;
 	gf2d_sprite_draw_image(world->background, gfc_vector2d(0,0));
 	gf2d_sprite_draw_image(world->tileLayer, gfc_vector2d(0,0));
+	if (f_collision_draw) world_draw_physics_layer(world);
 }

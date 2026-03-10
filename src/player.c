@@ -33,6 +33,7 @@ Entity *player_new()
 		slog("Failed to spawn a player entity");
 		return NULL;
 	}
+	self->layer = EL_PLAYER;
 	self->sprite = gf2d_sprite_load_all(
 		"images/ed210.png",
 		128,

@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
         // all drawing should happen betweem clear_screen and next_frame
     
             //backgrounds drawn first
-            //gf2d_sprite_draw_image(sprite,gfc_vector2d(0,0));
             world_draw(world);
 
             //entities drawn next
