@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "camera.h"
 #include "entity.h"
 #include "player.h"
 #include "bullet.h"
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     gf2d_sprite_init(1024);
 	entity_system_init(1024);
     SDL_ShowCursor(SDL_DISABLE);
+    camera_set_size(gfc_vector2d(1200, 720));
     
     /*demo setup*/
     //sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");

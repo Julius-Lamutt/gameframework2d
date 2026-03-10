@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
+#include "camera.h"
 #include "bullet.h"
 #include "collision.h"
 #include "player.h"
@@ -130,6 +131,7 @@ void player_update(Entity* self)
 	if (self->frame >= 16.0) self->frame = 0;
 
 	gfc_vector2d_add(self->position, self->position, self->velocity);
+	camera_center_on(self->position);
 }
 
 void player_free(Entity* self)

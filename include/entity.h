@@ -19,22 +19,22 @@ typedef enum
 
 typedef struct Entity_S
 {
-	Uint8			_inuse;			/*no touchy*/
+	Uint8			_inuse;			/* no touchy */
 	Uint32			id;
 	Uint32			layer;
 	GFC_TextLine	name;
-	GFC_Vector2D	position;		/*current position*/
-	GFC_Vector2D    newPosition;	/*position to be tested for collisions*/
+	GFC_Vector2D	position;		/* current position */
+	GFC_Vector2D    newPosition;	/* position to be tested for collisions */
 	GFC_Vector2D    scale;
 	GFC_Vector2D    velocity;
-	World			*world;			/*current world the player is in*/
+	World			*world;			/* current world the player is in */
 	Sprite			*sprite;
 	float           rotation;
 	float			frame;
-	struct Entity	*owner;			/*entity that shot the projectile*/
+	struct Entity	*owner;			/* entity that shot the projectile */
 	struct Entity	*proj;
-	struct Entity	*victim;		/*entity that was hit with the projectile*/
-	float           range;			/*how far a projectile can travel before disappearing*/
+	struct Entity	*victim;		/* entity that was hit with the projectile */
+	float           range;			/* how far a projectile can travel before disappearing */
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);
@@ -43,13 +43,13 @@ typedef struct Entity_S
 
 /**
  * @brief this initializes the entity management system and queues up cleaning on exit
- * @param max the maximum number of entities that can exist at the same time
+ * @param max: the maximum number of entities that can exist at the same time
  */
 void entity_system_init(Uint32 max);
 
 /**
  * @brief clean up all active entities
- * @param ignore do not clean up this entity
+ * @param ignore: do not clean up this entity
  */
 void entity_clear_all(Entity* ignore);
 
@@ -61,7 +61,7 @@ Entity* entity_new();
 
 /**
  * @brief clean up an entity and free its spot for future use
- * @param self the entity to free
+ * @param self: the entity to free
  */
 void entity_free(Entity* self);
 
