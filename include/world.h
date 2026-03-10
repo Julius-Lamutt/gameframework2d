@@ -6,14 +6,14 @@
 
 typedef struct
 {
-	Sprite		*background;	/**<background image for the world*/
-	Sprite		*tileLayer;		/**<pre-rendered tile layer*/	
-	Sprite		*tileSet;		/**<sprite containing tiles for the world*/
-	Uint8		*tileMap;		/**<the tiles that make up the world*/
-	Uint32		tileWidth;		/**<how many tiles wide the map is*/
-	Uint32		tileHeight;		/**<how many tiles tall the map is*/
-	GFC_Rect	*physicsLayer;	/**<the bounding boxes for collision testing on world*/
-	Uint32      tileCount;		/**<the number of solid tile for physics layer*/
+	Sprite		*background;	/*background image for the world*/
+	Sprite		*tileLayer;		/*pre-rendered tile layer*/	
+	Sprite		*tileSet;		/*sprite containing tiles for the world*/
+	Uint8		*tileMap;		/*the tiles that make up the world*/
+	Uint32		tileWidth;		/*how many tiles wide the map is*/
+	Uint32		tileHeight;		/*how many tiles tall the map is*/
+	Uint32      tileCount;		/*number of tiles for physics layer*/
+	GFC_Rect	*physicsLayer;	/*bounding boxes for collision testing on world*/
 } World;
 
 /**

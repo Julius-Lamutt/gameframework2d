@@ -42,6 +42,7 @@ Entity *player_new()
 		0);
 	self->frame = 0;
 	self->position = gfc_vector2d(500,200);
+	self->newPosition = gfc_vector2d(500,200);
 	self->proj = NULL;
 	self->think = player_think;
 	self->update = player_update;
@@ -67,6 +68,14 @@ void player_think(Entity* self)
 	if (self->position.y > my) dir.y = -1;
 	gfc_vector2d_normalize(&dir);
 	gfc_vector2d_scale(self->velocity, dir, 3);
+
+	// check for collision
+	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
+	if (move_collide_with_world(self, self->world))
+	{
+		self->velocity = gfc_vector2d(0, 0);
+		self->newPosition = self->position;
+	}
 
 	while (SDL_PollEvent(&ev) != 0) {
 		// check event type

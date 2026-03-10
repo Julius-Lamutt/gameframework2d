@@ -5,6 +5,7 @@
 #include "gfc_shape.h"
 #include "gfc_text.h"
 #include "gf2d_sprite.h"
+#include "world.h"
 
 typedef enum
 {
@@ -12,27 +13,28 @@ typedef enum
 	EL_PLAYER = 1,
 	EL_MONSTER = 2,
 	EL_ITEM = 4,
-	EL_WORLD = 8,
-	EL_PROJECTILES = 16,
-	EL_ALL = 31
+	EL_PROJECTILES = 8,
+	EL_ALL = 15
 } Entity_Layers;
 
 typedef struct Entity_S
 {
-	Uint8			_inuse;		// no touchy
+	Uint8			_inuse;			/*no touchy*/
 	Uint32			id;
 	Uint32			layer;
 	GFC_TextLine	name;
-	GFC_Vector2D	position;
+	GFC_Vector2D	position;		/*current position*/
+	GFC_Vector2D    newPosition;	/*position to be tested for collisions*/
 	GFC_Vector2D    scale;
 	GFC_Vector2D    velocity;
-	float           rotation;
+	World			*world;			/*current world the player is in*/
 	Sprite			*sprite;
-	float			frame; 
-	struct Entity	*owner;		// entity that shot the projectile
+	float           rotation;
+	float			frame;
+	struct Entity	*owner;			/*entity that shot the projectile*/
 	struct Entity	*proj;
-	struct Entity	*victim;	// entity that was hit with the projectile
-	float           range;		// how far a projectile can travel before disappearing
+	struct Entity	*victim;		/*entity that was hit with the projectile*/
+	float           range;			/*how far a projectile can travel before disappearing*/
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);

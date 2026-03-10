@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     world = world_load("maps/testworld.json");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
+    player->world = world;
     slog("press [escape] to quit");
 
     /*main game loop*/
