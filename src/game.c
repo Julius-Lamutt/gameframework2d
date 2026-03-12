@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     /*demo setup*/
     //sprite = gf2d_sprite_load_image("images/backgrounds/bg_flat.png");
     world = world_load("maps/testworld.json");
+    world_setup_camera(world);
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     player = player_new();
     player->world = world;

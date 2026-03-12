@@ -15,7 +15,7 @@ static Camera _camera = {0};
 
 GFC_Vector2D camera_get_offset()
 {
-	return gfc_vector2d(-_camera.bounds.x, -_camera.bounds.y);
+	return gfc_vector2d(-_camera.position.x, -_camera.position.y);
 }
 
 GFC_Vector2D camera_get_position()

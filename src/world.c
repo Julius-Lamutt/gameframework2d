@@ -213,23 +213,31 @@ void world_free(World *world)
 	free(world);
 }
 
-void world_draw_physics_layer(World *world)
+void world_draw_physics_layer(World *world, GFC_Vector2D offset)
 {
 	int i;
+	GFC_Rect rect;
 
 	if (!world) return;
 	for (i = 0; i < world->tileCount; i++)
 	{
-		gf2d_draw_rect(world->physicsLayer[i], GFC_COLOR_MAGENTA);
+		rect.x = world->physicsLayer[i].x + offset.x;
+		rect.y = world->physicsLayer[i].y + offset.y;
+		rect.w = world->physicsLayer[i].w;
+		rect.h = world->physicsLayer[i].h;
+		gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
 	}
 }
 
 void world_draw(World *world)
 {
+	GFC_Vector2D offset;
+
 	if (!world) return;
+	offset = camera_get_offset();
 	gf2d_sprite_draw_image(world->background, gfc_vector2d(0,0));
-	gf2d_sprite_draw_image(world->tileLayer, gfc_vector2d(0,0));
-	if (f_collision_draw) world_draw_physics_layer(world);
+	gf2d_sprite_draw_image(world->tileLayer, offset);
+	if (f_collision_draw) world_draw_physics_layer(world, offset);
 }
 
 void world_setup_camera(World *world)

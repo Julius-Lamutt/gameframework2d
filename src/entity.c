@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gf2d_draw.h"
 #include "gfc_shape.h"
+#include "camera.h"
 #include "entity.h"
 
 const static Bool f_collision_draw = true;
@@ -144,16 +145,18 @@ void entity_system_update()
 
 void entity_draw(Entity *self)
 {
-	GFC_Vector2D	pos;
+	GFC_Vector2D	position, offset;
 	GFC_Rect		rect;
 
 	if (!self) return;
+	offset = camera_get_offset();
+	gfc_vector2d_add(position, self->position, offset);
 	if (self->sprite)
 	{
-		pos = gfc_vector2d(self->position.x - (0.5 * self->sprite->frame_w), self->position.y - (0.5 * self->sprite->frame_h));
+		position = gfc_vector2d(position.x - (0.5 * self->sprite->frame_w), position.y - (0.5 * self->sprite->frame_h));
 		gf2d_sprite_render(
 			self->sprite,
-			pos,
+			position,
 			NULL,
 			NULL,
 			NULL,
@@ -163,8 +166,7 @@ void entity_draw(Entity *self)
 			(Uint32)self->frame);
 
 		// draw bounding boxes if the collision draw flag is raised
-		rect = gfc_rect(self->position.x - (0.5 * self->sprite->frame_w), self->position.y - (0.5 * self->sprite->frame_h),
-			self->sprite->frame_w, self->sprite->frame_h);
+		rect = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
 		if (f_collision_draw) gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
 	}
 }

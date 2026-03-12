@@ -57,12 +57,16 @@ void player_think(Entity* self)
 	if (!self) return;
 
 	Entity* bullet;
+	GFC_Vector2D screen;
 	SDL_Event ev;
 	GFC_Vector2D dir = {0};
 	Sint32 mx = 0, my = 0;
 
 	// move player toward mouse
+	screen = camera_get_position();
 	SDL_GetMouseState(&mx, &my);
+	mx += screen.x;
+	my += screen.y;
 	if (self->position.x < mx) dir.x = 1;
 	if (self->position.y < my) dir.y = 1;
 	if (self->position.x > mx) dir.x = -1;
@@ -129,7 +133,6 @@ void player_update(Entity* self)
 	if (!self) return;
 	self->frame += 0.1;
 	if (self->frame >= 16.0) self->frame = 0;
-
 	gfc_vector2d_add(self->position, self->position, self->velocity);
 	camera_center_on(self->position);
 }

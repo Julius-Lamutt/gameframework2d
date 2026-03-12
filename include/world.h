@@ -52,13 +52,20 @@ void world_free(World *world);
 /**
 * @brief draw the physics layer
 * @param world: which world's physics layer to draw
+* @param offset: how far the physics layer should be drawn from the origin
 */
-void world_draw_physics_layer(World *world);
+void world_draw_physics_layer(World *world, GFC_Vector2D offset);
 
 /**
  * @brief draw the world
  * @param world: the world to draw
  */
 void world_draw(World *world);
+
+/**
+* @brief set the camera for the world
+* @param world: the world set up the camera in
+*/
+void world_setup_camera(World *world);
 
 #endif
