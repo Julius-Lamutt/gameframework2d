@@ -4,7 +4,7 @@
 #include "camera.h"
 #include "entity.h"
 
-const static Bool f_collision_draw = true;
+extern const Bool f_collision_draw;
 
 typedef struct
 {
@@ -37,7 +37,7 @@ void entity_system_init(Uint32 max)
 	}
 	_entity_manager.entity_max = max;
 	atexit(entity_system_close);
-	slog("initialized entity system");
+	slog("entity system initialized");
 }
 
 void entity_system_close()
@@ -49,7 +49,7 @@ void entity_system_close()
 	}
 	free(_entity_manager.entity_list);
 	memset(&_entity_manager, 0, sizeof(EntityManager));
-	slog("closed entity system");
+	slog("entity system closed");
 }
 
 void entity_clear_all(Entity *ignore)

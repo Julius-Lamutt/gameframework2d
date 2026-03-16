@@ -6,7 +6,7 @@
 #include "camera.h"
 #include "world.h"
 
-static Bool f_collision_draw = true;
+extern const Bool f_collision_draw;
 
 void world_build_tile_layer(World* world)
 {
