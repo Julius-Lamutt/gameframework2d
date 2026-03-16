@@ -22,9 +22,6 @@ void player_update(Entity* self);
  */
 void player_free(Entity* self);
 
-Bool pressed = false;
-Bool released = true;
-
 Entity *player_new()
 {
 	Entity		*self;
