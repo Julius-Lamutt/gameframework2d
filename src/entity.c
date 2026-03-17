@@ -13,6 +13,9 @@ typedef struct
 	Uint32  entity_pool;
 } EntityManager;
 
+/*
+* @brief close the entity system
+*/
 void entity_system_close();
 
 static EntityManager _entity_manager = {0};
@@ -107,8 +110,8 @@ void entity_free(Entity *self)
 	self->_inuse = 0; // save this spot for future entities
 	gf2d_sprite_free(self->sprite);
 
-	// anything else we allocate for our would get cleaned up here
-	if (self->free) self->free(self->data);
+	// anything else we allocate for our entity would get cleaned up here
+	if (self->free) self->free(self);
 }
 
 void entity_think(Entity *self)
@@ -166,8 +169,11 @@ void entity_draw(Entity *self)
 			(Uint32)self->frame);
 
 		// draw bounding boxes if the collision draw flag is raised
-		rect = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
-		if (f_collision_draw) gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
+		if (f_collision_draw)
+		{
+			rect = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
+			gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
+		}
 	}
 }
 

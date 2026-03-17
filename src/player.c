@@ -129,7 +129,7 @@ void player_free(Entity *self)
 	ClientData* data;
 
 	if ((!self) || (!self->data)) return;
-	data = (ClientData*)self->data;
+	data = (ClientData*) self->data;
 	inventory_close(&data->inventory);
 	free(data);
 }

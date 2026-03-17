@@ -5,6 +5,7 @@
 #include "gf2d_sprite.h"
 #include "camera.h"
 #include "entity.h"
+#include "items.h"
 #include "player.h"
 #include "bullet.h"
 #include "world.h"
@@ -37,7 +38,9 @@ int main(int argc, char *argv[])
     gf2d_sprite_init(1024);
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
+    items_init("defs/items.json");
     gfc_input_init("defs/config.json");
+
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/

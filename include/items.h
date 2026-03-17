@@ -18,7 +18,7 @@ typedef struct
 * @brief intilialize and load item definitions
 * @param filename: the name of the json file to load
 */
-void items_initialize(const char *filename);
+void items_init(const char *filename);
 
 /*
 * @brief get an item definition by its name

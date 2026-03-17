@@ -9,7 +9,7 @@ static SJson *_itemDefs = NULL;
 */
 void items_close();
 
-void items_initialize(const char* filename)
+void items_init(const char* filename)
 {
 	if (!filename)
 	{
@@ -30,7 +30,7 @@ void items_initialize(const char* filename)
 		_itemJson = NULL;
 		return;
 	}
-
+	slog("items initialized");
 	atexit(items_close);
 }
 
@@ -39,6 +39,7 @@ void items_close()
 	if (_itemJson) sj_free(_itemJson);
 	_itemJson = NULL;
 	_itemDefs = NULL;
+	slog("items closed");
 }
 
 SJson* items_get_def_by_name(const char* name)
