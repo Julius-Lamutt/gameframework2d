@@ -3,9 +3,15 @@
 #include "gfc_shape.h"
 #include "gfc_vector.h"
 #include "camera.h"
+#include "inventory.h"
 #include "bullet.h"
 #include "collision.h"
 #include "player.h"
+
+typedef struct
+{
+	Inventory inventory;
+} ClientData;
 
 /**
  * @brief run the think function for the player
@@ -24,7 +30,8 @@ void player_free(Entity* self);
 
 Entity *player_new()
 {
-	Entity		*self;
+	Entity *self;
+	ClientData *data;
 
 	self = entity_new();
 	if (!self)
@@ -32,6 +39,8 @@ Entity *player_new()
 		slog("Failed to spawn a player entity");
 		return NULL;
 	}
+
+	// player information
 	self->layer = EL_PLAYER;
 	self->sprite = gf2d_sprite_load_all(
 		"images/player.png", //images/ed210.png
@@ -47,6 +56,13 @@ Entity *player_new()
 	self->update = player_update;
 	self->free = player_free;
 
+	// client data
+	data = gfc_allocate_array(sizeof(ClientData), 1);
+	if (data)
+	{
+		self->data = data;
+		inventory_init(&data->inventory);
+	}
 	return self;
 }
 
@@ -110,5 +126,10 @@ void player_update(Entity* self)
 
 void player_free(Entity *self)
 {
-	if (!self) return;
+	ClientData* data;
+
+	if ((!self) || (!self->data)) return;
+	data = (ClientData*)self->data;
+	inventory_close(&data->inventory);
+	free(data);
 }
