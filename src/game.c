@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "font.h"
 #include "camera.h"
 #include "entity.h"
 #include "items.h"
@@ -36,10 +37,11 @@ int main(int argc, char *argv[])
         0);
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
+    font_init();
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
-    items_init("defs/items.json");
     gfc_input_init("defs/config.json");
+    items_init("defs/items.json");
 
     SDL_ShowCursor(SDL_DISABLE);
     
@@ -56,6 +58,8 @@ int main(int argc, char *argv[])
     {
         /*update things here*/
         gfc_input_update(); // inputs/controls
+
+        font_cleanup(); // cleanup the font cache
 
         SDL_GetMouseState(&mx, &my); // mouse
         mf += 0.1;
@@ -74,6 +78,8 @@ int main(int argc, char *argv[])
             entity_system_draw();
 
             //UI elements last
+            font_draw_text("Press esc to quit\nain't that neat?", FS_MEDIUM, GFC_COLOR_BLACK, gfc_vector2d(10, 10));
+
             gf2d_sprite_draw(
                 mouse,
                 gfc_vector2d(mx,my),
