@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     World *world;
     Entity *player;
     Sprite *mouse;
-    GFC_Color mouseGFC_Color = gfc_color8(255,100,255,200);
+    GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
     
     /*program initializtion*/
     init_logger("gf2d.log",0);
