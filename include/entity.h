@@ -20,8 +20,8 @@ typedef enum
 typedef struct Entity_S
 {
 	Uint8			_inuse;			/* no touchy */
+	Uint16			layer;
 	Uint32			id;
-	Uint32			layer;
 	GFC_TextLine	name;
 	GFC_Vector2D	position;		/* current position */
 	GFC_Vector2D    newPosition;	/* position to be tested for collisions */

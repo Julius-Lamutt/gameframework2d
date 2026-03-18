@@ -19,7 +19,7 @@ typedef struct Window_S
 	GFC_Rect		canvas;			/* where on the window to draw elements */
 	struct Window_S *parent;		/* pointer to parent window */
 	struct Window_S *child;			/* pointer to child window */
-	Uint8			block_input		/* block input checks for child windows, but allows update */
+	Uint8			block_input;	/* block input checks for child windows, but allows update */
 	void (*close_child)(struct Window_S *win, struct Window_S *child);
 	int (*update)(struct Window_S *win, GFC_List *updateElements);
 	int (*draw)(struct Window_S *win);
@@ -32,5 +32,27 @@ typedef struct Window_S
 * @param max: the maximum number of windows that can exist at the same time
 */
 void window_system_init(Uint32 max);
+
+/**
+* @brief get a blank window for use
+* @returns NULL on no more room or error, a blank window otherwise
+*/
+Window *window_new();
+
+/**
+* @brief clean up a window and free its spot for future use
+* @param win: the window to free
+*/
+void window_free(Window *win);
+
+/**
+* @brief run the update function for all active windows
+*/
+void window_system_update();
+
+/**
+* @brief draw all active windows
+*/
+void window_system_draw();
 
 #endif

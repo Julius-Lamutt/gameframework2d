@@ -4,6 +4,7 @@
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
 #include "font.h"
+#include "windows.h"
 #include "camera.h"
 #include "entity.h"
 #include "items.h"
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
     font_init();
+    window_system_init(128);
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");

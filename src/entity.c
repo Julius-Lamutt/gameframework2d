@@ -13,12 +13,30 @@ typedef struct
 	Uint32  entity_pool;
 } EntityManager;
 
+static EntityManager _entity_manager = {0};
+
 /*
 * @brief close the entity system
 */
 void entity_system_close();
 
-static EntityManager _entity_manager = {0};
+/*
+* @brief run the think function for this entity
+* @param self: the entity to think
+*/
+void entity_think(Entity *self);
+
+/*
+* @brief run the update function for this entity
+* @param self: the entity to update
+*/
+void entity_update(Entity *self);
+
+/*
+* @breif run the draw function for this entity
+* @param self: the entity to draw
+*/
+void entity_draw(Entity *self);
 
 void entity_system_init(Uint32 max)
 {

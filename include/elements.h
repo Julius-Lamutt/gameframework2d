@@ -32,7 +32,7 @@ typedef enum
 
 typedef struct Element_S
 {
-
+	Uint8	_inuse;
 } Element;
 
 #endif
