@@ -155,7 +155,6 @@ Window *window_load(const char *filename)
 	name = sj_object_get_value_as_string(window, "name"); 
 	if (!name)
 	{
-		sj_free(window);
 		sj_free(file);
 		slog("missing window name object in file '%s'", filename);
 		return NULL;
@@ -164,18 +163,21 @@ Window *window_load(const char *filename)
 	element_list = sj_object_get_value(window, "elements");
 	if (!element_list)
 	{
-		sj_free(window);
 		sj_free(file);
 		slog("missing window elements object in file '%s'", filename);
 		return NULL;
 	}
-	// TODO call function to be made in elements.c
+	elements = element_list_load(element_list);
+	if (!elements)
+	{
+		sj_free(file);
+		slog("failed to get window elements in file '%s'");
+		return NULL;
+	}
 	
 	background = sj_object_get_value_as_string(window, "background");
 	if (!background)
 	{
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing window background object in file '%s'", filename);
 		return NULL;
@@ -184,8 +186,6 @@ Window *window_load(const char *filename)
 	border = sj_object_get_value_as_string(window, "border");
 	if (!border)
 	{
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing window border object in file '%s'", filename);
 		return NULL;
@@ -194,17 +194,12 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "size");
 	if (!array)
 	{
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing window size object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
-		sj_free(array);
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing or extra window size dimensions in file '%s'", filename);
 		return NULL;
@@ -214,9 +209,6 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &size.w) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &size.h))
 	{
-		sj_free(array);
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("one or more size dimensions are invalid in file '%s'", filename);
 		return NULL;
@@ -225,17 +217,12 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "canvas");
 	if (!array)
 	{
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing window canvas object in file '%s'", filename);
 		return NULL;
 	}
-	if (sj_array_get_count(array) == 4)
+	if (sj_array_get_count(array) != 4)
 	{
-		sj_free(array);
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("missing or extra window canvas dimensions in file '%s'", filename);
 		return NULL;
@@ -245,9 +232,6 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &canvas.w) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &canvas.h))
 	{
-		sj_free(array);
-		sj_free(element_list);
-		sj_free(window);
 		sj_free(file);
 		slog("one or more canvas dimensions are invalid in file '%s'", filename);
 		return NULL;
@@ -257,11 +241,7 @@ Window *window_load(const char *filename)
 	if (!pname) parent = NULL;
 	else parent = window_find_by_name(pname);
 
-	sj_free(array);
-	sj_free(element_list);
-	sj_free(window);
 	sj_free(file);
-
 	win = window_new();
 	if (!win) return NULL;
 	gfc_line_cpy(win->name, name);

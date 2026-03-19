@@ -34,8 +34,8 @@ typedef struct Element_S
 {
 	GFC_TextLine	name;		/* name of element, should be unique */
 	int				index;		/* order of highlights, -1 to disable highlights */
-	int				state;		/* element state e.g. disable, highlight */
 	int				type;		/* element type e.g. label, actor */
+	int				state;		/* element state e.g. disable, highlight */
 	Uint8			can_focus;	/* true if element can be the focus of keyboard input */
 	Uint8			has_focus;	/* true if element has the focus of keyboard input */
 	GFC_Rect		bounds;		/* drawing bounds for element */
@@ -43,15 +43,15 @@ typedef struct Element_S
 } Element;
 
 /*
-* @brief load all window elements given a list of elements
-* @param element_list: the json list of elements
-* @return NULL on error, a list of window elements otherwise
+* @brief load a window element
+* @param element: the window element to load
+* @return NULL on error, a pointer to an element otherwise
 */
-Element *element_load(SJson *element);
+Element *element_load(SJson *windel);
 
 /*
 * @brief load all window elements given a list of elements
-* @param element_list: the json list of elements
+* @param element_list: the json list of window elements
 * @return NULL on error, a list of window elements otherwise
 */
 GFC_List *element_list_load(SJson *element_list);
