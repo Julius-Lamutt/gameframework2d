@@ -10,6 +10,7 @@
 #include "items.h"
 #include "player.h"
 #include "bullet.h"
+#include "main_menu.h"
 #include "world.h"
 
 /*global variables & flags*/
@@ -21,6 +22,7 @@ int main(int argc, char *argv[])
     int mx,my, done = 0;
     float mf = 0;
     World *world;
+    Window *win;
     Entity *player;
     Sprite *mouse;
     GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
@@ -52,6 +54,7 @@ int main(int argc, char *argv[])
     world_setup_camera(world);
     player = player_new();
     player->world = world;
+    win = main_menu();
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");
 
@@ -67,8 +70,11 @@ int main(int argc, char *argv[])
         mf += 0.1;
         if (mf >= 16.0) mf = 0;
 
+        // player information
         entity_system_think();
-		entity_system_update(); // player information
+		entity_system_update();
+
+        window_system_update();
         
         gf2d_graphics_clear_screen(); // clears drawing buffers
         // all drawing should happen betweem clear_screen and next_frame
@@ -80,6 +86,8 @@ int main(int argc, char *argv[])
             entity_system_draw();
 
             //UI elements last
+            window_system_draw();
+
             font_draw_text("Press esc to quit\nain't that neat?", FS_MEDIUM, GFC_COLOR_BLACK, gfc_vector2d(10, 10));
 
             gf2d_sprite_draw(

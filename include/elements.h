@@ -36,7 +36,7 @@ typedef struct Element_S
 	int				index;		/* order of highlights, -1 to disable highlights */
 	int				type;		/* element type e.g. label, actor */
 	int				state;		/* element state e.g. disable, highlight */
-	Uint8			can_focus;	/* true if element can be the focus of keyboard input */
+	int				can_focus;	/* true if element can be the focus of keyboard input */
 	Uint8			has_focus;	/* true if element has the focus of keyboard input */
 	GFC_Rect		bounds;		/* drawing bounds for element */
 	GFC_Color		color;		/* color for the element */

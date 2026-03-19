@@ -88,6 +88,9 @@ void window_free(Window *win)
 {
 	if (!win) return;
 	win->_inuse = 0; // save this spot for future windows
+	gf2d_sprite_free(win->background);
+	gf2d_sprite_free(win->border);
+	gfc_list_delete(win->elements);
 
 	// anything else we allocate for our window would get cleaned up here
 	if (win->free) win->free(win);
@@ -111,7 +114,31 @@ void window_system_update()
 
 void window_draw(Window* win)
 {
+	GFC_Vector2D bg_scale, border_scale;
+
 	if (!win) return;
+	/*
+	bg_scale = gfc_vector2d(win->size.w / win->background->frame_w, win->size.h / win->background->frame_h);
+	border_scale = gfc_vector2d(win->size.w / win->border->frame_w, win->size.h / win->border->frame_h);
+
+	gf2d_sprite_draw(win->background, 
+		gfc_vector2d(win->size.x, win->size.y), // draw background within window size
+		&bg_scale, // scale background to match size
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		0);
+
+	gf2d_sprite_draw(win->border, 
+		gfc_vector2d(win->size.x, win->size.y), // draw border within window size
+		&border_scale, // scale border to match size
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		0);
+		*/
 	if (win->draw) win->draw(win);
 }
 
@@ -247,6 +274,7 @@ Window *window_load(const char *filename)
 	gfc_line_cpy(win->name, name);
 	win->background = gf2d_sprite_load_image(background);
 	win->border = gf2d_sprite_load_image(border);
+	win->elements = elements;
 	win->size = size;
 	win->canvas = canvas;
 	win->parent = parent;

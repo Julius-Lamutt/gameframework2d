@@ -4,8 +4,7 @@
 Element *element_load(SJson *windel)
 {
 	const char *name, *type_name;
-	int index, type;
-	Uint8 can_focus;
+	int index, type, can_focus;
 	GFC_Rect bounds;
 	GFC_Color color;
 	SJson *array;
@@ -20,20 +19,20 @@ Element *element_load(SJson *windel)
 	name = sj_object_get_value_as_string(windel, "name");
 	if (!name)
 	{
-		slog("failed to find name object for window element '%s'", windel);
+		slog("failed to find name object for window element");
 		return NULL;
 	}
 
 	if (!sj_object_get_value_as_int(windel, "index", &index))
 	{
-		slog("failed to find index object for window element '%s'", windel);
+		slog("failed to find index object for window element '%s'", name);
 		return NULL;
 	}
 
 	type_name = sj_object_get_value_as_string(windel, "type");
 	if (!type_name)
 	{
-		slog("failed to find type object for window element '%s'", windel);
+		slog("failed to find type object for window element '%s'", name);
 		return NULL;
 	}
 	if (gfc_strlcmp(type_name, "label")) type = ET_LABEL;
@@ -43,20 +42,20 @@ Element *element_load(SJson *windel)
 	if (gfc_strlcmp(type_name, "list")) type = ET_LIST;
 	else
 	{
-		slog("invalid type object for window element '%s'", windel);
+		slog("invalid type object for window element '%s'", name);
 		return NULL;
 	}
 
-	if (!sj_object_get_value_as_uint8(windel, "can_focus", &can_focus));
+	if (!sj_object_get_value_as_int(windel, "can_focus", &can_focus));
 	{
-		slog("failed to find can_focus object for window element '%s'", windel);
+		slog("failed to find can_focus object for window element '%s'", name);
 		return NULL;
 	}
 
 	array = sj_object_get_value(windel, "bounds");
 	if (!array)
 	{
-		slog("failed to find bounds object for window element '%s'", windel);
+		slog("failed to find bounds object for window element '%s'", name);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
@@ -130,7 +129,8 @@ GFC_List *element_list_load(SJson *element_list)
 		if (!element)
 		{
 			slog("element #%i is invalid", i);
-			return NULL;
+			continue;
+			//return NULL;
 		}
 		gfc_list_append(elements, element);
 	}
