@@ -46,7 +46,7 @@ SJson* items_get_def_by_name(const char* name)
 {
 	int i, c;
 	SJson *item;
-	const char *itemName = NULL;
+	const char *itemName;
 
 	if (!name)
 	{

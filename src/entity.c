@@ -96,9 +96,9 @@ Entity *entity_new()
 	{
 		if (_entity_manager.entity_list[i]._inuse) continue;
 		memset(&_entity_manager.entity_list[i], 0, sizeof(Entity));
+		//set defaults
 		_entity_manager.entity_list[i]._inuse = 1;
 		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
-		//set defaults
 		_entity_manager.entity_list[i].scale.x = 1;
 		_entity_manager.entity_list[i].scale.y = 1;
 		return &_entity_manager.entity_list[i];

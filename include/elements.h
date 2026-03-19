@@ -23,16 +23,37 @@ typedef enum
 
 typedef enum
 {
-	ET_LIST,
-	ET_LABEL,
-	ET_ACTOR,
-	ET_BUTTON,
-	ET_ENTRY
+	ET_LABEL,	/* text blocks */
+	ET_ACTOR,	/* sprites/animations */
+	ET_BUTTON,	/* triggers an action on click */
+	ET_ENTRY,	/* allows user keyboard inputs */
+	ET_LIST,	/* a list of elements */
 } ElementTypes;
 
 typedef struct Element_S
 {
-	Uint8	_inuse;
+	GFC_TextLine	name;		/* name of element, should be unique */
+	int				index;		/* order of highlights, -1 to disable highlights */
+	int				state;		/* element state e.g. disable, highlight */
+	int				type;		/* element type e.g. label, actor */
+	Uint8			can_focus;	/* true if element can be the focus of keyboard input */
+	Uint8			has_focus;	/* true if element has the focus of keyboard input */
+	GFC_Rect		bounds;		/* drawing bounds for element */
+	GFC_Color		color;		/* color for the element */
 } Element;
+
+/*
+* @brief load all window elements given a list of elements
+* @param element_list: the json list of elements
+* @return NULL on error, a list of window elements otherwise
+*/
+Element *element_load(SJson *element);
+
+/*
+* @brief load all window elements given a list of elements
+* @param element_list: the json list of elements
+* @return NULL on error, a list of window elements otherwise
+*/
+GFC_List *element_list_load(SJson *element_list);
 
 #endif

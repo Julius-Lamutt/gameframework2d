@@ -1,4 +1,6 @@
 #include "simple_logger.h"
+#include "simple_json.h"
+#include "elements.h"
 #include "windows.h"
 
 typedef struct
@@ -73,7 +75,9 @@ Window *window_new()
 	{
 		if (_window_manager.window_list[i]._inuse) continue;
 		memset(&_window_manager.window_list[i], 0, sizeof(Window));
+		// set defaults
 		_window_manager.window_list[i]._inuse = 1;
+		_window_manager.window_list[i].hidden = 0;
 		return &_window_manager.window_list[i];
 	}
 	slog("no more available windows");
@@ -100,7 +104,7 @@ void window_system_update()
 	int i;
 	for (i = 0; i < _window_manager.window_max; i++)
 	{
-		if (!_window_manager.window_list[i]._inuse) continue;
+		if ((!_window_manager.window_list[i]._inuse) || (_window_manager.window_list[i].hidden)) continue;
 		window_update(&_window_manager.window_list[i]);
 	}
 }
@@ -116,7 +120,173 @@ void window_system_draw()
 	int i;
 	for (i = _window_manager.window_max - 1; i >= 0; i--)
 	{
-		if (!_window_manager.window_list[i]._inuse) continue;
+		if ((!_window_manager.window_list[i]._inuse) || (_window_manager.window_list[i].hidden)) continue;
 		window_draw(&_window_manager.window_list[i]);
 	}
+}
+
+Window *window_load(const char *filename)
+{
+	Window *win, *parent;
+	SJson *file, *window, *element_list, *array;
+	const char *name, *background, *border, *pname;
+	GFC_Rect size, canvas;
+	GFC_List *elements;
+
+	if (!filename)
+	{
+		slog("no file name provided for window load");
+		return NULL;
+	}
+	file = sj_load(filename);
+	if (!file)
+	{
+		slog("failed to load window file '%s'", filename);
+		return NULL;
+	}
+	window = sj_object_get_value(file, "window");
+	if (!window)
+	{
+		sj_free(file);
+		slog("missing window object in file '%s'", filename);
+		return NULL;
+	}
+	
+	name = sj_object_get_value_as_string(window, "name"); 
+	if (!name)
+	{
+		sj_free(window);
+		sj_free(file);
+		slog("missing window name object in file '%s'", filename);
+		return NULL;
+	}
+
+	element_list = sj_object_get_value(window, "elements");
+	if (!element_list)
+	{
+		sj_free(window);
+		sj_free(file);
+		slog("missing window elements object in file '%s'", filename);
+		return NULL;
+	}
+	// TODO call function to be made in elements.c
+	
+	background = sj_object_get_value_as_string(window, "background");
+	if (!background)
+	{
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing window background object in file '%s'", filename);
+		return NULL;
+	}
+	
+	border = sj_object_get_value_as_string(window, "border");
+	if (!border)
+	{
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing window border object in file '%s'", filename);
+		return NULL;
+	}
+	
+	array = sj_object_get_value(window, "size");
+	if (!array)
+	{
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing window size object in file '%s'", filename);
+		return NULL;
+	}
+	if (sj_array_get_count(array) != 4)
+	{
+		sj_free(array);
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing or extra window size dimensions in file '%s'", filename);
+		return NULL;
+	}
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &size.x) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &size.y) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &size.w) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &size.h))
+	{
+		sj_free(array);
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("one or more size dimensions are invalid in file '%s'", filename);
+		return NULL;
+	}
+	
+	array = sj_object_get_value(window, "canvas");
+	if (!array)
+	{
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing window canvas object in file '%s'", filename);
+		return NULL;
+	}
+	if (sj_array_get_count(array) == 4)
+	{
+		sj_free(array);
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("missing or extra window canvas dimensions in file '%s'", filename);
+		return NULL;
+	}
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &canvas.x) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &canvas.y) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &canvas.w) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &canvas.h))
+	{
+		sj_free(array);
+		sj_free(element_list);
+		sj_free(window);
+		sj_free(file);
+		slog("one or more canvas dimensions are invalid in file '%s'", filename);
+		return NULL;
+	}
+
+	pname = sj_object_get_value_as_string(window, "parent");
+	if (!pname) parent = NULL;
+	else parent = window_find_by_name(pname);
+
+	sj_free(array);
+	sj_free(element_list);
+	sj_free(window);
+	sj_free(file);
+
+	win = window_new();
+	if (!win) return NULL;
+	gfc_line_cpy(win->name, name);
+	win->background = gf2d_sprite_load_image(background);
+	win->border = gf2d_sprite_load_image(border);
+	win->size = size;
+	win->canvas = canvas;
+	win->parent = parent;
+	if (parent) parent->child = win;
+	return win;
+}
+
+Window *window_find_by_name(const char* name)
+{
+	int i;
+
+	if (!name)
+	{
+		slog("failed to get window name");
+		return NULL;
+	}
+	for (i = 0; i < _window_manager.window_max; i++)
+	{
+		if (!_window_manager.window_list[i]._inuse) continue;
+		if (gfc_strlcmp(_window_manager.window_list[i].name, name) == 0) return &_window_manager.window_list[i];
+	}
+	return NULL;
 }

@@ -15,11 +15,10 @@ typedef struct Window_S
 	GFC_List		*elements;		/* list of elements that should be updated */
 	Sprite			*background;	/* window background */
 	Sprite			*border;		/* window border */
-	GFC_Rect		dim;			/* where on the screen to draw window */
+	GFC_Rect		size;			/* where on the screen to draw window */
 	GFC_Rect		canvas;			/* where on the window to draw elements */
 	struct Window_S *parent;		/* pointer to parent window */
 	struct Window_S *child;			/* pointer to child window */
-	Uint8			block_input;	/* block input checks for child windows, but allows update */
 	void (*close_child)(struct Window_S *win, struct Window_S *child);
 	int (*update)(struct Window_S *win, GFC_List *updateElements);
 	int (*draw)(struct Window_S *win);
@@ -27,13 +26,13 @@ typedef struct Window_S
 	void *data;
 } Window;
 
-/**
+/*
 * @brief this initializes the window management system and queues up cleaning on exit
 * @param max: the maximum number of windows that can exist at the same time
 */
 void window_system_init(Uint32 max);
 
-/**
+/*
 * @brief get a blank window for use
 * @returns NULL on no more room or error, a blank window otherwise
 */
@@ -45,14 +44,28 @@ Window *window_new();
 */
 void window_free(Window *win);
 
-/**
+/*
 * @brief run the update function for all active windows
 */
 void window_system_update();
 
-/**
+/*
 * @brief draw all active windows
 */
 void window_system_draw();
+
+/*
+* @brief load a parent window from a config file
+* @param filename: the name of the window file to load
+* @return NULL on error, a pointer to window otherwise
+*/
+Window *window_load(const char *filename);
+
+/*
+* @brief find a window by name
+* @param name: name of the window
+* @return NULL if not found, a pointer to a window otherwise
+*/
+Window *window_find_by_name(const char *name);
 
 #endif
