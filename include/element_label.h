@@ -1,7 +1,6 @@
 #ifndef __ELEMENT_LABEL_H__
 #define __ELEMENT_LABEL_H__
 
-#include "simple_json.h"
 #include "elements.h"
 
 typedef struct
@@ -13,7 +12,7 @@ typedef struct
 } LabelElement;
 
 /*
-* @brief load an label element
+* @brief load a label element
 * @param windel: the window element to load the label from
 * @return NULL on error, a pointer to an element label otherwise
 */

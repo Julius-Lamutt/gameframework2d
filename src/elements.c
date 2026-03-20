@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "element_label.h"
+#include "element_actor.h"
 #include "elements.h"
 
 /*
@@ -147,6 +148,7 @@ Element *element_load(SJson *windel)
 			element->data = element_label_load(windel);
 			break;
 		case ET_ACTOR:
+			element->data = element_actor_load(windel);
 			break;
 		case ET_BUTTON:
 			break;
@@ -210,6 +212,8 @@ void element_free(Element *element)
 			element_label_free(data);
 			break;
 		case ET_ACTOR:
+			data = (ActorElement*) element->data;
+			element_actor_free(data);
 			break;
 		case ET_BUTTON:
 			break;
@@ -250,6 +254,7 @@ void element_draw(Element* element)
 			element_label_draw(element->data, element->bounds);
 			break;
 		case ET_ACTOR:
+			element_actor_draw(element->data, element->bounds);
 			break;
 		case ET_BUTTON:
 			break;

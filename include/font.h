@@ -9,6 +9,8 @@ typedef enum
 	FS_SMALL,
 	FS_MEDIUM,
 	FS_LARGE,
+	FS_XLARGE,
+	FS_XXLARGE,
 	FS_MAX
 } FontStyles;
 

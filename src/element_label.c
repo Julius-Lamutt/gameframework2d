@@ -18,7 +18,6 @@ LabelElement *element_label_load(SJson *windel)
 	label = gfc_allocate_array(sizeof(LabelElement), 1);
 	if (!label)
 	{
-		free(label);
 		slog("failed to allocate label element");
 		return NULL;
 	}
