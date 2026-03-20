@@ -56,4 +56,16 @@ Element *element_load(SJson *windel);
 */
 GFC_List *element_list_load(SJson *element_list);
 
+/*
+* @brief free an element from memory
+* @param element: the element to be freed
+*/
+void element_free(Element *element);
+
+/*
+* @brief free a list of elements from memory
+* @param element_list: the list of elements to be freed
+*/
+void element_list_free(GFC_List *element_list);
+
 #endif

@@ -10,6 +10,13 @@ Element *element_load(SJson *windel)
 	SJson *array;
 	Element *element;
 
+	element = gfc_allocate_array(sizeof(Element), 1);
+	if (!element)
+	{
+		slog("failed to allocate a new element");
+		return NULL;
+	}
+
 	if (!windel)
 	{
 		slog("failed to find window element");
@@ -36,17 +43,17 @@ Element *element_load(SJson *windel)
 		return NULL;
 	}
 	if (gfc_strlcmp(type_name, "label")) type = ET_LABEL;
-	if (gfc_strlcmp(type_name, "actor")) type = ET_ACTOR;
-	if (gfc_strlcmp(type_name, "button")) type = ET_BUTTON;
-	if (gfc_strlcmp(type_name, "entry")) type = ET_ENTRY;
-	if (gfc_strlcmp(type_name, "list")) type = ET_LIST;
+	else if (gfc_strlcmp(type_name, "actor")) type = ET_ACTOR;
+	else if (gfc_strlcmp(type_name, "button")) type = ET_BUTTON;
+	else if (gfc_strlcmp(type_name, "entry")) type = ET_ENTRY;
+	else if (gfc_strlcmp(type_name, "list")) type = ET_LIST;
 	else
 	{
 		slog("invalid type object for window element '%s'", name);
 		return NULL;
 	}
-
-	if (!sj_object_get_value_as_int(windel, "can_focus", &can_focus));
+	
+	if (!sj_object_get_value_as_int(windel, "can_focus", &can_focus))
 	{
 		slog("failed to find can_focus object for window element '%s'", name);
 		return NULL;
@@ -92,6 +99,7 @@ Element *element_load(SJson *windel)
 		return NULL;
 	}
 	color.ct = CT_RGBA8;
+
 	gfc_line_cpy(element->name, name);
 	element->index = index;
 	element->type = type;
@@ -130,9 +138,31 @@ GFC_List *element_list_load(SJson *element_list)
 		{
 			slog("element #%i is invalid", i);
 			continue;
-			//return NULL;
+			return NULL;
 		}
 		gfc_list_append(elements, element);
 	}
 	return elements;
+}
+
+void element_free(Element *element)
+{
+	if (!element) return;
+	free(element);
+}
+
+void element_list_free(GFC_List *element_list)
+{
+	int i, c;
+	Element *element;
+
+	if (!element_list) return;
+	c = gfc_list_get_count(element_list);
+	for (i = 0; i < c; i++)
+	{
+		element = gfc_list_get_nth(element_list, i);
+		if (!element) continue;
+		element_free(element);
+	}
+	gfc_list_delete(element_list);
 }

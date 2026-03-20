@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "simple_json.h"
+#include "camera.h"
 #include "elements.h"
 #include "windows.h"
 
@@ -90,7 +91,7 @@ void window_free(Window *win)
 	win->_inuse = 0; // save this spot for future windows
 	gf2d_sprite_free(win->background);
 	gf2d_sprite_free(win->border);
-	gfc_list_delete(win->elements);
+	element_list_free(win->elements);
 
 	// anything else we allocate for our window would get cleaned up here
 	if (win->free) win->free(win);
@@ -114,31 +115,37 @@ void window_system_update()
 
 void window_draw(Window* win)
 {
-	GFC_Vector2D bg_scale, border_scale;
+	GFC_Vector2D position, bg_scale, border_scale;
+	GFC_Color bg_color, border_color;
 
 	if (!win) return;
-	/*
+	if (!win->background) return;
+	if (!win->border) return;
+	
+	position = gfc_vector2d(win->size.x, win->size.y);
 	bg_scale = gfc_vector2d(win->size.w / win->background->frame_w, win->size.h / win->background->frame_h);
 	border_scale = gfc_vector2d(win->size.w / win->border->frame_w, win->size.h / win->border->frame_h);
+	bg_color = win->bg_color;
+	border_color = win->border_color;
 
 	gf2d_sprite_draw(win->background, 
-		gfc_vector2d(win->size.x, win->size.y), // draw background within window size
+		position, // draw background within window size
 		&bg_scale, // scale background to match size
 		NULL,
 		NULL,
 		NULL,
-		NULL,
+		&bg_color,
 		0);
 
 	gf2d_sprite_draw(win->border, 
-		gfc_vector2d(win->size.x, win->size.y), // draw border within window size
+		position, // draw border within window size
 		&border_scale, // scale border to match size
 		NULL,
 		NULL,
 		NULL,
-		NULL,
+		&border_color,
 		0);
-		*/
+		
 	if (win->draw) win->draw(win);
 }
 
@@ -156,9 +163,13 @@ Window *window_load(const char *filename)
 {
 	Window *win, *parent;
 	SJson *file, *window, *element_list, *array;
-	const char *name, *background, *border, *pname;
-	GFC_Rect size, canvas;
+	const char *name, *bg_name, *border_name, *pname;
+	int frame_w, frame_h;
 	GFC_List *elements;
+	Sprite *background, *border;
+	GFC_Rect size, canvas;
+	GFC_Vector4D size_dims, canvas_dims;
+	GFC_Color bg_color, border_color;
 
 	if (!filename)
 	{
@@ -201,23 +212,55 @@ Window *window_load(const char *filename)
 		slog("failed to get window elements in file '%s'");
 		return NULL;
 	}
-	
-	background = sj_object_get_value_as_string(window, "background");
-	if (!background)
+
+	array = sj_object_get_value(window, "background");
+	if (!array)
 	{
 		sj_free(file);
 		slog("missing window background object in file '%s'", filename);
 		return NULL;
 	}
-	
-	border = sj_object_get_value_as_string(window, "border");
-	if (!border)
+	if (sj_array_get_count(array) != 3)
+	{
+		sj_free(file);
+		slog("missing or extra window background parameters in file '%s'", filename);
+		return NULL;
+	}
+	bg_name = sj_get_string_value(sj_array_get_nth(array, 0));
+	if (!bg_name ||
+		!sj_get_integer_value(sj_array_get_nth(array, 1), &frame_w) ||
+		!sj_get_integer_value(sj_array_get_nth(array, 2), &frame_h))
+	{
+		sj_free(file);
+		slog("one or more background parameters are invalid in file '%s'", filename);
+		return NULL;
+	}
+	background = gf2d_sprite_load_all(bg_name, frame_w, frame_h, 1, 0);
+
+	array = sj_object_get_value(window, "border");
+	if (!array)
 	{
 		sj_free(file);
 		slog("missing window border object in file '%s'", filename);
 		return NULL;
 	}
-	
+	if (sj_array_get_count(array) != 3)
+	{
+		sj_free(file);
+		slog("missing or extra window border parameters in file '%s'", filename);
+		return NULL;
+	}
+	border_name = sj_get_string_value(sj_array_get_nth(array, 0));
+	if (!border_name ||
+		!sj_get_integer_value(sj_array_get_nth(array, 1), &frame_w) ||
+		!sj_get_integer_value(sj_array_get_nth(array, 2), &frame_h))
+	{
+		sj_free(file);
+		slog("one or more border parameters are invalid in file '%s'", filename);
+		return NULL;
+	}
+	border = gf2d_sprite_load_all(border_name, frame_w, frame_h, 1, 0);
+
 	array = sj_object_get_value(window, "size");
 	if (!array)
 	{
@@ -231,16 +274,17 @@ Window *window_load(const char *filename)
 		slog("missing or extra window size dimensions in file '%s'", filename);
 		return NULL;
 	}
-	if (!sj_get_float_value(sj_array_get_nth(array, 0), &size.x) ||
-		!sj_get_float_value(sj_array_get_nth(array, 1), &size.y) ||
-		!sj_get_float_value(sj_array_get_nth(array, 2), &size.w) ||
-		!sj_get_float_value(sj_array_get_nth(array, 3), &size.h))
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &size_dims.x) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &size_dims.y) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &size_dims.z) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &size_dims.w))
 	{
 		sj_free(file);
 		slog("one or more size dimensions are invalid in file '%s'", filename);
 		return NULL;
 	}
-	
+	size = gfc_rect(size_dims.x, size_dims.y, size_dims.z, size_dims.w);
+
 	array = sj_object_get_value(window, "canvas");
 	if (!array)
 	{
@@ -254,15 +298,64 @@ Window *window_load(const char *filename)
 		slog("missing or extra window canvas dimensions in file '%s'", filename);
 		return NULL;
 	}
-	if (!sj_get_float_value(sj_array_get_nth(array, 0), &canvas.x) ||
-		!sj_get_float_value(sj_array_get_nth(array, 1), &canvas.y) ||
-		!sj_get_float_value(sj_array_get_nth(array, 2), &canvas.w) ||
-		!sj_get_float_value(sj_array_get_nth(array, 3), &canvas.h))
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &canvas_dims.x) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &canvas_dims.y) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &canvas_dims.z) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &canvas_dims.w))
 	{
 		sj_free(file);
 		slog("one or more canvas dimensions are invalid in file '%s'", filename);
 		return NULL;
 	}
+	canvas = gfc_rect(canvas_dims.x, canvas_dims.y, canvas_dims.z, canvas_dims.w);
+
+	array = sj_object_get_value(window, "bg_color");
+	if (!array)
+	{
+		sj_free(file);
+		slog("missing window bg_color object in file '%s'", filename);
+		return NULL;
+	}
+	if (sj_array_get_count(array) != 4)
+	{
+		sj_free(file);
+		slog("missing or extra window bg_color dimensions in file '%s'", filename);
+		return NULL;
+	}
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &bg_color.r) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &bg_color.g) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &bg_color.b) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &bg_color.a))
+	{
+		sj_free(file);
+		slog("one or more bg_color parameters are invalid in file '%s'", filename);
+		return NULL;
+	}
+	bg_color.ct = CT_RGBA8;
+
+	array = sj_object_get_value(window, "border_color");
+	if (!array)
+	{
+		sj_free(file);
+		slog("missing window border_color object in file '%s'", filename);
+		return NULL;
+	}
+	if (sj_array_get_count(array) != 4)
+	{
+		sj_free(file);
+		slog("missing or extra window border_color dimensions in file '%s'", filename);
+		return NULL;
+	}
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &border_color.r) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &border_color.g) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &border_color.b) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &border_color.a))
+	{
+		sj_free(file);
+		slog("one or more bg_color parameters are invalid in file '%s'", filename);
+		return NULL;
+	}
+	border_color.ct = CT_RGBA8;
 
 	pname = sj_object_get_value_as_string(window, "parent");
 	if (!pname) parent = NULL;
@@ -272,10 +365,12 @@ Window *window_load(const char *filename)
 	win = window_new();
 	if (!win) return NULL;
 	gfc_line_cpy(win->name, name);
-	win->background = gf2d_sprite_load_image(background);
-	win->border = gf2d_sprite_load_image(border);
+	win->background = background;
+	win->border = border;
 	win->elements = elements;
 	win->size = size;
+	win->bg_color = bg_color;
+	win->border_color = border_color;
 	win->canvas = canvas;
 	win->parent = parent;
 	if (parent) parent->child = win;
