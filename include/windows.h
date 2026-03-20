@@ -21,6 +21,7 @@ typedef struct Window_S
 	GFC_Color		border_color;	/* what color to draw the border in */
 	struct Window_S *parent;		/* pointer to parent window */
 	struct Window_S *child;			/* pointer to child window */
+
 	void (*close_child)(struct Window_S *win, struct Window_S *child);
 	int (*update)(struct Window_S *win, GFC_List *update_elements);
 	int (*draw)(struct Window_S *win);

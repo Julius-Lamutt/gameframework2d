@@ -40,7 +40,7 @@ Entity *player_new()
 		return NULL;
 	}
 
-	// player information
+	// player defaults
 	self->layer = EL_PLAYER;
 	self->sprite = gf2d_sprite_load_all(
 		"images/player.png", //images/ed210.png

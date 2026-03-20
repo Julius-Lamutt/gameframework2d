@@ -1,15 +1,41 @@
 #include "simple_logger.h"
+#include "element_label.h"
 #include "elements.h"
+
+/*
+* @brief load a window element
+* @param element: the window element to load
+* @return NULL on error, a pointer to an element otherwise
+*/
+Element *element_load(SJson *windel);
+
+/*
+* @brief free an element from memory
+* @param element: the element to be freed
+*/
+void element_free(Element *element);
+
+/*
+* @brief draw an element
+* @param element: the element to draw
+*/
+void element_draw(Element *element);
 
 Element *element_load(SJson *windel)
 {
 	const char *name, *type_name;
 	int index, type, can_focus;
+	GFC_Vector4D bound_dims;
 	GFC_Rect bounds;
 	GFC_Color color;
 	SJson *array;
 	Element *element;
 
+	if (!windel)
+	{
+		slog("failed to find window element");
+		return NULL;
+	}
 	element = gfc_allocate_array(sizeof(Element), 1);
 	if (!element)
 	{
@@ -17,21 +43,17 @@ Element *element_load(SJson *windel)
 		return NULL;
 	}
 
-	if (!windel)
-	{
-		slog("failed to find window element");
-		return NULL;
-	}
-
 	name = sj_object_get_value_as_string(windel, "name");
 	if (!name)
 	{
+		free(element);
 		slog("failed to find name object for window element");
 		return NULL;
 	}
 
 	if (!sj_object_get_value_as_int(windel, "index", &index))
 	{
+		free(element);
 		slog("failed to find index object for window element '%s'", name);
 		return NULL;
 	}
@@ -39,22 +61,25 @@ Element *element_load(SJson *windel)
 	type_name = sj_object_get_value_as_string(windel, "type");
 	if (!type_name)
 	{
+		free(element);
 		slog("failed to find type object for window element '%s'", name);
 		return NULL;
 	}
-	if (gfc_strlcmp(type_name, "label")) type = ET_LABEL;
-	else if (gfc_strlcmp(type_name, "actor")) type = ET_ACTOR;
-	else if (gfc_strlcmp(type_name, "button")) type = ET_BUTTON;
-	else if (gfc_strlcmp(type_name, "entry")) type = ET_ENTRY;
-	else if (gfc_strlcmp(type_name, "list")) type = ET_LIST;
+	if (gfc_strlcmp(type_name, "label") == 0) type = ET_LABEL;
+	else if (gfc_strlcmp(type_name, "actor") == 0) type = ET_ACTOR;
+	else if (gfc_strlcmp(type_name, "button") == 0) type = ET_BUTTON;
+	else if (gfc_strlcmp(type_name, "entry") == 0) type = ET_ENTRY;
+	else if (gfc_strlcmp(type_name, "list") == 0) type = ET_LIST;
 	else
 	{
+		free(element);
 		slog("invalid type object for window element '%s'", name);
 		return NULL;
 	}
 	
 	if (!sj_object_get_value_as_int(windel, "can_focus", &can_focus))
 	{
+		free(element);
 		slog("failed to find can_focus object for window element '%s'", name);
 		return NULL;
 	}
@@ -62,32 +87,38 @@ Element *element_load(SJson *windel)
 	array = sj_object_get_value(windel, "bounds");
 	if (!array)
 	{
+		free(element);
 		slog("failed to find bounds object for window element '%s'", name);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
-		slog("missing or extra bound dimensions for window element '%s'", windel);
+		free(element);
+		slog("missing or extra bound dimensions for window element '%s'", name);
 		return NULL;
 	}
-	if (!sj_get_float_value(sj_array_get_nth(array, 0), &bounds.x) ||
-		!sj_get_float_value(sj_array_get_nth(array, 1), &bounds.y) ||
-		!sj_get_float_value(sj_array_get_nth(array, 2), &bounds.w) ||
-		!sj_get_float_value(sj_array_get_nth(array, 3), &bounds.h))
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &bound_dims.x) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &bound_dims.y) ||
+		!sj_get_float_value(sj_array_get_nth(array, 2), &bound_dims.z) ||
+		!sj_get_float_value(sj_array_get_nth(array, 3), &bound_dims.w))
 	{
-		slog("one or more bound dimensions are invalid for window element '%s'", windel);
+		free(element);
+		slog("one or more bound dimensions are invalid for window element '%s'", name);
 		return NULL;
 	}
+	bounds = gfc_rect(bound_dims.x, bound_dims.y, bound_dims.z, bound_dims.w);
 
 	array = sj_object_get_value(windel, "color");
 	if (!array)
 	{
-		slog("failed to find color object for window element '%s'", windel);
+		free(element);
+		slog("failed to find color object for window element '%s'", name);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
-		slog("missing or extra color parameters for window element '%s'", windel);
+		free(element);
+		slog("missing or extra color parameters for window element '%s'", name);
 		return NULL;
 	}
 	if (!sj_get_float_value(sj_array_get_nth(array, 0), &color.r) ||
@@ -95,7 +126,8 @@ Element *element_load(SJson *windel)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &color.b) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &color.a))
 	{
-		slog("one or more color are invalid for window element '%s'", windel);
+		free(element);
+		slog("one or more color parameters are invalid for window element '%s'", name);
 		return NULL;
 	}
 	color.ct = CT_RGBA8;
@@ -103,14 +135,31 @@ Element *element_load(SJson *windel)
 	gfc_line_cpy(element->name, name);
 	element->index = index;
 	element->type = type;
+	element->state = ES_IDLE;
 	element->can_focus = can_focus;
+	element->has_focus = 0;
 	element->bounds = bounds;
 	element->color = color;
+
+	switch (type)
+	{
+		case ET_LABEL:
+			element->data = element_label_load(windel);
+			break;
+		case ET_ACTOR:
+			break;
+		case ET_BUTTON:
+			break;
+		case ET_ENTRY:
+			break;
+		case ET_LIST:
+			break;
+	}
 
 	return element;
 }
 
-GFC_List *element_list_load(SJson *element_list)
+GFC_List *element_list_load(SJson *element_list, Window *win)
 {
 	int i, c;
 	GFC_List *elements;
@@ -140,6 +189,7 @@ GFC_List *element_list_load(SJson *element_list)
 			continue;
 			return NULL;
 		}
+		element->win = win;
 		gfc_list_append(elements, element);
 	}
 	return elements;
@@ -147,7 +197,27 @@ GFC_List *element_list_load(SJson *element_list)
 
 void element_free(Element *element)
 {
-	if (!element) return;
+	int type;
+	void *data;
+	
+	if (!element || !element->data) return;
+	type = element->type;
+
+	switch (type)
+	{
+		case ET_LABEL:
+			data = (LabelElement*) element->data;
+			element_label_free(data);
+			break;
+		case ET_ACTOR:
+			break;
+		case ET_BUTTON:
+			break;
+		case ET_ENTRY:
+			break;
+		case ET_LIST:
+			break;
+	}
 	free(element);
 }
 
@@ -165,4 +235,43 @@ void element_list_free(GFC_List *element_list)
 		element_free(element);
 	}
 	gfc_list_delete(element_list);
+}
+
+void element_draw(Element* element)
+{
+	int type;
+
+	if (!element) return;
+	type = element->type;
+
+	switch (type)
+	{
+		case ET_LABEL:
+			element_label_draw(element->data, element->bounds);
+			break;
+		case ET_ACTOR:
+			break;
+		case ET_BUTTON:
+			break;
+		case ET_ENTRY:
+			break;
+		case ET_LIST:
+			break;
+	}
+}
+
+void element_list_draw(GFC_List *element_list)
+{
+	int i, c;
+	Element *element;
+
+	if (!element_list) return;
+	c = gfc_list_get_count(element_list);
+	for (i = 0; i < c; i++)
+	{
+		element = gfc_list_get_nth(element_list, i);
+		if (!element) continue;
+		if (element->state == ES_HIDDEN) continue;
+		element_draw(element);
+	}
 }

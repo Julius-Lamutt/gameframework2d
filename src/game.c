@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
         entity_system_think();
 		entity_system_update();
 
+        // window information
         window_system_update();
         
         gf2d_graphics_clear_screen(); // clears drawing buffers
@@ -87,8 +88,6 @@ int main(int argc, char *argv[])
 
             //UI elements last
             window_system_draw();
-
-            font_draw_text("Press esc to quit\nain't that neat?", FS_MEDIUM, GFC_COLOR_BLACK, gfc_vector2d(10, 10));
 
             gf2d_sprite_draw(
                 mouse,

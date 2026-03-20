@@ -5,6 +5,7 @@
 #include "gfc_shape.h"
 #include "gfc_text.h"
 #include "gf2d_sprite.h"
+#include "windows.h"
 
 typedef enum
 {
@@ -17,8 +18,8 @@ typedef enum
 
 typedef enum
 {
-	EUR_NONE,		/* don't update */
-	EUR_UPDATED		/* update */
+	EUR_NONE,		/* updated */
+	EUR_UPDATED		/* not updated */
 } ElementUpdatedReturn;
 
 typedef enum
@@ -37,35 +38,32 @@ typedef struct Element_S
 	int				type;		/* element type e.g. label, actor */
 	int				state;		/* element state e.g. disable, highlight */
 	int				can_focus;	/* true if element can be the focus of keyboard input */
-	Uint8			has_focus;	/* true if element has the focus of keyboard input */
+	int				has_focus;	/* true if element has the focus of keyboard input */
 	GFC_Rect		bounds;		/* drawing bounds for element */
 	GFC_Color		color;		/* color for the element */
-} Element;
+	Window			*win;		/* parent window */
 
-/*
-* @brief load a window element
-* @param element: the window element to load
-* @return NULL on error, a pointer to an element otherwise
-*/
-Element *element_load(SJson *windel);
+	void *data;
+} Element;
 
 /*
 * @brief load all window elements given a list of elements
 * @param element_list: the json list of window elements
+* @param win: the parent window for the list of elements
 * @return NULL on error, a list of window elements otherwise
 */
-GFC_List *element_list_load(SJson *element_list);
-
-/*
-* @brief free an element from memory
-* @param element: the element to be freed
-*/
-void element_free(Element *element);
+GFC_List *element_list_load(SJson *element_list, Window *win);
 
 /*
 * @brief free a list of elements from memory
 * @param element_list: the list of elements to be freed
 */
 void element_list_free(GFC_List *element_list);
+
+/*
+* @brief draw elements from a list
+* @param element_list: the list of elements to draw
+*/
+void element_list_draw(GFC_List *element_list);
 
 #endif

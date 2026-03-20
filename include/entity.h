@@ -35,6 +35,7 @@ typedef struct Entity_S
 	struct Entity	*proj;
 	struct Entity	*victim;		/* entity that was hit with the projectile */
 	float           range;			/* how far a projectile can travel before disappearing */
+
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);

@@ -23,8 +23,9 @@ void font_init();
 * @param style: the font style to render the text in
 * @param color: the color to render the text in
 * @param position: where to render the text
+* @param wrap_length: pixel length for text wrapping (0 to disable)
 */
-void font_draw_text(const char *text, FontStyles style, GFC_Color color, GFC_Vector2D position);
+void font_draw_text(const char *text, FontStyles style, GFC_Color color, GFC_Vector2D position, Uint32 wrap_length);
 
 /*
 * @brief add a recently used text render to the cache

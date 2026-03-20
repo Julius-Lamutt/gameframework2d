@@ -61,7 +61,7 @@ void font_init()
 	}
 	for (i = 0; i < FS_MAX; i++)
 	{
-		font = TTF_OpenFont("fonts/Pixelify_Sans/PixelifySans-Regular.ttf", 20 + (i * 4));
+		font = TTF_OpenFont("fonts/Pixelify_Sans/PixelifySans-Regular.ttf", 20 + (i * 8));
 		if (!font)
 		{
 			slog("failed to open font file");
@@ -101,7 +101,7 @@ void font_close()
 	slog("fonts closed");
 }
 
-void font_draw_text(const char *text, FontStyles style, GFC_Color color, GFC_Vector2D position)
+void font_draw_text(const char *text, FontStyles style, GFC_Color color, GFC_Vector2D position, Uint32 wrap_length)
 {
 	TTF_Font *font;
 	SDL_Surface *surface;
@@ -128,7 +128,7 @@ void font_draw_text(const char *text, FontStyles style, GFC_Color color, GFC_Vec
 		return;
 	}
 	fg = gfc_color_to_sdl(color);
-	surface = TTF_RenderUTF8_Blended_Wrapped(font, text, fg, 0);
+	surface = TTF_RenderUTF8_Blended_Wrapped(font, text, fg, wrap_length);
 	if (!surface)
 	{
 		slog("failed to render text '%s', failed to create surface", text);

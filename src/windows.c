@@ -147,6 +147,8 @@ void window_draw(Window* win)
 		0);
 		
 	if (win->draw) win->draw(win);
+
+	element_list_draw(win->elements);
 }
 
 void window_system_draw()
@@ -189,10 +191,14 @@ Window *window_load(const char *filename)
 		slog("missing window object in file '%s'", filename);
 		return NULL;
 	}
+
+	win = window_new();
+	if (!win) return NULL;
 	
 	name = sj_object_get_value_as_string(window, "name"); 
 	if (!name)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window name object in file '%s'", filename);
 		return NULL;
@@ -201,13 +207,15 @@ Window *window_load(const char *filename)
 	element_list = sj_object_get_value(window, "elements");
 	if (!element_list)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window elements object in file '%s'", filename);
 		return NULL;
 	}
-	elements = element_list_load(element_list);
+	elements = element_list_load(element_list, win);
 	if (!elements)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("failed to get window elements in file '%s'");
 		return NULL;
@@ -216,12 +224,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "background");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window background object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 3)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window background parameters in file '%s'", filename);
 		return NULL;
@@ -231,6 +241,7 @@ Window *window_load(const char *filename)
 		!sj_get_integer_value(sj_array_get_nth(array, 1), &frame_w) ||
 		!sj_get_integer_value(sj_array_get_nth(array, 2), &frame_h))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more background parameters are invalid in file '%s'", filename);
 		return NULL;
@@ -240,12 +251,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "border");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window border object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 3)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window border parameters in file '%s'", filename);
 		return NULL;
@@ -255,6 +268,7 @@ Window *window_load(const char *filename)
 		!sj_get_integer_value(sj_array_get_nth(array, 1), &frame_w) ||
 		!sj_get_integer_value(sj_array_get_nth(array, 2), &frame_h))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more border parameters are invalid in file '%s'", filename);
 		return NULL;
@@ -264,12 +278,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "size");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window size object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window size dimensions in file '%s'", filename);
 		return NULL;
@@ -279,6 +295,7 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &size_dims.z) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &size_dims.w))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more size dimensions are invalid in file '%s'", filename);
 		return NULL;
@@ -288,12 +305,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "canvas");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window canvas object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window canvas dimensions in file '%s'", filename);
 		return NULL;
@@ -303,6 +322,7 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &canvas_dims.z) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &canvas_dims.w))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more canvas dimensions are invalid in file '%s'", filename);
 		return NULL;
@@ -312,12 +332,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "bg_color");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window bg_color object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window bg_color dimensions in file '%s'", filename);
 		return NULL;
@@ -327,6 +349,7 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &bg_color.b) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &bg_color.a))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more bg_color parameters are invalid in file '%s'", filename);
 		return NULL;
@@ -336,12 +359,14 @@ Window *window_load(const char *filename)
 	array = sj_object_get_value(window, "border_color");
 	if (!array)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing window border_color object in file '%s'", filename);
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
+		window_free(win);
 		sj_free(file);
 		slog("missing or extra window border_color dimensions in file '%s'", filename);
 		return NULL;
@@ -351,6 +376,7 @@ Window *window_load(const char *filename)
 		!sj_get_float_value(sj_array_get_nth(array, 2), &border_color.b) ||
 		!sj_get_float_value(sj_array_get_nth(array, 3), &border_color.a))
 	{
+		window_free(win);
 		sj_free(file);
 		slog("one or more bg_color parameters are invalid in file '%s'", filename);
 		return NULL;
@@ -362,8 +388,6 @@ Window *window_load(const char *filename)
 	else parent = window_find_by_name(pname);
 
 	sj_free(file);
-	win = window_new();
-	if (!win) return NULL;
 	gfc_line_cpy(win->name, name);
 	win->background = background;
 	win->border = border;
