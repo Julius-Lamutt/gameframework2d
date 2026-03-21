@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "gfc_shape.h"
 #include "gfc_text.h"
+#include "gf2d_draw.h"
 #include "gf2d_sprite.h"
 #include "windows.h"
 

@@ -40,6 +40,8 @@ LabelElement *element_label_load(SJson *windel)
 	if (gfc_strlcmp(font, "small") == 0) style = FS_SMALL;
 	else if (gfc_strlcmp(font, "medium") == 0) style = FS_MEDIUM;
 	else if (gfc_strlcmp(font, "large") == 0) style = FS_LARGE;
+	else if (gfc_strlcmp(font, "xlarge") == 0) style = FS_XLARGE;
+	else if (gfc_strlcmp(font, "xxlarge") == 0) style = FS_XXLARGE;
 	else
 	{
 		free(label);
@@ -76,6 +78,7 @@ LabelElement *element_label_load(SJson *windel)
 	label->style = style;
 	label->color = color;
 	label->wrap = wrap;
+	return label;
 }
 
 void element_label_free(LabelElement *label)

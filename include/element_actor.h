@@ -12,8 +12,8 @@ typedef struct
 
 /*
 * @brief load an actor element
-* @param windel: the window element to load the actor from
-* @return NULL on error, a pointer to an element label otherwise
+* @param windel: the window element to load the actor element from
+* @return NULL on error, a pointer to an actor element otherwise
 */
 ActorElement *element_actor_load(SJson *windel);
 
@@ -26,7 +26,7 @@ void element_actor_free(ActorElement *actor);
 /*
 * @brief draws an actor element
 * @param actor: the actor element to draw
-* @param bounds: the bounds for the actor
+* @param bounds: the bounds for the actor element
 */
 void element_actor_draw(ActorElement *actor, GFC_Rect bounds);
 

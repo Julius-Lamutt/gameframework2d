@@ -54,14 +54,21 @@ void window_system_init(Uint32 max)
 
 void window_system_close()
 {
+	window_clear_all(NULL);
+	if (_window_manager.window_list) free(_window_manager.window_list);
+	memset(&_window_manager, 0, sizeof(WindowManager));
+	slog("window system closed");
+}
+
+void window_clear_all(Window *ignore)
+{
 	int i;
 	for (i = 0; i < _window_manager.window_max; i++)
 	{
+		if (&_window_manager.window_list[i] == ignore) continue;
+		if (!_window_manager.window_list[i]._inuse) continue;
 		window_free(&_window_manager.window_list[i]);
 	}
-	free(_window_manager.window_list);
-	memset(&_window_manager, 0, sizeof(WindowManager));
-	slog("window system closed");
 }
 
 Window *window_new()

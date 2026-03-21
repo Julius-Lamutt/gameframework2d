@@ -63,12 +63,8 @@ void entity_system_init(Uint32 max)
 
 void entity_system_close()
 {
-	int i;
-	for (i = 0; i < _entity_manager.entity_max; i++)
-	{
-		entity_free(&_entity_manager.entity_list[i]);
-	}
-	free(_entity_manager.entity_list);
+	entity_clear_all(NULL);
+	if (_entity_manager.entity_list) free(_entity_manager.entity_list);
 	memset(&_entity_manager, 0, sizeof(EntityManager));
 	slog("entity system closed");
 }

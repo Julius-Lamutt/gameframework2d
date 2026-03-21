@@ -18,7 +18,7 @@ ActorElement *element_actor_load(SJson *windel)
 	actor = gfc_allocate_array(sizeof(ActorElement), 1);
 	if (!actor)
 	{
-		slog("failed to allocate label element");
+		slog("failed to allocate actor element");
 		return NULL;
 	}
 
@@ -67,6 +67,7 @@ ActorElement *element_actor_load(SJson *windel)
 
 	actor->image = image;
 	actor->color_shift = color;
+	return actor;
 }
 
 void element_actor_free(ActorElement *actor)

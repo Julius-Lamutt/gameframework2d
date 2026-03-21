@@ -36,6 +36,12 @@ typedef struct Window_S
 void window_system_init(Uint32 max);
 
 /*
+* @breif cleans up all active windows
+* @param ignore: do not clean this window
+*/
+void window_clear_all(Window *ignore);
+
+/*
 * @brief get a blank window for use
 * @returns NULL on no more room or error, a blank window otherwise
 */
