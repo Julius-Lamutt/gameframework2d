@@ -34,11 +34,26 @@ int main_menu_update(Window *win, GFC_List *update_elements)
 {
 	Element *element;
 	MainMenuData *data;
+	int i, c, mx, my;
 
 	if (!win) return 0;
 	if (!update_elements) return 0;
 	data = (MainMenuData*)win->data;
 	if (!data) return 0;
+	SDL_GetMouseState(&mx, &my);
+	c = gfc_list_get_count(update_elements);
+	for (i = 0; i < c; i++)
+	{
+		element = gfc_list_get_nth(update_elements, i);
+		if (!element) continue;
+		if (element->index == -1) continue;
+		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
+		{
+
+			element->state = ES_HIGHLIGHT;
+		}
+		else element->state = ES_IDLE;
+	}
 	return 1;
 }
 

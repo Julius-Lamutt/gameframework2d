@@ -111,20 +111,21 @@ void element_button_free(ButtonElement *button)
 	free(button);
 }
 
-void element_button_draw(ButtonElement *button, GFC_Rect bounds, GFC_Color color)
+void element_button_draw(ButtonElement *button, Element *element)
 {
 	GFC_Rect text_bounds;
 
 	if (!button) return;
-	gf2d_draw_rect_filled(bounds, color);
+	if (element->state == ES_IDLE) gf2d_draw_rect_filled(element->bounds, element->color);
+	else if (element->state == ES_HIGHLIGHT) gf2d_draw_rect_filled(element->bounds, button->high_color);
 
-	if (button->actor) element_actor_draw(button->actor, bounds);
+	if (button->actor) element_actor_draw(button->actor, element->bounds);
 	if (button->label)
 	{
-		text_bounds.x = bounds.x + (0.1 * bounds.w);
-		text_bounds.y = bounds.y;
-		text_bounds.w = 0.8 * bounds.w;
-		text_bounds.h = bounds.h;
+		text_bounds.x = element->bounds.x + (0.1 * element->bounds.w);
+		text_bounds.y = element->bounds.y;
+		text_bounds.w = 0.8 * element->bounds.w;
+		text_bounds.h = element->bounds.h;
 		element_label_draw(button->label, text_bounds);
 	}
 }

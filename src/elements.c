@@ -261,7 +261,7 @@ void element_draw(Element* element)
 			element_actor_draw(element->data, element->bounds);
 			break;
 		case ET_BUTTON:
-			element_button_draw(element->data, element->bounds, element->color);
+			element_button_draw(element->data, element);
 			break;
 		case ET_ENTRY:
 			break;

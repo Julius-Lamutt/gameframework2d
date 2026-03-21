@@ -61,7 +61,7 @@ void font_init()
 	}
 	for (i = 0; i < FS_MAX; i++)
 	{
-		font = TTF_OpenFont("fonts/Pixelify_Sans/PixelifySans-Regular.ttf", 20 + (i * 8));
+		font = TTF_OpenFont("fonts/Pixelify_Sans/PixelifySans-Regular.ttf", 20 + (i * 10));
 		if (!font)
 		{
 			slog("failed to open font file");

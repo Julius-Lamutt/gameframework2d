@@ -36,10 +36,9 @@ void element_button_free(ButtonElement *button);
 
 /*
 * @brief draws a button element
-* @param actor: the button element to draw
-* @param bounds: the bounds for the button element
-* @param color: the color for the bounds
+* @param button: the button element to draw
+* @param element: a pointer to basic element data
 */
-void element_button_draw(ButtonElement *button, GFC_Rect bounds, GFC_Color color);
+void element_button_draw(ButtonElement *button, Element *element);
 
 #endif
