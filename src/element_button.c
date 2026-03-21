@@ -50,13 +50,14 @@ ButtonElement *element_button_load(SJson *windel)
 		button->actor = element_actor_load(button_windel);
 		if (!button->actor)
 		{
+			element_label_free(button->label);
 			element_button_free(button);
 			slog("failed to create an actor for button element");
 			return NULL;
 		}
 	}
 
-	if (label && actor) type =	BT_BOTH;
+	if (label && actor) type = BT_BOTH;
 	else if (label) type = BT_LABEL;
 	else if (actor) type = BT_ACTOR;
 	else type = BT_HIDDEN;
@@ -118,6 +119,7 @@ void element_button_draw(ButtonElement *button, Element *element)
 	if (!button) return;
 	if (element->state == ES_IDLE) gf2d_draw_rect_filled(element->bounds, element->color);
 	else if (element->state == ES_HIGHLIGHT) gf2d_draw_rect_filled(element->bounds, button->high_color);
+	else if (element->state == ES_ACTIVE) gf2d_draw_rect_filled(element->bounds, button->press_color);
 
 	if (button->actor) element_actor_draw(button->actor, element->bounds);
 	if (button->label)

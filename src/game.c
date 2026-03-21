@@ -13,13 +13,27 @@
 #include "main_menu.h"
 #include "world.h"
 
-/*global variables & flags*/
+/*
+* @brief start the demo
+*/
+void start_game();
+
+/*
+* @brief exit the demo
+*/
+void exit_game();
+
+/*game flags*/
 const Bool f_collision_draw = false; // for collision debugging
+
+/*game variables*/
+static int done = 0;
+static int game = 0;
 
 int main(int argc, char *argv[])
 {
     /*variable declarations*/
-    int mx,my, done = 0;
+    int mx,my;
     float mf = 0;
     World *world;
     Window *win;
@@ -41,7 +55,7 @@ int main(int argc, char *argv[])
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
     font_init();
-    window_system_init(128);
+    window_system_init(64);
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");
@@ -71,8 +85,8 @@ int main(int argc, char *argv[])
         if (mf >= 16.0) mf = 0;
 
         // player information
-        entity_system_think();
-		entity_system_update();
+        if (game) entity_system_think();
+		if (game) entity_system_update();
 
         // window information
         window_system_update();
@@ -81,10 +95,10 @@ int main(int argc, char *argv[])
         // all drawing should happen betweem clear_screen and next_frame
     
             //backgrounds drawn first
-            world_draw(world);
+            if (game) world_draw(world);
 
             //entities drawn next
-            entity_system_draw();
+            if (game) entity_system_draw();
 
             //UI elements last
             window_system_draw();
@@ -100,11 +114,21 @@ int main(int argc, char *argv[])
                 (int)mf);
 
         gf2d_graphics_next_frame(); // render current draw frame and skip to the next frame
-        
         if (gfc_input_key_pressed("ESCAPE")) done = 1;
     }
     world_free(world);
     slog("---==== END ====---");
     return 0;
 }
+
+void start_game()
+{
+    game = 1;
+}
+
+void exit_game()
+{
+    done = 1;
+}
+
 /*eol@eof*/

@@ -1,6 +1,10 @@
 #include "simple_logger.h"
+#include "gfc_input.h"
 #include "elements.h"
 #include "main_menu.h"
+
+extern void start_game();
+extern void exit_game();
 
 typedef struct
 {
@@ -47,10 +51,23 @@ int main_menu_update(Window *win, GFC_List *update_elements)
 		element = gfc_list_get_nth(update_elements, i);
 		if (!element) continue;
 		if (element->index == -1) continue;
+		if (gfc_strlcmp(element->name, "button_start_demo") == 0)
+		{
+			if (element->state == ES_ACTIVE)
+			{
+				window_free(win);
+				start_game();
+				return 1;
+			}
+		}
+		if (gfc_strlcmp(element->name, "button_quit_demo") == 0)
+		{
+			if (element->state == ES_ACTIVE) exit_game();
+		}
 		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
 		{
-
-			element->state = ES_HIGHLIGHT;
+			if (gfc_input_mouse_left_pressed()) element->state = ES_ACTIVE;
+			else element->state = ES_HIGHLIGHT;
 		}
 		else element->state = ES_IDLE;
 	}
