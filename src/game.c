@@ -25,7 +25,7 @@ void start_game();
 void exit_game();
 
 /*game flags*/
-const Bool f_collision_draw = true; // for collision debugging
+const Bool f_collision_draw = false; // for collision debugging
 
 /*game variables*/
 static int done = 0;

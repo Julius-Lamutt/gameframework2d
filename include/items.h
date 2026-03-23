@@ -8,10 +8,11 @@
 
 typedef struct
 {
-	GFC_TextLine name;
-	Sprite *sprite;
-	int count; /*how many of the item I have*/
-	int max; /*how many of the item I can carry*/
+	GFC_TextLine	name;			/* used for item search by name */
+	GFC_TextLine	display_name;	/* used for UI display name */
+	Sprite			*sprite;		/* sprite for the item */
+	int				count;			/* how many of the item I have */
+	int				max;			/* how many of the item I can carry */
 } Item;
 
 /*
