@@ -20,6 +20,13 @@ void world_build_tile_layer(World *world);
 */
 void world_build_physics_layer(World *world);
 
+/*
+* @brief build the item layer for the world
+* @param world: the world to build the item layer on
+* @param items: the list of items in the world 
+*/
+void world_build_item_layer(World *world, SJson *items);
+
 /**
 * @brief draw the physics layer
 * @param world: which world's physics layer to draw
@@ -121,15 +128,29 @@ void world_build_physics_layer(World *world)
 	}
 }
 
+void world_build_item_layer(World *world, SJson *items)
+{
+	SJson *array;
+	Sprite *sprite;
+	int frame_w, frame_h, frames_per_line;
+
+	if (!world) return;
+	if (!items) return;
+	if (!world->physicsLayer)
+	{
+		slog("missing world physics layer for item layer creation");
+		return;
+	}
+
+	return;
+}
+
 World *world_load(const char *filename)
 {
 	int i, j, tile, frame_w, frame_h, frames_per_line, w = 0, h = 0;
 	const char *background, *tileSet;
 	World *world = NULL;
-	SJson *json = NULL;
-	SJson *wjson = NULL;
-	SJson *vertical, *horizontal;
-	SJson *item;
+	SJson *json, *wjson, *ijson, *vertical, *horizontal, *item;
 
 	if (!filename)
 	{
@@ -178,6 +199,13 @@ World *world_load(const char *filename)
 			world->tileMap[i + (j * w)] = tile;
 		}
 	}
+	ijson = sj_object_get_value(json, "items");
+	if (!ijson)
+	{
+		slog("missing item list for world");
+		return NULL;
+	}
+
 	background = sj_object_get_value_as_string(wjson, "background");
 	world->background = gf2d_sprite_load_image(background);
 
@@ -193,6 +221,7 @@ World *world_load(const char *filename)
 		1
 	);
 	world_build_tile_layer(world);
+	world_build_item_layer(world, ijson);
 	sj_free(json);
 	return world;
 }

@@ -1,7 +1,7 @@
 #include "simple_logger.h"
 #include "physics.h"
 #include "collision.h"
-#include "item_shuriken.h"
+#include "shuriken.h"
 
 extern const float gravity;
 
