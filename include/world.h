@@ -17,18 +17,6 @@ typedef struct
 } World;
 
 /**
-* @brief build the tile layer for the world
-* @param world: the world to build tile layer on
-*/
-void world_build_tile_layer(World *world);
-
-/**
-* @brief build the physics layer for the world
-* @param world: the world to build physics layer on
-*/
-void world_build_physics_layer(World *world);
-
-/**
 * @brief load the world from a config file
 * @param filename: the name of the world file to load
 * @return NULL on error, a usable world otherwise
@@ -48,13 +36,6 @@ World *world_new(Uint32 width, Uint32 height);
  * @param world: the world to free
  */
 void world_free(World *world);
-
-/**
-* @brief draw the physics layer
-* @param world: which world's physics layer to draw
-* @param offset: how far the physics layer should be drawn from the origin
-*/
-void world_draw_physics_layer(World *world, GFC_Vector2D offset);
 
 /**
  * @brief draw the world

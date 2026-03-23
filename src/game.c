@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "physics.h"
 #include "font.h"
 #include "windows.h"
 #include "camera.h"
@@ -24,7 +25,7 @@ void start_game();
 void exit_game();
 
 /*game flags*/
-const Bool f_collision_draw = false; // for collision debugging
+const Bool f_collision_draw = true; // for collision debugging
 
 /*game variables*/
 static int done = 0;
@@ -56,6 +57,7 @@ int main(int argc, char *argv[])
     gf2d_sprite_init(1024);
     font_init();
     window_system_init(64);
+    physics_system_init(60.0);
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");
@@ -83,6 +85,9 @@ int main(int argc, char *argv[])
         SDL_GetMouseState(&mx, &my); // mouse
         mf += 0.1;
         if (mf >= 16.0) mf = 0;
+
+        // update physics delta before calling entity think/update functions
+        physics_update_delta();
 
         // player information
         if (game) entity_system_think();
@@ -115,6 +120,7 @@ int main(int argc, char *argv[])
 
         gf2d_graphics_next_frame(); // render current draw frame and skip to the next frame
         if (gfc_input_key_pressed("ESCAPE")) done = 1;
+        //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
     world_free(world);
     slog("---==== END ====---");

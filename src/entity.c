@@ -57,6 +57,7 @@ void entity_system_init(Uint32 max)
 		return;
 	}
 	_entity_manager.entity_max = max;
+	_entity_manager.entity_pool = 0;
 	atexit(entity_system_close);
 	slog("entity system initialized");
 }
@@ -162,15 +163,16 @@ void entity_system_update()
 
 void entity_draw(Entity *self)
 {
-	GFC_Vector2D	position, offset;
-	GFC_Rect		rect;
+	GFC_Vector2D position, offset;
 
 	if (!self) return;
-	offset = camera_get_offset();
-	gfc_vector2d_add(position, self->position, offset);
 	if (self->sprite)
 	{
-		position = gfc_vector2d(position.x - (0.5 * self->sprite->frame_w), position.y - (0.5 * self->sprite->frame_h));
+		offset = camera_get_offset();
+		gfc_vector2d_add(position, self->position, offset);
+		gfc_vector2d_sub(position, position, gfc_vector2d(0.5 * self->sprite->frame_w, 0.5 * self->sprite->frame_h));
+		self->box = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
+
 		gf2d_sprite_render(
 			self->sprite,
 			position,
@@ -183,11 +185,7 @@ void entity_draw(Entity *self)
 			(Uint32)self->frame);
 
 		// draw bounding boxes if the collision draw flag is raised
-		if (f_collision_draw)
-		{
-			rect = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
-			gf2d_draw_rect(rect, GFC_COLOR_MAGENTA);
-		}
+		if (f_collision_draw) gf2d_draw_rect(self->box, GFC_COLOR_MAGENTA);
 	}
 }
 

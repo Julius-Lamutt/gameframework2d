@@ -20,15 +20,18 @@ typedef enum
 typedef struct Entity_S
 {
 	Uint8			_inuse;			/* no touchy */
-	Uint16			layer;
-	Uint32			id;
-	GFC_TextLine	name;
+	Uint16			layer;			/* collision layer for entity */
+	Uint32			id;				/* unique id for entity */
+	GFC_TextLine	name;			/* name of entity */
+	GFC_Rect		box;			/* bounding box */
 	GFC_Vector2D	position;		/* current position */
 	GFC_Vector2D    newPosition;	/* position to be tested for collisions */
 	GFC_Vector2D    scale;
 	GFC_Vector2D    velocity;
+	GFC_Vector2D	acceleration;
+	GFC_Vector2D    collision;
 	World			*world;			/* current world the player is in */
-	Sprite			*sprite;
+	Sprite			*sprite;		/* sprite for the entity */
 	float           rotation;
 	float			frame;
 	struct Entity	*owner;			/* entity that shot the projectile */

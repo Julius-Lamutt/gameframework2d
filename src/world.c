@@ -8,6 +8,25 @@
 
 extern const Bool f_collision_draw;
 
+/**
+* @brief build the tile layer for the world
+* @param world: the world to build tile layer on
+*/
+void world_build_tile_layer(World *world);
+
+/**
+* @brief build the physics layer for the world
+* @param world: the world to build physics layer on
+*/
+void world_build_physics_layer(World *world);
+
+/**
+* @brief draw the physics layer
+* @param world: which world's physics layer to draw
+* @param offset: how far the physics layer should be drawn from the origin
+*/
+void world_draw_physics_layer(World *world, GFC_Vector2D offset);
+
 void world_build_tile_layer(World* world)
 {
 	int i, j;
@@ -195,7 +214,6 @@ World *world_new(Uint32 width, Uint32 height)
 		return NULL;
 	}
 	// all boilerplate code here
-	// all defaults
 	world->tileMap = gfc_allocate_array(sizeof(Uint8), width * height);
 	world->tileWidth = width;
 	world->tileHeight = height;
