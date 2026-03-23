@@ -5,6 +5,7 @@
 #include "physics.h"
 #include "camera.h"
 #include "inventory.h"
+#include "item_shuriken.h"
 #include "bullet.h"
 #include "collision.h"
 #include "player.h"
@@ -71,7 +72,7 @@ Entity *player_new()
 void player_think(Entity* self)
 {
 	Entity* bullet;
-	GFC_Vector2D screen;
+	GFC_Vector2D screen, dir;
 	Sint32 mx = 0, my = 0;
 
 	if (!self) return;
@@ -120,13 +121,33 @@ void player_think(Entity* self)
 		self->newPosition.y = self->position.y;
 		self->velocity.y = 0;
 	}
+
+	dir = gfc_vector2d(self->velocity.x, 0);
+	gfc_vector2d_normalize(&dir);
+	// throw shuriken
+	if (gfc_input_command_pressed("shuriken"))
+	{
+		if (dir.x == 0) shuriken_new(self, gfc_vector2d(1, 0));
+		else shuriken_new(self, dir);
+	}
 }
 
 void player_update(Entity* self)
 {
+	int i, c;
+	Entity *other;
+	ClientData *data;
+
 	if (!self) return;
-	//self->frame += 0.1;
-	//if (self->frame >= 16.0) self->frame = 0;
+
+	// check for collision with other entities
+	c = gfc_list_get_count(self->entity_touches);
+	for (i = 0; i < c; i++)
+	{
+		other = gfc_list_get_nth(self->entity_touches, i);
+		if (!other) continue;
+		if (gfc_strlcmp(other->name, "Shuriken") == 0) entity_free(other);
+	}
 	self->position = self->newPosition;
 	camera_center_on(self->position);
 }

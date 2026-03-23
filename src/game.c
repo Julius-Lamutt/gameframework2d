@@ -25,7 +25,7 @@ void start_game();
 void exit_game();
 
 /*game flags*/
-const Bool f_collision_draw = false; // for collision debugging
+const Bool f_collision_draw = true; // for collision debugging
 
 /*game variables*/
 static int done = 0;
@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
     
     /*demo setup*/
     world = world_load("defs/maps/testworld.json");
+    entity_system_set_world(world);
     world_setup_camera(world);
     player = player_new();
-    player->world = world;
     win = main_menu();
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");

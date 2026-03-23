@@ -3,7 +3,7 @@
 #include "collision.h"
 #include "camera.h"
 
-Bool collide_with_entity(Entity *self, Entity *other)
+Bool *collide_with_entity(Entity *self, Entity *other)
 {
 	GFC_Rect self_box;
 	GFC_Rect other_box;
@@ -14,15 +14,10 @@ Bool collide_with_entity(Entity *self, Entity *other)
 		return false;
 	}
 
-	self_box = (gfc_rect(self->newPosition.x - (0.5 * self->sprite->frame_w), self->newPosition.y - (0.5 * self->sprite->frame_h),
-		self->sprite->frame_w, self->sprite->frame_h));
-	other_box = (gfc_rect(other->newPosition.x - (0.5 * other->sprite->frame_w), other->newPosition.y - (0.5 * other->sprite->frame_h),
-		other->sprite->frame_w, other->sprite->frame_h));
+	gfc_rect_set(self_box, self->box.x + self->velocity.x, self->box.y + self->velocity.y, self->box.w, self->box.h);
+	gfc_rect_set(other_box, other->box.x + other->velocity.x, other->box.y + other->velocity.y, other->box.w, other->box.h);
 
-	if (((self_box.x + self_box.w >= other_box.x) &&
-		(self_box.x <= other_box.x + other_box.w)) &&
-		((self_box.y + self_box.h >= other_box.y) &&
-		(self_box.y <= other_box.y + other_box.h))) return true;
+	if (gfc_rect_overlap(self_box, other_box)) return;
 	return false;
 }
 

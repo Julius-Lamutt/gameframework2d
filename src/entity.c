@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gf2d_draw.h"
 #include "gfc_shape.h"
+#include "collision.h"
 #include "camera.h"
 #include "entity.h"
 
@@ -11,6 +12,7 @@ typedef struct
 	Entity  *entity_list;
 	Uint32	entity_max;
 	Uint32  entity_pool;
+	World	*world;
 } EntityManager;
 
 static EntityManager _entity_manager = {0};
@@ -93,6 +95,18 @@ Entity *entity_new()
 	{
 		if (_entity_manager.entity_list[i]._inuse) continue;
 		memset(&_entity_manager.entity_list[i], 0, sizeof(Entity));
+
+		//set entity world
+		_entity_manager.entity_list[i].world = _entity_manager.world;
+
+		//initialize entity collision list
+		_entity_manager.entity_list[i].entity_touches = gfc_list_new();
+		if (!_entity_manager.entity_list[i].entity_touches)
+		{
+			slog("failed to create a list for array touches");
+			return NULL;
+		}
+
 		//set defaults
 		_entity_manager.entity_list[i]._inuse = 1;
 		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
@@ -124,6 +138,7 @@ void entity_free(Entity *self)
 	if (!self) return;
 	self->_inuse = 0; // save this spot for future entities
 	gf2d_sprite_free(self->sprite);
+	if (self->entity_touches) gfc_list_delete(self->entity_touches);
 
 	// anything else we allocate for our entity would get cleaned up here
 	if (self->free) self->free(self);
@@ -131,8 +146,26 @@ void entity_free(Entity *self)
 
 void entity_think(Entity *self)
 {
+	int i, c;
+	Entity *other;
+
 	if (!self) return;
 	if (self->think) self->think(self);
+
+	c = gfc_list_get_count(self->entity_touches);
+	if (c) gfc_list_clear(self->entity_touches);
+	for (i = 0; i < _entity_manager.entity_max; i++)
+	{
+		other = &_entity_manager.entity_list[i];
+		if (!other) continue;
+		if (!other->_inuse) continue;
+		if (self->layer == other->layer) continue;
+		if (collide_with_entity(self, other))
+		{
+			slog("collision");
+			gfc_list_append(self->entity_touches, other);
+		}
+	}
 }
 
 void entity_system_think()
@@ -197,4 +230,9 @@ void entity_system_draw()
 		if (!_entity_manager.entity_list[i]._inuse) continue;
 		entity_draw(&_entity_manager.entity_list[i]);
 	}
+}
+
+void entity_system_set_world(World *world)
+{
+	_entity_manager.world = world;
 }

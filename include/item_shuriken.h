@@ -7,6 +7,6 @@
 * @brief spawn a shuriken
 * return NULL on error, a pointer to a shuriken otherwise
 */
-Entity *shuriken_new();
+Entity *shuriken_new(Entity *owner, GFC_Vector2D dir);
 
 #endif

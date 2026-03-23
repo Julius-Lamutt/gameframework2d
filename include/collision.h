@@ -11,7 +11,7 @@
 * @param other: the entity being tested for collision by the first entity
 * @return true if collision, false otherwise
 */
-Bool collide_with_entity(Entity *self, Entity *other);
+Bool *collide_with_entity(Entity *self, Entity *other);
 
 /**
 * @brief test to see if an entity will collide with the world

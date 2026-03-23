@@ -13,31 +13,32 @@ typedef enum
 	EL_PLAYER = 1,
 	EL_MONSTER = 2,
 	EL_ITEM = 4,
-	EL_PROJECTILES = 8,
+	EL_PROJECTILE = 8,
 	EL_ALL = 15
 } Entity_Layers;
 
 typedef struct Entity_S
 {
-	Uint8			_inuse;			/* no touchy */
-	Uint16			layer;			/* collision layer for entity */
-	Uint32			id;				/* unique id for entity */
-	GFC_TextLine	name;			/* name of entity */
-	GFC_Rect		box;			/* bounding box */
-	GFC_Vector2D	position;		/* current position */
-	GFC_Vector2D    newPosition;	/* position to be tested for collisions */
-	GFC_Vector2D    scale;
-	GFC_Vector2D    velocity;
-	GFC_Vector2D	acceleration;
-	GFC_Vector2D    collision;
-	World			*world;			/* current world the player is in */
-	Sprite			*sprite;		/* sprite for the entity */
-	float           rotation;
-	float			frame;
-	struct Entity	*owner;			/* entity that shot the projectile */
-	struct Entity	*proj;
-	struct Entity	*victim;		/* entity that was hit with the projectile */
-	float           range;			/* how far a projectile can travel before disappearing */
+	Uint8			_inuse;				/* no touchy */
+	Uint16			layer;				/* collision layer for entity */
+	Uint32			id;					/* unique id for entity */
+	GFC_TextLine	name;				/* name of entity */
+	GFC_Rect		box;				/* bounding box */
+	GFC_Vector2D	position;			/* current position */
+	GFC_Vector2D    newPosition;		/* position to be tested for collisions */
+	GFC_Vector2D    scale;				/* scale for sprite */
+	GFC_Vector2D    velocity;			/* current velocity */
+	GFC_Vector2D	acceleration;		/* current acceleration */
+	GFC_Vector2D    collision;			/* xy collision test on world */
+	World			*world;				/* current world the player is in */
+	Sprite			*sprite;			/* sprite for the entity */
+	float           rotation;			/* rotation for sprite*/
+	float			frame;				/* frame of sprite sheet for entity */
+	struct Entity_S *entity_touches;	/* list of entities clipped this frame */
+	struct Entity_S	*owner;				/* entity that shot the projectile */
+	struct Entity_S	*proj;				/* projectile entity */
+	struct Entity_S	*victim;			/* entity that was hit with the projectile */
+	float           range;				/* how far a projectile can travel before disappearing */
 
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
@@ -83,5 +84,10 @@ void entity_system_update();
  * @brief draw all active entities
  */
 void entity_system_draw();
+
+/*
+* @breif set the world for all entities
+*/
+void entity_system_set_world(World *world);
 
 #endif
