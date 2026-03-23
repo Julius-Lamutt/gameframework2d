@@ -140,13 +140,19 @@ void player_update(Entity* self)
 
 	if (!self) return;
 
+	data = self->data;
+
 	// check for collision with other entities
 	c = gfc_list_get_count(self->entity_touches);
 	for (i = 0; i < c; i++)
 	{
 		other = gfc_list_get_nth(self->entity_touches, i);
 		if (!other) continue;
-		if (gfc_strlcmp(other->name, "Shuriken") == 0) entity_free(other);
+		if (gfc_strlcmp(other->name, "Shuriken") == 0)
+		{
+			inventory_add_item(&data->inventory, "tool_shuriken");
+			entity_free(other);
+		}
 	}
 	self->position = self->newPosition;
 	camera_center_on(self->position);

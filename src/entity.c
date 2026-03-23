@@ -160,11 +160,7 @@ void entity_think(Entity *self)
 		if (!other) continue;
 		if (!other->_inuse) continue;
 		if (self->layer == other->layer) continue;
-		if (collide_with_entity(self, other))
-		{
-			slog("collision");
-			gfc_list_append(self->entity_touches, other);
-		}
+		if (collide_with_entity(self, other)) gfc_list_append(self->entity_touches, other);
 	}
 }
 
