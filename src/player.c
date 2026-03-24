@@ -19,6 +19,9 @@ typedef struct
 	int			active_drone;
 	int			smoke_invis;
 	int			smoke_invis_start;
+	int			stab_anim;
+	int         stab_anim_start;
+	float		stab_anim_frame;
 } ClientData;
 
 int	player_focus = 1;
@@ -73,12 +76,14 @@ if (data)
 	inventory_init(&data->inventory);
 	data->active_drone = 0;
 	data->smoke_invis = 0;
+	data->stab_anim = 0;
 }
 return self;
 }
 
 void player_think(Entity* self)
 {
+	Sprite *sprite;
 	ClientData* data;
 	Entity* bullet;
 	GFC_Vector2D screen, dir;
@@ -100,6 +105,18 @@ void player_think(Entity* self)
 		{
 			data->smoke_invis = 0;
 			self->fade = 0;
+		}
+	}
+
+	// check stab state
+	sprite = gf2d_sprite_load_all("images/stab.png", 32, 32, 1, 0);
+	if (data->stab_anim)
+	{
+		data->stab_anim_frame += 0.1;
+		gf2d_sprite_render(sprite, gfc_vector2d(self->position.x + 64, self->position.y), NULL, NULL, NULL, NULL, NULL, NULL, 0);
+		if (SDL_GetTicks() - data->stab_anim_start > 3000)
+		{
+			data->stab_anim = 0;
 		}
 	}
 
@@ -187,6 +204,16 @@ void player_think(Entity* self)
 			data->smoke_invis = 1;
 			data->smoke_invis_start = SDL_GetTicks();
 			self->fade = 1;
+		}
+	}
+
+	if (gfc_input_command_pressed("stab") && player_focus)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_kitana") && !data->stab_anim)
+		{
+			data->stab_anim = 1;
+			data->stab_anim_start = SDL_GetTicks();
+			data->stab_anim_frame = 0;
 		}
 	}
 }
