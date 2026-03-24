@@ -7,6 +7,7 @@
 #include "inventory.h"
 #include "shuriken.h"
 #include "bullet.h"
+#include "drone.h"
 #include "collision.h"
 #include "player.h"
 
@@ -14,8 +15,11 @@ extern const float gravity;
 
 typedef struct
 {
-	Inventory inventory;
+	Inventory	inventory;
+	int			active_drone;
 } ClientData;
+
+int	player_focus = 1;
 
 /**
  * @brief run the think function for the player
@@ -65,6 +69,7 @@ if (data)
 {
 	self->data = data;
 	inventory_init(&data->inventory);
+	data->active_drone = 0;
 }
 return self;
 }
@@ -85,17 +90,36 @@ void player_think(Entity* self)
 	mx += screen.x;
 	my += screen.y;
 
+	// drone action
+	if (gfc_input_command_pressed("drone") && !data->active_drone)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_drone"))
+		{
+			inventory_remove_item(&data->inventory, "tool_drone");
+			drone_new(self);
+			data->active_drone = 1;
+		}
+	}
+	if (gfc_input_command_pressed("drone_camera") && data->active_drone)
+	{
+		if (player_focus) player_focus = 0;
+		else player_focus = 1;
+	}
+
 	// move the player
 	self->velocity.x = 0;
-	if (gfc_input_command_down("up") && self->collision.y == 1) self->velocity.y = -7;
-	if (gfc_input_command_down("right") && !gfc_input_command_down("left")) self->velocity.x = 4;
-	if (gfc_input_command_down("left") && !gfc_input_command_down("right")) self->velocity.x = -4;
+	if (player_focus)
+	{
+		if (gfc_input_command_down("up") && self->collision.y == 1) self->velocity.y = -7;
+		if (gfc_input_command_down("right") && !gfc_input_command_down("left")) self->velocity.x = 4;
+		if (gfc_input_command_down("left") && !gfc_input_command_down("right")) self->velocity.x = -4;
+	}
 
 	self->velocity.y += gravity; // gravity
 	if (self->velocity.y > 7) self->velocity.y = 7; // max falling speed
 
 	// teleport player to bullet
-	if (gfc_input_command_released("teleport"))
+	if (gfc_input_command_released("teleport") && player_focus)
 	{
 		if (!self->proj)
 		{
@@ -132,7 +156,7 @@ void player_think(Entity* self)
 	dir = gfc_vector2d(self->velocity.x, 0);
 	gfc_vector2d_normalize(&dir);
 	// throw shuriken
-	if (gfc_input_command_pressed("shuriken"))
+	if (gfc_input_command_pressed("shuriken") && player_focus)
 	{
 		if (inventory_get_item_by_name(&data->inventory, "tool_shuriken"))
 		{
@@ -167,12 +191,16 @@ void player_update(Entity* self)
 		{
 			inventory_add_item(&data->inventory, "tool_teleporter");
 			inventory_add_item(&data->inventory, "tool_teleporter");
-			inventory_add_item(&data->inventory, "tool_teleporter");
+			entity_free(other);
+		}
+		if (gfc_strlcmp(other->name, "pickup_drone") == 0)
+		{
+			inventory_add_item(&data->inventory, "tool_drone");
 			entity_free(other);
 		}
 	}
 	self->position = self->newPosition;
-	camera_center_on(self->position);
+	if (player_focus) camera_center_on(self->position);
 }
 
 void player_free(Entity *self)
