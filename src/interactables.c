@@ -45,7 +45,7 @@ Entity *interactable_new(GFC_Vector2D position, const char *name, const char *fi
 	self->proj = NULL;
 	if (gfc_strlcmp(self->name, "rope") == 0)
 	{
-		self->proj = interactable_new(gfc_vector2d(self->position.x, self->position.y + 32), "light", "images/light.png", 32, 32);
+		self->proj = interactable_new(gfc_vector2d(self->position.x, self->position.y + 48), "light", "images/light.png", 32, 32);
 	}
 	self->think = interactable_think;
 	self->update = interactable_update;

@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
     item3 = item_pickup_new(gfc_vector2d(800, 1200), "pickup_drone", "images/toolbox_red.png", 32, 32);
     item4 = item_pickup_new(gfc_vector2d(900, 1200), "pickup_smoke", "images/toolbox_yellow.png", 32, 32);
     item5 = item_pickup_new(gfc_vector2d(1000, 1200), "pickup_kitana", "images/toolbox_green.png", 32, 32);
-    stalagmite = interactable_new(gfc_vector2d(1500, 1200), "good_stalagmite", "images/stalagmite.png", 32, 64);
-    rope = interactable_new(gfc_vector2d(2000, 1200), "rope", "images/rope.png", 8, 64);
+    stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
+    rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
     win = main_menu();
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");
