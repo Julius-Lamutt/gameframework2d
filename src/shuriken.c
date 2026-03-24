@@ -75,7 +75,7 @@ void shuriken_think(Entity* self)
 
 	// check new position for world collision
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->box, self->velocity, self->world);
+	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
 	if (self->collision.x == 1)
 	{
 		self->newPosition.x = self->position.x;

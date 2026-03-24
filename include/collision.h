@@ -15,12 +15,12 @@ Bool *collide_with_entity(Entity *self, Entity *other);
 
 /**
 * @brief test to see if an entity will collide with the world
+* @param tile_count: the number of tiles to check collisions for
+* @param physics_layer: the tiles for collision testing
 * @param box: the bounding box of the entity
-* @param tiles: the bounding boxes of the world physics layer
 * @param velocity: the velocity of the entity
-* @param tile_count: the number of tiles in the world physics layer
 * @return for both x and y: true if collision, false otherwise
 */
-GFC_Vector2D collide_with_world(GFC_Rect box, GFC_Vector2D velocity, World *world);
+GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Rect box, GFC_Vector2D velocity);
 
 #endif

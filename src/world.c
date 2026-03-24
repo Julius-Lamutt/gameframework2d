@@ -3,6 +3,8 @@
 #include "gfc_shape.h"
 #include "gf2d_draw.h"
 #include "gf2d_graphics.h"
+#include "collision.h"
+#include "item_pickup.h"
 #include "camera.h"
 #include "world.h"
 
@@ -21,11 +23,11 @@ void world_build_tile_layer(World *world);
 void world_build_physics_layer(World *world);
 
 /*
-* @brief build the item layer for the world
-* @param world: the world to build the item layer on
+* @brief load pre-cached items for the world
+* @param world: the world to load the items to
 * @param items: the list of items in the world 
 */
-void world_build_item_layer(World *world, SJson *items);
+void world_load_items(World *world, SJson *items);
 
 /**
 * @brief draw the physics layer
@@ -127,12 +129,13 @@ void world_build_physics_layer(World *world)
 		}
 	}
 }
-
-void world_build_item_layer(World *world, SJson *items)
+/*
+void world_load_items(World *world, SJson *items)
 {
-	SJson *array;
-	Sprite *sprite;
-	int frame_w, frame_h, frames_per_line;
+	int i, c;
+	SJson *array, *item;
+	Entity *pickup;
+	GFC_Vector2D collision;
 
 	if (!world) return;
 	if (!items) return;
@@ -141,9 +144,27 @@ void world_build_item_layer(World *world, SJson *items)
 		slog("missing world physics layer for item layer creation");
 		return;
 	}
-
+	
+	c = sj_array_get_count(items);
+	
+	for (i = 0; i < c; i++)
+	{
+		item = sj_array_get_nth(items, i);
+		if (!item) continue;
+		pickup = item_pickup_new(item);
+		if (!pickup)
+		{
+			slog("failed to create item pickup #%i for item layer creation", i);
+		}
+		else
+		{
+			collision = collide_with_world(world->tileCount, world->physicsLayer, pickup->box, gfc_vector2d(0,0));
+			if (collision.x || collision.y) entity_free(pickup);
+		}
+	}
 	return;
 }
+*/
 
 World *world_load(const char *filename)
 {
@@ -221,7 +242,7 @@ World *world_load(const char *filename)
 		1
 	);
 	world_build_tile_layer(world);
-	world_build_item_layer(world, ijson);
+	//world_load_items(world, ijson);
 	sj_free(json);
 	return world;
 }

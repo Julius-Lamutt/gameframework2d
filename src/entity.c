@@ -137,7 +137,7 @@ void entity_free(Entity *self)
 {
 	if (!self) return;
 	self->_inuse = 0; // save this spot for future entities
-	gf2d_sprite_free(self->sprite);
+	if (self->sprite) gf2d_sprite_free(self->sprite);
 	if (self->entity_touches) gfc_list_delete(self->entity_touches);
 
 	// anything else we allocate for our entity would get cleaned up here

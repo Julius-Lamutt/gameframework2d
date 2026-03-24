@@ -21,22 +21,11 @@ Bool *collide_with_entity(Entity *self, Entity *other)
 	return false;
 }
 
-GFC_Vector2D collide_with_world(GFC_Rect box, GFC_Vector2D velocity, World *world)
+GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Rect box, GFC_Vector2D velocity)
 {
 	int i, test_both, test_x, test_y;
 	GFC_Rect box_test, box_test_x, box_test_y, tile;
 	GFC_Vector2D offset;
-
-	if (!world)
-	{
-		slog("missing world for world collision test");
-		return gfc_vector2d(0, 0);
-	}
-	if (!world->physicsLayer)
-	{
-		slog("missing physics layer for world collision test");
-		return gfc_vector2d(0, 0);
-	}
 
 	test_both = 0;
 	test_x = 0;
@@ -48,12 +37,12 @@ GFC_Vector2D collide_with_world(GFC_Rect box, GFC_Vector2D velocity, World *worl
 
 	offset = camera_get_offset();
 
-	for (i = 0; i < world->tileCount; i++)
+	for (i = 0; i < tile_count; i++)
 	{
-		tile.x = world->physicsLayer[i].x + offset.x;
-		tile.y = world->physicsLayer[i].y + offset.y;
-		tile.w = world->physicsLayer[i].w;
-		tile.h = world->physicsLayer[i].h;
+		tile.x = physics_layer[i].x + offset.x;
+		tile.y = physics_layer[i].y + offset.y;
+		tile.w = physics_layer[i].w;
+		tile.h = physics_layer[i].h;
 
 		if (!test_both)
 		{

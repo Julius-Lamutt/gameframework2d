@@ -59,19 +59,19 @@ Entity *player_new()
 	self->update = player_update;
 	self->free = player_free;
 
-	// client data
-	data = gfc_allocate_array(sizeof(ClientData), 1);
-	if (data)
-	{
-		self->data = data;
-		inventory_init(&data->inventory);
-	}
-	return self;
+// client data
+data = gfc_allocate_array(sizeof(ClientData), 1);
+if (data)
+{
+	self->data = data;
+	inventory_init(&data->inventory);
+}
+return self;
 }
 
 void player_think(Entity* self)
 {
-	ClientData *data;
+	ClientData* data;
 	Entity* bullet;
 	GFC_Vector2D screen, dir;
 	Sint32 mx = 0, my = 0;
@@ -113,7 +113,7 @@ void player_think(Entity* self)
 
 	// check new position for world collision
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->box, self->velocity, self->world);
+	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
 	if (self->collision.x == 1)
 	{
 		self->newPosition.x = self->position.x;
@@ -140,8 +140,8 @@ void player_think(Entity* self)
 void player_update(Entity* self)
 {
 	int i, c;
-	Entity *other;
-	ClientData *data;
+	Entity* other;
+	ClientData* data;
 
 	if (!self) return;
 	data = self->data;
@@ -153,6 +153,11 @@ void player_update(Entity* self)
 		other = gfc_list_get_nth(self->entity_touches, i);
 		if (!other) continue;
 		if (gfc_strlcmp(other->name, "Shuriken") == 0)
+		{
+			inventory_add_item(&data->inventory, "tool_shuriken");
+			entity_free(other);
+		}
+		else if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
 		{
 			inventory_add_item(&data->inventory, "tool_shuriken");
 			entity_free(other);

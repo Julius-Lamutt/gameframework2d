@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "entity.h"
 #include "items.h"
+#include "item_pickup.h"
 #include "player.h"
 #include "bullet.h"
 #include "main_menu.h"
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
     float mf = 0;
     World *world;
     Window *win;
-    Entity *player;
+    Entity *player, *item1;
     Sprite *mouse;
     GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
     
@@ -70,6 +71,7 @@ int main(int argc, char *argv[])
     entity_system_set_world(world);
     world_setup_camera(world);
     player = player_new();
+    item1 = item_pickup_new(gfc_vector2d(600, 1200), "pickup_shuriken", "images/shuriken.png", 16, 16);
     win = main_menu();
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");
