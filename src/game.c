@@ -14,6 +14,7 @@
 #include "player.h"
 #include "bullet.h"
 #include "main_menu.h"
+#include "objectives_menu.h"
 #include "world.h"
 
 /*
@@ -39,7 +40,7 @@ int main(int argc, char *argv[])
     int mx,my;
     float mf = 0;
     World *world;
-    Window *win;
+    Window *win, *obj;
     Entity *player, *item1, *item2, *item3, *item4, *item5, *stalagmite, *rope;
     Sprite *mouse;
     GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
@@ -80,6 +81,8 @@ int main(int argc, char *argv[])
     stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
     rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
     win = main_menu();
+    obj = objectives_menu();
+    obj->hidden = 1;
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");
 
@@ -128,6 +131,14 @@ int main(int argc, char *argv[])
                 (int)mf);
 
         gf2d_graphics_next_frame(); // render current draw frame and skip to the next frame
+        if (game)
+        {
+            if (gfc_input_key_pressed("m"))
+            {
+                if (obj->hidden) obj->hidden = 0;
+                else obj->hidden = 1;
+            }
+        }
         if (gfc_input_key_pressed("ESCAPE")) done = 1;
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }

@@ -1,6 +1,8 @@
 #include "simple_logger.h"
 #include "physics.h"
 #include "collision.h"
+#include "windows.h"
+#include "objectives_menu.h"
 #include "interactables.h"
 #include "actor.h"
 #include "item_pickup.h"
@@ -117,6 +119,7 @@ void shuriken_update(Entity* self)
 		{
 			interactable_new(other->position, "bad_stalagmite", "images/stalagmite_cracked.png", 32, 64);
 			entity_free(other);
+			
 		}
 		if (gfc_strlcmp(other->name, "bad_stalagmite") == 0)
 		{

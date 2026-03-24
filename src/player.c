@@ -45,6 +45,7 @@ Entity *player_new()
 {
 	Entity *self;
 	ClientData *data;
+	
 
 	self = entity_new();
 	if (!self)
