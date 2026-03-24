@@ -14,13 +14,14 @@ typedef enum
 	EL_MONSTER = 2,
 	EL_ITEM = 4,
 	EL_PROJECTILE = 8,
-	EL_ALL = 15
+	EL_WORLD = 16,
+	EL_ALL = 31
 } Entity_Layers;
 
 typedef struct Entity_S
 {
 	Uint8			_inuse;				/* no touchy */
-	Uint16			layer;				/* collision layer for entity */
+	Uint32			layer;				/* collision layer for entity */
 	Uint32			id;					/* unique id for entity */
 	GFC_TextLine	name;				/* name of entity */
 	GFC_Rect		box;				/* bounding box */
