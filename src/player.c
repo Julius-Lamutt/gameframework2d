@@ -234,37 +234,53 @@ void player_update(Entity* self)
 	{
 		other = gfc_list_get_nth(self->entity_touches, i);
 		if (!other) continue;
-		if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
+		if (other->layer == EL_ITEM)
 		{
-			inventory_add_item(&data->inventory, "tool_shuriken");
-			entity_free(other);
+			if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_shuriken");
+				entity_free(other);
+			}
+			if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_teleporter");
+				inventory_add_item(&data->inventory, "tool_teleporter");
+				entity_free(other);
+			}
+			if (gfc_strlcmp(other->name, "pickup_drone") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_drone");
+				entity_free(other);
+			}
+			if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_smoke");
+				inventory_add_item(&data->inventory, "tool_smoke");
+				entity_free(other);
+			}
+			if (gfc_strlcmp(other->name, "pickup_kitana") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_kitana");
+				entity_free(other);
+			}
+			if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
+			{
+				inventory_add_item(&data->inventory, "diamond");
+				entity_free(other);
+			}
 		}
-		if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
+		else if (other->layer == EL_WORLD)
 		{
-			inventory_add_item(&data->inventory, "tool_teleporter");
-			inventory_add_item(&data->inventory, "tool_teleporter");
-			entity_free(other);
-		}
-		if (gfc_strlcmp(other->name, "pickup_drone") == 0)
-		{
-			inventory_add_item(&data->inventory, "tool_drone");
-			entity_free(other);
-		}
-		if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
-		{
-			inventory_add_item(&data->inventory, "tool_smoke");
-			inventory_add_item(&data->inventory, "tool_smoke");
-			entity_free(other);
-		}
-		if (gfc_strlcmp(other->name, "pickup_kitana") == 0)
-		{
-			inventory_add_item(&data->inventory, "tool_kitana");
-			entity_free(other);
-		}
-		if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
-		{
-			inventory_add_item(&data->inventory, "diamond");
-			entity_free(other);
+			self->collision = collide_with_entity_vector(self, other);
+			if (self->collision.x == 1)
+			{
+				self->newPosition.x = self->position.x;
+			}
+			if (self->collision.y == 1)
+			{
+				self->newPosition.y = self->position.y;
+				self->velocity.y = 0;
+			}
 		}
 	}
 	self->position = self->newPosition;
