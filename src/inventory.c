@@ -47,3 +47,25 @@ void inventory_add_item(Inventory* inventory, const char* name)
 	if (!item) return;
 	gfc_list_append(inventory->itemList, item);
 }
+
+void inventory_remove_item(Inventory *inventory, const char *name)
+{
+	Item *item;
+
+	if ((!inventory) || (!name)) return;
+	item = inventory_get_item_by_name(inventory, name);
+	if (item)
+	{
+		item->count--;
+	}
+	else
+	{
+		slog("item %s not in inventory", name);
+	}
+	if (item->count == 0)
+	{
+		if (!gfc_list_delete_data(inventory->itemList, item)) slog("failed delete of item %s", item);
+		item_free(item);
+	}
+	return;
+}

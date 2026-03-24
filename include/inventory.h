@@ -50,4 +50,11 @@ Item *inventory_get_item_by_name(Inventory *inventory, const char *name);
 */
 void inventory_add_item(Inventory *inventory, const char *name);
 
+/*
+* @brief remove an item from the inventory
+* @param inventory: the inventory the item will be removed from
+* @param name: the name of the item to be removed
+*/
+void inventory_remove_item(Inventory *inventory, const char *name);
+
 #endif

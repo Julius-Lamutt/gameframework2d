@@ -85,23 +85,6 @@ void player_think(Entity* self)
 	mx += screen.x;
 	my += screen.y;
 
-	// teleport player to bullet
-	if (gfc_input_command_released("teleport"))
-	{
-		if (!self->proj)
-		{
-			bullet = bullet_new(self, self->position);
-			self->proj = bullet;
-		}
-		else
-		{
-			bullet = self->proj;
-			self->position = bullet->position;
-			entity_free(bullet);
-			self->proj = NULL;
-		}
-	}
-
 	// move the player
 	self->velocity.x = 0;
 	if (gfc_input_command_down("up") && self->collision.y == 1) self->velocity.y = -7;
@@ -110,6 +93,28 @@ void player_think(Entity* self)
 
 	self->velocity.y += gravity; // gravity
 	if (self->velocity.y > 7) self->velocity.y = 7; // max falling speed
+
+	// teleport player to bullet
+	if (gfc_input_command_released("teleport"))
+	{
+		if (!self->proj)
+		{
+			if (inventory_get_item_by_name(&data->inventory, "tool_teleporter"))
+			{
+				inventory_remove_item(&data->inventory, "tool_teleporter");
+				bullet = bullet_new(self, self->position);
+				self->proj = bullet;
+			}
+		}
+		else
+		{
+			bullet = self->proj;
+			self->newPosition = bullet->position;
+			self->velocity = gfc_vector2d(0, 0);
+			entity_free(bullet);
+			self->proj = NULL;
+		}
+	}
 
 	// check new position for world collision
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
@@ -131,6 +136,7 @@ void player_think(Entity* self)
 	{
 		if (inventory_get_item_by_name(&data->inventory, "tool_shuriken"))
 		{
+			inventory_remove_item(&data->inventory, "tool_shuriken");
 			if (dir.x == 0) shuriken_new(self, gfc_vector2d(1, 0));
 			else shuriken_new(self, dir);
 		}
@@ -152,14 +158,16 @@ void player_update(Entity* self)
 	{
 		other = gfc_list_get_nth(self->entity_touches, i);
 		if (!other) continue;
-		if (gfc_strlcmp(other->name, "Shuriken") == 0)
+		if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
 		{
 			inventory_add_item(&data->inventory, "tool_shuriken");
 			entity_free(other);
 		}
-		else if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
+		if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
 		{
-			inventory_add_item(&data->inventory, "tool_shuriken");
+			inventory_add_item(&data->inventory, "tool_teleporter");
+			inventory_add_item(&data->inventory, "tool_teleporter");
+			inventory_add_item(&data->inventory, "tool_teleporter");
 			entity_free(other);
 		}
 	}

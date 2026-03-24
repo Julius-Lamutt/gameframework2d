@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "physics.h"
 #include "collision.h"
+#include "item_pickup.h"
 #include "shuriken.h"
 
 extern const float gravity;
@@ -105,7 +106,11 @@ void shuriken_update(Entity* self)
 	data = self->data; // get shuriken data
 
 	self->position = self->newPosition;
-	if (data->distance >= self->range) entity_free(self);
+	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)
+	{
+		item_pickup_new(self->position, "pickup_shuriken", "images/shuriken.png", 16, 16);
+		entity_free(self);
+	}
 }
 
 void shuriken_free(Entity *self)
