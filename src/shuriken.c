@@ -1,6 +1,8 @@
 #include "simple_logger.h"
 #include "physics.h"
 #include "collision.h"
+#include "interactables.h"
+#include "actor.h"
 #include "item_pickup.h"
 #include "shuriken.h"
 
@@ -26,10 +28,10 @@ typedef struct
 	float distance;
 } ShurikenData;
 
-Entity *shuriken_new(Entity *owner, GFC_Vector2D dir)
+Entity* shuriken_new(Entity* owner, GFC_Vector2D dir)
 {
-	Entity *self;
-	ShurikenData *data;
+	Entity* self;
+	ShurikenData* data;
 
 	self = entity_new();
 	if (!self)
@@ -65,7 +67,7 @@ Entity *shuriken_new(Entity *owner, GFC_Vector2D dir)
 
 void shuriken_think(Entity* self)
 {
-	ShurikenData *data;
+	ShurikenData* data;
 
 	if (!self) return;
 
@@ -98,12 +100,34 @@ void shuriken_think(Entity* self)
 void shuriken_update(Entity* self)
 {
 	int i, c;
-	Entity *other;
+	Entity* other;
 	ShurikenData* data;
 
 	if (!self) return;
 
 	data = self->data; // get shuriken data
+	// check for collision with other entities
+	c = gfc_list_get_count(self->entity_touches);
+	for (i = 0; i < c; i++)
+	{
+		other = gfc_list_get_nth(self->entity_touches, i);
+		if (!other) continue;
+		if (other->layer != EL_WORLD) continue;
+		if (gfc_strlcmp(other->name, "good_stalagmite") == 0)
+		{
+			interactable_new(other->position, "bad_stalagmite", "images/stalagmite_cracked.png", 32, 64);
+			entity_free(other);
+		}
+		if (gfc_strlcmp(other->name, "bad_stalagmite") == 0)
+		{
+			actor_new(other->position, "actor_stalagmite", "images/stalagmite_cracked.png", 32, 64);
+			entity_free(other);
+		}
+		if (gfc_strlcmp(other->name, "rope") == 0)
+		{
+			entity_free(other);
+		}
+	}
 
 	self->position = self->newPosition;
 	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)

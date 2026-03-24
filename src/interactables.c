@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "interactables.h"
+#include "actor.h"
 #include "collision.h"
 
 extern const float gravity;
@@ -32,7 +33,7 @@ Entity *interactable_new(GFC_Vector2D position, const char *name, const char *fi
 
 	// item_pickup defaults
 	gfc_line_cpy(self->name, name);
-	self->layer = EL_ITEM;
+	self->layer = EL_WORLD;
 	self->sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, 1, 0);
 	self->frame = 0;
 	self->position = position;
@@ -41,6 +42,11 @@ Entity *interactable_new(GFC_Vector2D position, const char *name, const char *fi
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, 0);
 	self->collision = gfc_vector2d(0, 0);
+	self->proj = NULL;
+	if (gfc_strlcmp(self->name, "rope") == 0)
+	{
+		self->proj = interactable_new(gfc_vector2d(self->position.x, self->position.y + 32), "light", "images/light.png", 32, 32);
+	}
 	self->think = interactable_think;
 	self->update = interactable_update;
 	self->free = interactable_free;
@@ -61,4 +67,9 @@ void interactable_update(Entity* self)
 void interactable_free(Entity *self)
 {
 	if (!self) return;
+	if (self->proj)
+	{
+		actor_new(self->proj->position, "actor_light", "images/light.png", 32, 32);
+		entity_free(self->proj);
+	}
 }
