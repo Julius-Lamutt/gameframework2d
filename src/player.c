@@ -261,6 +261,11 @@ void player_update(Entity* self)
 			inventory_add_item(&data->inventory, "tool_kitana");
 			entity_free(other);
 		}
+		if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
+		{
+			inventory_add_item(&data->inventory, "diamond");
+			entity_free(other);
+		}
 	}
 	self->position = self->newPosition;
 	if (player_focus) camera_center_on(self->position);
