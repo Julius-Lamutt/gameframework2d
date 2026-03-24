@@ -74,8 +74,8 @@ int main(int argc, char *argv[])
     item1 = item_pickup_new(gfc_vector2d(600, 1200), "pickup_shuriken", "images/shuriken.png", 16, 16);
     item2 = item_pickup_new(gfc_vector2d(700, 1200), "pickup_teleporter", "images/toolbox_blue.png", 32, 32);
     item3 = item_pickup_new(gfc_vector2d(800, 1200), "pickup_drone", "images/toolbox_red.png", 32, 32);
-    item4 = item_pickup_new(gfc_vector2d(900, 1200), "pickup_teleporter", "images/toolbox_yellow.png", 32, 32);
-    item5 = item_pickup_new(gfc_vector2d(1000, 1200), "pickup_drone", "images/toolbox_green.png", 32, 32);
+    item4 = item_pickup_new(gfc_vector2d(900, 1200), "pickup_smoke", "images/toolbox_yellow.png", 32, 32);
+    item5 = item_pickup_new(gfc_vector2d(1000, 1200), "pickup_kitana", "images/toolbox_green.png", 32, 32);
     win = main_menu();
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     slog("press [escape] to quit");

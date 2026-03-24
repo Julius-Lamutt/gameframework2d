@@ -39,6 +39,7 @@ typedef struct Entity_S
 	struct Entity_S	*proj;				/* projectile entity */
 	struct Entity_S	*victim;			/* entity that was hit with the projectile */
 	float           range;				/* how far a projectile can travel before disappearing */
+	int				fade;				/* enable/disable fade effect for sprite draws */
 
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);

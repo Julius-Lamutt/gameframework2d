@@ -110,6 +110,7 @@ Entity *entity_new()
 		//set defaults
 		_entity_manager.entity_list[i]._inuse = 1;
 		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
+		_entity_manager.entity_list[i].fade = 0;
 		_entity_manager.entity_list[i].scale.x = 1;
 		_entity_manager.entity_list[i].scale.y = 1;
 		return &_entity_manager.entity_list[i];
@@ -193,6 +194,7 @@ void entity_system_update()
 void entity_draw(Entity *self)
 {
 	GFC_Vector2D position, offset;
+	GFC_Color color;
 
 	if (!self) return;
 	if (self->sprite)
@@ -202,6 +204,9 @@ void entity_draw(Entity *self)
 		gfc_vector2d_sub(position, position, gfc_vector2d(0.5 * self->sprite->frame_w, 0.5 * self->sprite->frame_h));
 		self->box = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
 
+		color = gfc_color8(255, 255, 255, 255);
+		if (self->fade) color = gfc_color8(255, 255, 255, 125);
+
 		gf2d_sprite_render(
 			self->sprite,
 			position,
@@ -209,7 +214,7 @@ void entity_draw(Entity *self)
 			NULL,
 			NULL,
 			NULL,
-			NULL,
+			&color,
 			NULL,
 			(Uint32)self->frame);
 

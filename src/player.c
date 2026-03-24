@@ -17,6 +17,8 @@ typedef struct
 {
 	Inventory	inventory;
 	int			active_drone;
+	int			smoke_invis;
+	int			smoke_invis_start;
 } ClientData;
 
 int	player_focus = 1;
@@ -70,6 +72,7 @@ if (data)
 	self->data = data;
 	inventory_init(&data->inventory);
 	data->active_drone = 0;
+	data->smoke_invis = 0;
 }
 return self;
 }
@@ -89,6 +92,16 @@ void player_think(Entity* self)
 	SDL_GetMouseState(&mx, &my);
 	mx += screen.x;
 	my += screen.y;
+
+	// check smoke state
+	if (data->smoke_invis)
+	{
+		if (SDL_GetTicks() - data->smoke_invis_start > 5000)
+		{
+			data->smoke_invis = 0;
+			self->fade = 0;
+		}
+	}
 
 	// drone action
 	if (gfc_input_command_pressed("drone") && !data->active_drone)
@@ -165,6 +178,17 @@ void player_think(Entity* self)
 			else shuriken_new(self, dir);
 		}
 	}
+
+	if (gfc_input_command_pressed("smoke") && player_focus)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_smoke") && !data->smoke_invis)
+		{
+			inventory_remove_item(&data->inventory, "tool_smoke");
+			data->smoke_invis = 1;
+			data->smoke_invis_start = SDL_GetTicks();
+			self->fade = 1;
+		}
+	}
 }
 
 void player_update(Entity* self)
@@ -196,6 +220,17 @@ void player_update(Entity* self)
 		if (gfc_strlcmp(other->name, "pickup_drone") == 0)
 		{
 			inventory_add_item(&data->inventory, "tool_drone");
+			entity_free(other);
+		}
+		if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
+		{
+			inventory_add_item(&data->inventory, "tool_smoke");
+			inventory_add_item(&data->inventory, "tool_smoke");
+			entity_free(other);
+		}
+		if (gfc_strlcmp(other->name, "pickup_kitana") == 0)
+		{
+			inventory_add_item(&data->inventory, "tool_kitana");
 			entity_free(other);
 		}
 	}
