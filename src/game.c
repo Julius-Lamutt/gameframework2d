@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     item2 = item_pickup_new(gfc_vector2d(700, 1200), "pickup_teleporter", "images/toolbox_blue.png", 32, 32);
     item3 = item_pickup_new(gfc_vector2d(800, 1200), "pickup_drone", "images/toolbox_red.png", 32, 32);
     item4 = item_pickup_new(gfc_vector2d(900, 1200), "pickup_smoke", "images/toolbox_yellow.png", 32, 32);
-    item5 = item_pickup_new(gfc_vector2d(1000, 1200), "pickup_kitana", "images/toolbox_green.png", 32, 32);
+    item5 = item_pickup_new(gfc_vector2d(1000, 1200), "pickup_jump", "images/toolbox_green.png", 32, 32);
     item6 = item_pickup_new(gfc_vector2d(2400, 1100), "pickup_diamond", "images/diamond.png", 32, 32);
     stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
     rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
