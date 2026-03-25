@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     float mf = 0;
     World *world;
     Window *win, *obj;
-    Entity *player, *item1, *item2, *item3, *item4, *item5, *item6, *stalagmite, *rope;
+    Entity *player, *item1, *item2, *item3, *item4, *item5, *item6, *stalagmite, *rope, *grass;
     Sprite *mouse;
     GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
     
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     item6 = item_pickup_new(gfc_vector2d(2400, 1100), "pickup_diamond", "images/diamond.png", 32, 32);
     stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
     rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
+    grass = interactable_new(gfc_vector2d(3000, 1358), "grass", "images/grass.png", 128, 96);
     win = main_menu();
     obj = objectives_menu();
     obj->hidden = 1;

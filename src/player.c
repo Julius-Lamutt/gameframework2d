@@ -29,6 +29,7 @@ typedef struct
 	int			stab_anim;
 	int         stab_anim_start;
 	float		stab_anim_frame;
+	Sprite      *stab_anim_sprite;
 } ClientData;
 
 int	player_focus = 1;
@@ -52,7 +53,6 @@ Entity *player_new()
 {
 	Entity *self;
 	ClientData *data;
-	
 
 	self = entity_new();
 	if (!self)
@@ -85,13 +85,13 @@ if (data)
 	data->active_drone = 0;
 	data->smoke_invis = 0;
 	data->stab_anim = 0;
+	data->stab_anim_sprite = gf2d_sprite_load_all("images/stab.png", 32, 32, 1, 0);
 }
 return self;
 }
 
 void player_think(Entity* self)
 {
-	Sprite *sprite;
 	ClientData* data;
 	Entity* bullet;
 	GFC_Vector2D screen, dir;
@@ -117,11 +117,10 @@ void player_think(Entity* self)
 	}
 
 	// check stab state
-	sprite = gf2d_sprite_load_all("images/stab.png", 32, 32, 1, 0);
 	if (data->stab_anim)
 	{
 		data->stab_anim_frame += 0.1;
-		gf2d_sprite_render(sprite, gfc_vector2d(self->position.x + 64, self->position.y), NULL, NULL, NULL, NULL, NULL, NULL, 0);
+		gf2d_sprite_render(data->stab_anim_sprite, gfc_vector2d(self->position.x + 64, self->position.y), NULL, NULL, NULL, NULL, NULL, NULL, 0);
 		if (SDL_GetTicks() - data->stab_anim_start > 3000)
 		{
 			data->stab_anim = 0;
@@ -289,12 +288,17 @@ void player_update(Entity* self)
 			self->collision = collide_with_entity_vector(self, other);
 			if (self->collision.x == 1)
 			{
-				self->newPosition.x = self->position.x;
+				if (gfc_strlcmp(other->name, "grass") == 0) other->fade = 1;
+				else self->newPosition.x = self->position.x;
 			}
 			if (self->collision.y == 1)
 			{
-				self->newPosition.y = self->position.y;
-				self->velocity.y = 0;
+				if (gfc_strlcmp(other->name, "grass") == 0) other->fade = 1;
+				else
+				{
+					self->newPosition.y = self->position.y;
+					self->velocity.y = 0;
+				}
 			}
 		}
 	}
