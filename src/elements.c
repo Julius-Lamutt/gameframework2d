@@ -285,3 +285,17 @@ void element_list_draw(GFC_List *element_list)
 		element_draw(element);
 	}
 }
+
+void element_update_label(Element *element, const char* text)
+{
+	LabelElement* data;
+
+	if (!element) return;
+	if (element->type != ET_LABEL)
+	{
+		slog("cannot call element_update_label on a non-label");
+		return;
+	}
+	data = element->data;
+	gfc_line_cpy(data->text, text);
+}

@@ -10,4 +10,11 @@
 */
 Window *objectives_menu();
 
+/*
+* @breif set an objective to be complete
+* @param win: the window to change objective data for
+* @param objective: the objective to set as completed
+*/
+void objective_complete(Window *win, int objective);
+
 #endif

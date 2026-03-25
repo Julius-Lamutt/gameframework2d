@@ -408,7 +408,7 @@ Window *window_load(const char *filename)
 	return win;
 }
 
-Window *window_find_by_name(const char* name)
+Window *window_find_by_name(const char *name)
 {
 	int i;
 

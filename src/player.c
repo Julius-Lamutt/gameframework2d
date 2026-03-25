@@ -2,6 +2,8 @@
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
+#include "windows.h"
+#include "objectives_menu.h"
 #include "physics.h"
 #include "camera.h"
 #include "inventory.h"
@@ -12,6 +14,11 @@
 #include "player.h"
 
 extern const float gravity;
+static int item1 = 0;
+static int item2 = 0;
+static int item3 = 0;
+static int item4 = 0;
+static int item5 = 0;
 
 typedef struct
 {
@@ -224,9 +231,11 @@ void player_update(Entity* self)
 	int i, c;
 	Entity* other;
 	ClientData* data;
+	Window *win;
 
 	if (!self) return;
 	data = self->data;
+	win = window_find_by_name("objectives_menu");
 
 	// check for collision with other entities
 	c = gfc_list_get_count(self->entity_touches);
@@ -240,33 +249,39 @@ void player_update(Entity* self)
 			{
 				inventory_add_item(&data->inventory, "tool_shuriken");
 				entity_free(other);
+				item1 = 1;
 			}
 			if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_teleporter");
 				inventory_add_item(&data->inventory, "tool_teleporter");
 				entity_free(other);
+				item2 = 1;
 			}
 			if (gfc_strlcmp(other->name, "pickup_drone") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_drone");
 				entity_free(other);
+				item3 = 1;
 			}
 			if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_smoke");
 				inventory_add_item(&data->inventory, "tool_smoke");
 				entity_free(other);
+				item4 = 1;
 			}
 			if (gfc_strlcmp(other->name, "pickup_kitana") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_kitana");
 				entity_free(other);
+				item5 = 1;
 			}
 			if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
 			{
 				inventory_add_item(&data->inventory, "diamond");
 				entity_free(other);
+				if (win) objective_complete(win, 3);
 			}
 		}
 		else if (other->layer == EL_WORLD)
@@ -283,6 +298,16 @@ void player_update(Entity* self)
 			}
 		}
 	}
+	if (item1 && item2 && item3 && item4 && item5)
+	{
+		objective_complete(win, 1);
+		item1 = 0;
+		item2 = 0;
+		item3 = 0;
+		item4 = 0;
+		item5 = 0;
+	}
+
 	self->position = self->newPosition;
 	if (player_focus) camera_center_on(self->position);
 }

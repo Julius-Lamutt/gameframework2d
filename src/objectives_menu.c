@@ -35,6 +35,19 @@ int objectives_menu_draw(Window *win);
 */
 int objectives_menu_free(Window *win);
 
+void objective_complete(Window *win, int objective)
+{
+	ObjectivesMenuData *data;
+
+	if (!win) return 0;
+	if (!win->data) return 0;
+	data = win->data;
+
+	if (objective == 1) data->item_pickup = 1;
+	if (objective == 2) data->environment_used = 1;
+	if (objective == 3) data->diamond_stolen = 1;
+}
+
 int objectives_menu_update(Window *win, GFC_List *update_elements)
 {
 	Element *element;
@@ -54,7 +67,15 @@ int objectives_menu_update(Window *win, GFC_List *update_elements)
 		if (element->index == -1) continue;
 		if (gfc_strlcmp(element->name, "label_objective_1") == 0)
 		{
-			return 1;
+			if (data->item_pickup) element_update_label(element, "Completed!!");
+		}
+		if (gfc_strlcmp(element->name, "label_objective_2") == 0)
+		{
+			if (data->environment_used) element_update_label(element, "Completed!!");
+		}
+		if (gfc_strlcmp(element->name, "label_objective_3") == 0)
+		{
+			if (data->diamond_stolen) element_update_label(element, "Completed!!");
 		}
 	}
 	return 1;
@@ -96,6 +117,9 @@ Window *objectives_menu()
 	data = (ObjectivesMenuData*)gfc_allocate_array(sizeof(ObjectivesMenuData), 1);
 	win->data = data;
 	data->win = win;
+	data->item_pickup = 0;
+	data->environment_used = 0;
+	data->diamond_stolen = 0;
 	data->selected = 1;
 	return win;
 }

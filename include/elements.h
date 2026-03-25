@@ -67,4 +67,11 @@ void element_list_free(GFC_List *element_list);
 */
 void element_list_draw(GFC_List *element_list);
 
+/*
+* @brief update the text for a label
+* @param element: the element to update
+* @param text: the new text for the label
+*/
+void element_update_label(Element *element, const char* text);
+
 #endif

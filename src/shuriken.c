@@ -9,6 +9,8 @@
 #include "shuriken.h"
 
 extern const float gravity;
+static int destroy_stalagmite = 0;
+static int destroy_rope = 0;
 
 /**
 * @brief run the think function for the shuriken
@@ -104,8 +106,10 @@ void shuriken_update(Entity* self)
 	int i, c;
 	Entity* other;
 	ShurikenData* data;
+	Window *win;
 
 	if (!self) return;
+	win = window_find_by_name("objectives_menu");
 
 	data = self->data; // get shuriken data
 	// check for collision with other entities
@@ -114,22 +118,32 @@ void shuriken_update(Entity* self)
 	{
 		other = gfc_list_get_nth(self->entity_touches, i);
 		if (!other) continue;
-		if (other->layer != EL_WORLD) continue;
-		if (gfc_strlcmp(other->name, "good_stalagmite") == 0)
+		if (other->layer == EL_WORLD)
 		{
-			interactable_new(other->position, "bad_stalagmite", "images/stalagmite_cracked.png", 32, 64);
-			entity_free(other);
-			
+			if (gfc_strlcmp(other->name, "good_stalagmite") == 0)
+			{
+				interactable_new(other->position, "bad_stalagmite", "images/stalagmite_cracked.png", 32, 64);
+				entity_free(other);
+				destroy_stalagmite = 1;
+			}
+			else if (gfc_strlcmp(other->name, "bad_stalagmite") == 0)
+			{
+				actor_new(other->position, "actor_stalagmite", "images/stalagmite_cracked.png", 32, 64);
+				entity_free(other);
+			}
+			else if (gfc_strlcmp(other->name, "rope") == 0)
+			{
+				entity_free(other);
+				destroy_rope = 1;
+			}
 		}
-		if (gfc_strlcmp(other->name, "bad_stalagmite") == 0)
-		{
-			actor_new(other->position, "actor_stalagmite", "images/stalagmite_cracked.png", 32, 64);
-			entity_free(other);
-		}
-		if (gfc_strlcmp(other->name, "rope") == 0)
-		{
-			entity_free(other);
-		}
+	}
+
+	if (destroy_rope && destroy_stalagmite)
+	{
+		objective_complete(win, 2);
+		destroy_rope = 0;
+		destroy_stalagmite = 0;
 	}
 
 	self->position = self->newPosition;
