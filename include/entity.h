@@ -7,6 +7,15 @@
 #include "gf2d_sprite.h"
 #include "world.h"
 
+/* entity collision detection */
+#define NO_MASK			(EL_NONE)
+#define PLAYER_MASK		(EL_MONSTER|EL_ITEM|EL_PROJECTILE|EL_WORLD)
+#define MONSTER_MASK	(EL_PLAYER|EL_MONSTER|EL_PROJECTILE|EL_WORLD)
+#define ITEM_MASK		(EL_PLAYER|EL_WORLD)
+#define PROJECTILE_MASK (EL_PLAYER|EL_MONSTER|EL_WORLD)
+#define WORLD_MASK		(EL_PLAYER|EL_MONSTER|EL_PROJECTILE)
+#define ALL_MASK		(EL_ALL)
+
 typedef enum
 {
 	EL_NONE = 0,
@@ -16,32 +25,41 @@ typedef enum
 	EL_PROJECTILE = 8,
 	EL_WORLD = 16,
 	EL_ALL = 31
-} Entity_Layers;
+} EntityLayers;
 
 typedef struct Entity_S
 {
-	Uint8			_inuse;				/* no touchy */
-	Uint32			layer;				/* collision layer for entity */
-	Uint32			id;					/* unique id for entity */
+	/* basic info for all entities */
 	GFC_TextLine	name;				/* name of entity */
+	Uint8			_inuse;				/* no touchy */
+	Uint32			id;					/* unique id for entity */
+	Uint32			layer;				/* draw layer for entity */
+	Uint32			mask;				/* collision mask for entity */
 	GFC_Rect		box;				/* bounding box */
+	World			*world;				/* current world the entity is in */
+
+	/* rendering */
+	Sprite			*sprite;			/* sprite for the entity */
+	GFC_Vector2D    scale;				/* scale for sprite */
+	float           rotation;			/* rotation for sprite*/
+	int				fade;				/* enable/disable fade effect for sprite draws */
+	float			frame;				/* frame of sprite sheet for entity */
+
+	/* physics */
 	GFC_Vector2D	position;			/* current position */
 	GFC_Vector2D    newPosition;		/* position to be tested for collisions */
-	GFC_Vector2D    scale;				/* scale for sprite */
 	GFC_Vector2D    velocity;			/* current velocity */
 	GFC_Vector2D	acceleration;		/* current acceleration */
 	GFC_Vector2D    collision;			/* xy collision test on world */
-	World			*world;				/* current world the player is in */
-	Sprite			*sprite;			/* sprite for the entity */
-	float           rotation;			/* rotation for sprite*/
-	float			frame;				/* frame of sprite sheet for entity */
 	struct Entity_S *entity_touches;	/* list of entities clipped this frame */
+
+	/* projectile info */
+	float           range;				/* how far a projectile can travel before disappearing */
 	struct Entity_S	*owner;				/* entity that shot the projectile */
 	struct Entity_S	*proj;				/* projectile entity */
 	struct Entity_S	*victim;			/* entity that was hit with the projectile */
-	float           range;				/* how far a projectile can travel before disappearing */
-	int				fade;				/* enable/disable fade effect for sprite draws */
 
+	/* functions & custom data */
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);
@@ -49,7 +67,7 @@ typedef struct Entity_S
 } Entity;
 
 /*
- * @brief this initializes the entity management system and queues up cleaning on exit
+ * @brief initialize the entity management system and queues up cleaning on exit
  * @param max: the maximum number of entities that can exist at the same time
  */
 void entity_system_init(Uint32 max);
@@ -64,13 +82,20 @@ void entity_clear_all(Entity* ignore);
  * @brief get a blank entity for use
  * @returns NULL on no more room or error, a blank entity otherwise
  */
-Entity* entity_new();
+Entity *entity_new();
+
+/*
+* @brief get an entity by its unique id
+* @param id: the id to find the entity with
+* @return NULL if not found, an entity otherwise
+*/
+Entity *entity_get_by_id(Uint32 id);
 
 /*
  * @brief clean up an entity and free its spot for future use
  * @param self: the entity to free
  */
-void entity_free(Entity* self);
+void entity_free(Entity *self);
 
 /*
  * @brief run the think function for all active entities
@@ -88,7 +113,7 @@ void entity_system_update();
 void entity_system_draw();
 
 /*
-* @breif set the world for all entities
+* @brief set the world for all entities
 */
 void entity_system_set_world(World *world);
 

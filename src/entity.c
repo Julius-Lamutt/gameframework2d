@@ -35,7 +35,7 @@ void entity_think(Entity *self);
 void entity_update(Entity *self);
 
 /*
-* @breif run the draw function for this entity
+* @brief run the draw function for this entity
 * @param self: the entity to draw
 */
 void entity_draw(Entity *self);
@@ -130,6 +130,7 @@ Entity* entity_get_by_id(Uint32 id)
 	for (i = 0; i < _entity_manager.entity_max; i++)
 	{
 		if (!_entity_manager.entity_list[i]._inuse) continue;
+		if (_entity_manager.entity_list[i].id == id) return &_entity_manager.entity_list[i];
 	}
 	return NULL;
 }
@@ -225,11 +226,15 @@ void entity_draw(Entity *self)
 
 void entity_system_draw()
 {
-	int i;
-	for (i = 0; i < _entity_manager.entity_max; i++)
+	int i, j;
+	for (j = 1; j < EL_ALL; j *= 2)
 	{
-		if (!_entity_manager.entity_list[i]._inuse) continue;
-		entity_draw(&_entity_manager.entity_list[i]);
+		for (i = 0; i < _entity_manager.entity_max; i++)
+		{
+			if (!_entity_manager.entity_list[i]._inuse) continue;
+			if (_entity_manager.entity_list[i].layer != j) continue;
+			entity_draw(&_entity_manager.entity_list[i]);
+		}
 	}
 }
 
