@@ -5,8 +5,9 @@
 
 /**
 * @brief spawn a player
-* return NULL on error, a pointer to the player otherwise
-**/
-Entity *player_new();
+* @param position: where to spawn the player
+* @return NULL on error, a player otherwise
+*/
+Entity *player_new(GFC_Vector2D position);
 
 #endif

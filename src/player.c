@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "simple_json.h"
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
@@ -33,6 +34,12 @@ typedef struct
 int	player_focus = 1;
 
 /**
+* @brief load a player from a config file
+* @return NULL on error, a player otherwise
+*/
+Entity *player_load();
+
+/**
  * @brief run the think function for the player
  */
 void player_think(Entity* self);
@@ -47,44 +54,136 @@ void player_update(Entity* self);
  */
 void player_free(Entity* self);
 
-Entity *player_new()
+Entity *player_load()
 {
+	SJson *json, *pjson, *array;
+	const char *name, *filename;
+	float box_w, box_h;
+	GFC_Rect box;
+	Sint32 frame_w, frame_h, frames_per_line;
+	Sprite *sprite;
 	Entity *self;
-	ClientData *data;
+
+	json = sj_load("defs/player.json");
+	if (!json)
+	{
+		slog("failed to load player config file");
+		return NULL;
+	}
+	pjson = sj_object_get_value(json, "player_entity");
+	if (!pjson)
+	{
+		free(json);
+		slog("missing player entity object");
+		return NULL;
+	}
+
+	name = sj_object_get_value_as_string(pjson, "name");
+	if (!name)
+	{
+		free(json);
+		slog("missing player entity name");
+		return NULL;
+	}
+
+	array = sj_object_get_value(pjson, "box");
+	if (!array)
+	{
+		free(json);
+		slog("missing box object for player entity");
+		return NULL;
+	}
+	if (sj_array_get_count(array) != 2)
+	{
+		free(json);
+		slog("missing or extra box parameters for player entity");
+		return NULL;
+	}
+	if (!sj_get_float_value(sj_array_get_nth(array, 0), &box_w) ||
+		!sj_get_float_value(sj_array_get_nth(array, 1), &box_h))
+	{
+		free(json);
+		slog("one or more box parameters are invalid for player entity");
+		return NULL;
+	}
+	box = gfc_rect(0, 0, box_w, box_h);
+
+	array = sj_object_get_value(pjson, "sprite");
+	if (!array)
+	{
+		free(json);
+		slog("missing sprite object for player entity");
+		return NULL;
+	}
+	if (sj_array_get_count(array) != 4)
+	{
+		free(json);
+		slog("missing or extra sprite parameters for player entity");
+		return NULL;
+	}
+	filename = sj_get_string_value(sj_array_get_nth(array, 0));
+	if (!filename ||
+		!sj_get_integer_value(sj_array_get_nth(array, 1), &frame_w) ||
+		!sj_get_integer_value(sj_array_get_nth(array, 2), &frame_h) ||
+		!sj_get_integer_value(sj_array_get_nth(array, 3), &frames_per_line))
+	{
+		free(json);
+		slog("one or more sprite parameters are invalid for player entity");
+		return NULL;
+	}
+	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
 	self = entity_new();
 	if (!self)
 	{
-		slog("Failed to spawn a player entity");
+		free(json);
+		slog("failed to spawn a player entity");
 		return NULL;
 	}
+	gfc_line_cpy(self->name, name);
+	self->box = box;
+	self->sprite = sprite;
+	return self;
+}
+
+Entity *player_new(GFC_Vector2D position)
+{
+	Entity *self;
+	ClientData *data;
+
+	self = player_load();
+	if (!self) return NULL;
 
 	// player defaults
 	self->layer = EL_PLAYER;
-	self->sprite = gf2d_sprite_load_all("images/player.png", 64, 96, 1, 0);
+	self->mask = PLAYER_MASK;
+	self->box = gfc_rect(self->position.x, self->position.y, self->sprite->frame_w, self->sprite->frame_h);
+
 	self->frame = 0;
+
 	self->position = gfc_vector2d(500, 1000);
 	self->newPosition = self->position;
-	self->box = gfc_rect(self->position.x, self->position.y, self->sprite->frame_w, self->sprite->frame_h);
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, gravity);
 	self->collision = gfc_vector2d(0, 0);
+
 	self->proj = NULL;
+
 	self->think = player_think;
 	self->update = player_update;
 	self->free = player_free;
 
-// client data
-data = gfc_allocate_array(sizeof(ClientData), 1);
-if (data)
-{
-	self->data = data;
-	inventory_init(&data->inventory);
-	data->active_drone = 0;
-	data->smoke_invis = 0;
-	data->jump_anim = 0;
-}
-return self;
+	// client data
+	data = gfc_allocate_array(sizeof(ClientData), 1);
+	if (data)
+	{
+		self->data = data;
+		inventory_init(&data->inventory);
+		data->active_drone = 0;
+		data->smoke_invis = 0;
+		data->jump_anim = 0;
+	}
+	return self;
 }
 
 void player_think(Entity* self)

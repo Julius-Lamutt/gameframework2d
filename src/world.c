@@ -5,6 +5,7 @@
 #include "gf2d_graphics.h"
 #include "collision.h"
 #include "item_pickup.h"
+#include "player.h"
 #include "camera.h"
 #include "world.h"
 
@@ -23,11 +24,11 @@ void world_build_tile_layer(World *world);
 void world_build_physics_layer(World *world);
 
 /*
-* @brief load pre-cached items for the world
-* @param world: the world to load the items to
-* @param items: the list of items in the world 
+* @brief load pre-cached entities for the world
+* @param world: the world to load the entities in
+* @param ejson: the json array of entities to load
 */
-void world_load_items(World *world, SJson *items);
+void world_entity_load(World *world, SJson *ejson);
 
 /**
 * @brief draw the physics layer
@@ -106,10 +107,8 @@ void world_build_physics_layer(World *world)
 	if (!world->tileCount) return; // may slog later
 	if (!world->tileSet) return;
 	if (!world->tileLayer) return;
-	if (world->physicsLayer)
-	{
-		free(world->physicsLayer);
-	}
+	if (world->physicsLayer) free(world->physicsLayer);
+
 	world->physicsLayer = gfc_allocate_array(sizeof(GFC_Rect), world->tileCount);
 	if (!world->physicsLayer)
 	{
@@ -129,49 +128,75 @@ void world_build_physics_layer(World *world)
 		}
 	}
 }
-/*
-void world_load_items(World *world, SJson *items)
+
+void world_entity_load(World *world, SJson *ejson)
 {
 	int i, c;
-	SJson *array, *item;
-	Entity *pickup;
+	SJson *object, *array;
+	float position_x, position_y;
+	GFC_Vector2D position;
+	Entity *entity;
 	GFC_Vector2D collision;
 
 	if (!world) return;
-	if (!items) return;
+	if (!ejson) return;
 	if (!world->physicsLayer)
 	{
 		slog("missing world physics layer for item layer creation");
 		return;
 	}
 	
-	c = sj_array_get_count(items);
-	
+	c = sj_array_get_count(ejson);
 	for (i = 0; i < c; i++)
 	{
-		item = sj_array_get_nth(items, i);
-		if (!item) continue;
-		pickup = item_pickup_new(item);
-		if (!pickup)
+		const char *name;
+
+		object = sj_array_get_nth(ejson, i);
+		if (!object) continue;
+
+		name = sj_object_get_value_as_string(object, "name");
+		if (!name)
 		{
-			slog("failed to create item pickup #%i for item layer creation", i);
+			slog("missing name object for entity #%i in entities list", i);
+			continue;
 		}
+
+		array = sj_object_get_value(object, "location");
+		if (!array)
+		{
+			slog("missing location object for entity #%i in entities list", i);
+			continue;
+		}
+		if (sj_array_get_count(array) != 2)
+		{
+			slog("missing location object for entity #%i in entities list", i);
+			continue;
+		}
+		if (!sj_get_float_value(sj_array_get_nth(array, 0), &position_x) ||
+			!sj_get_float_value(sj_array_get_nth(array, 1), &position_y))
+		{
+			slog("one or more location parameters for entity #%i in entities list are invalid", i);
+			continue;
+		}
+		position = gfc_vector2d(position_x, position_y);
+
+		if (gfc_strlcmp(name, "player") == 0) entity = player_new(position);
 		else
 		{
-			collision = collide_with_world(world->tileCount, world->physicsLayer, pickup->box, gfc_vector2d(0,0));
-			if (collision.x || collision.y) entity_free(pickup);
+			slog("entity #%i in entities list has invalid entity name", i);
+			continue;
 		}
+		//entity->world = world;
 	}
 	return;
 }
-*/
 
 World *world_load(const char *filename)
 {
 	int i, j, tile, frame_w, frame_h, frames_per_line, w = 0, h = 0;
 	const char *background, *tileSet;
 	World *world = NULL;
-	SJson *json, *wjson, *ijson, *vertical, *horizontal, *item;
+	SJson *json, *wjson, *ejson, *vertical, *horizontal, *item;
 
 	if (!filename)
 	{
@@ -198,6 +223,14 @@ World *world_load(const char *filename)
 		sj_free(json);
 		return NULL;
 	}
+	ejson = sj_object_get_value(json, "entities");
+	if (!ejson)
+	{
+		sj_free(json);
+		slog("missing entity list for world");
+		return NULL;
+	}
+
 	h = sj_array_get_count(vertical);
 	horizontal = sj_array_get_nth(vertical, 0);
 	w = sj_array_get_count(horizontal);
@@ -220,12 +253,6 @@ World *world_load(const char *filename)
 			world->tileMap[i + (j * w)] = tile;
 		}
 	}
-	ijson = sj_object_get_value(json, "items");
-	if (!ijson)
-	{
-		slog("missing item list for world");
-		return NULL;
-	}
 
 	background = sj_object_get_value_as_string(wjson, "background");
 	world->background = gf2d_sprite_load_image(background);
@@ -241,8 +268,10 @@ World *world_load(const char *filename)
 		frames_per_line,
 		1
 	);
+
 	world_build_tile_layer(world);
-	//world_load_items(world, ijson);
+	entity_system_set_world(world);
+	world_entity_load(world, ejson);
 	sj_free(json);
 	return world;
 }

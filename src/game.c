@@ -70,9 +70,8 @@ int main(int argc, char *argv[])
     
     /*demo setup*/
     world = world_load("defs/maps/testworld.json");
-    entity_system_set_world(world);
     world_setup_camera(world);
-    player = player_new();
+    //player = player_new();
     item1 = item_pickup_new(gfc_vector2d(600, 1200), "pickup_shuriken", "images/shuriken.png", 16, 16);
     item2 = item_pickup_new(gfc_vector2d(700, 1200), "pickup_teleporter", "images/toolbox_blue.png", 32, 32);
     item3 = item_pickup_new(gfc_vector2d(800, 1200), "pickup_drone", "images/toolbox_red.png", 32, 32);

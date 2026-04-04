@@ -16,6 +16,9 @@
 #define WORLD_MASK		(EL_PLAYER|EL_MONSTER|EL_PROJECTILE)
 #define ALL_MASK		(EL_ALL)
 
+#define PLAYER_CLIP		(EL_PLAYER)
+#define MONSTER_CLIP    (EL_MONSTER)
+
 typedef enum
 {
 	EL_NONE = 0,
