@@ -6,7 +6,7 @@ extern const float gravity;
 
 /**
 * @brief load an item pickup from a config file
-* @param item_name: the name of the item pickup to look for
+* @param item_name: the name of the item pickup to load
 * @return NULL on error, an item pickup otherwise
 */
 Entity *item_pickup_load(const char *item_name);
@@ -136,7 +136,7 @@ Entity *item_pickup_load(const char *item_name)
 	self = entity_new();
 	if (!self)
 	{
-		slog("failed to spawn a item pickup entity");
+		slog("failed to spawn an item pickup entity");
 		return NULL;
 	}
 	gfc_line_cpy(self->name, name);

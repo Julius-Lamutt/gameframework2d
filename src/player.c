@@ -8,7 +8,7 @@
 #include "physics.h"
 #include "camera.h"
 #include "inventory.h"
-#include "shuriken.h"
+#include "projectiles.h"
 #include "bullet.h"
 #include "drone.h"
 #include "collision.h"
@@ -42,17 +42,17 @@ Entity *player_load();
 /**
  * @brief run the think function for the player
  */
-void player_think(Entity* self);
+void player_think(Entity *self);
 
 /**
  * @brief run the update function for the player
  */
-void player_update(Entity* self);
+void player_update(Entity *self);
 
 /**
  * @brief free the player
  */
-void player_free(Entity* self);
+void player_free(Entity *self);
 
 Entity *player_load()
 {
@@ -303,8 +303,8 @@ void player_think(Entity* self)
 		if (inventory_get_item_by_name(&data->inventory, "tool_shuriken"))
 		{
 			inventory_remove_item(&data->inventory, "tool_shuriken");
-			if (dir.x == 0) shuriken_new(self, gfc_vector2d(1, 0));
-			else shuriken_new(self, dir);
+			if (dir.x == 0) projectile_new(self, gfc_vector2d(1, 0), "projectile_shuriken");
+			else projectile_new(self, dir, "projectile_shuriken");
 		}
 	}
 
