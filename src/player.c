@@ -133,10 +133,11 @@ Entity *player_load()
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
+	free(json);
+
 	self = entity_new();
 	if (!self)
 	{
-		free(json);
 		slog("failed to spawn a player entity");
 		return NULL;
 	}
@@ -157,11 +158,10 @@ Entity *player_new(GFC_Vector2D position)
 	// player defaults
 	self->layer = EL_PLAYER;
 	self->mask = PLAYER_MASK;
-	self->box = gfc_rect(self->position.x, self->position.y, self->sprite->frame_w, self->sprite->frame_h);
 
 	self->frame = 0;
 
-	self->position = gfc_vector2d(500, 1000);
+	self->position = position;
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, gravity);

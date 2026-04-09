@@ -149,7 +149,7 @@ void shuriken_update(Entity* self)
 	self->position = self->newPosition;
 	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)
 	{
-		item_pickup_new(self->position, "pickup_shuriken", "images/shuriken.png", 16, 16);
+		item_pickup_new(self->position, "pickup_shuriken");
 		entity_free(self);
 	}
 }

@@ -21,7 +21,7 @@ Bool collide_with_entity(Entity *self, Entity *other)
 	return false;
 }
 
-GFC_Vector2D collide_with_entity_vector(Entity* self, Entity* other)
+GFC_Vector2D collide_with_entity_vector(Entity *self, Entity *other)
 {
 	int test_both, test_x, test_y;
 	GFC_Rect self_box, self_box_x, self_box_y, other_box;

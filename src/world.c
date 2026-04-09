@@ -1,3 +1,4 @@
+#include <string.h>
 #include "simple_logger.h"
 #include "simple_json.h"
 #include "gfc_shape.h"
@@ -180,15 +181,14 @@ void world_entity_load(World *world, SJson *ejson)
 		}
 		position = gfc_vector2d(position_x, position_y);
 
-		if (gfc_strlcmp(name, "player") == 0) entity = player_new(position);
+		if (strcmp("player", name) == 0) entity = player_new(position);
+		else if (strncmp("pickup", name, 6) == 0) entity = item_pickup_new(position, name);
 		else
 		{
 			slog("entity #%i in entities list has invalid entity name", i);
 			continue;
 		}
-		//entity->world = world;
 	}
-	return;
 }
 
 World *world_load(const char *filename)
@@ -270,7 +270,7 @@ World *world_load(const char *filename)
 	);
 
 	world_build_tile_layer(world);
-	entity_system_set_world(world);
+	entity_system_set_world(world); // HACK: for entities not spawned on world load or by trigger, delete later
 	world_entity_load(world, ejson);
 	sj_free(json);
 	return world;

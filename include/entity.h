@@ -32,7 +32,7 @@ typedef enum
 
 typedef struct Entity_S
 {
-	/* basic info for all entities */
+	// basic info for all entities
 	GFC_TextLine	name;				/* name of entity */
 	Uint8			_inuse;				/* no touchy */
 	Uint32			id;					/* unique id for entity */
@@ -41,28 +41,28 @@ typedef struct Entity_S
 	GFC_Rect		box;				/* bounding box */
 	World			*world;				/* current world the entity is in */
 
-	/* rendering */
+	// rendering
 	Sprite			*sprite;			/* sprite for the entity */
 	GFC_Vector2D    scale;				/* scale for sprite */
 	float           rotation;			/* rotation for sprite*/
 	int				fade;				/* enable/disable fade effect for sprite draws */
 	float			frame;				/* frame of sprite sheet for entity */
 
-	/* physics */
+	// physics
 	GFC_Vector2D	position;			/* current position */
 	GFC_Vector2D    newPosition;		/* position to be tested for collisions */
 	GFC_Vector2D    velocity;			/* current velocity */
 	GFC_Vector2D	acceleration;		/* current acceleration */
 	GFC_Vector2D    collision;			/* xy collision test on world */
-	struct Entity_S *entity_touches;	/* list of entities clipped this frame */
+	GFC_List		*entity_touches;	/* list of entities clipped this frame */
 
-	/* projectile info */
+	// projectile info
 	float           range;				/* how far a projectile can travel before disappearing */
 	struct Entity_S	*owner;				/* entity that shot the projectile */
 	struct Entity_S	*proj;				/* projectile entity */
 	struct Entity_S	*victim;			/* entity that was hit with the projectile */
 
-	/* functions & custom data */
+	// functions & custom data
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);
 	void (*free)(struct Entity_S *self);

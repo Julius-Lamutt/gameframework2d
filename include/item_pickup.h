@@ -6,13 +6,10 @@
 
 /**
 * @brief spawn an item pickup
-* @param name: position for pickpup
-* @param name: name of pickup
-* @param filename: the file for the item pickup
-* @param frame_w: frame width
-* @param frame_h: frame height
-* return NULL on error, a pointer to the item pickup otherwise
-**/
-Entity *item_pickup_new(GFC_Vector2D position, const char *name, const char *filename, int frame_w, int frame_h);
+* @param position: where to spawn the item pickpup
+* @param item_name: the name of the item pickup to spawn
+* return NULL on error, an item pickup otherwise
+*/
+Entity *item_pickup_new(GFC_Vector2D position, const char *item_name);
 
 #endif

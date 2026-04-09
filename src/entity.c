@@ -203,8 +203,13 @@ void entity_draw(Entity *self)
 		offset = camera_get_offset();
 		gfc_vector2d_add(position, self->position, offset);
 		gfc_vector2d_sub(position, position, gfc_vector2d(0.5 * self->sprite->frame_w, 0.5 * self->sprite->frame_h));
-		self->box = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
-
+		if (self->layer == EL_PLAYER)
+		{
+			self->box = gfc_rect(position.x + ((self->sprite->frame_w - self->box.w) / 2),
+				position.y + ((self->sprite->frame_h - self->box.h) / 2), self->box.w, self->box.h);
+		}
+		else self->box = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
+		
 		color = gfc_color8(255, 255, 255, 255);
 		if (self->fade) color = gfc_color8(255, 255, 255, 125);
 
