@@ -120,4 +120,12 @@ void entity_system_draw();
 */
 void entity_system_set_world(World *world);
 
+/**
+* @brief find an entity object from a sjson array by name
+* @param array: the sjson array to search in
+* @param obj_name: the name of the entity object to search
+* @return NULL if not found, a sjson entity object otherwise
+*/
+SJson *entity_object_get_by_name(SJson *array, const char *obj_name);
+
 #endif

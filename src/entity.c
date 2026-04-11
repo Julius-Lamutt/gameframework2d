@@ -247,3 +247,28 @@ void entity_system_set_world(World *world)
 {
 	_entity_manager.world = world;
 }
+
+SJson *entity_object_get_by_name(SJson *array, const char *obj_name)
+{
+	int i, c;
+	SJson *object;
+
+	if (!array) return NULL;
+
+	c = sj_array_get_count(array);
+	for (i = 0; i < c; i++)
+	{
+		const char *name;
+
+		object = sj_array_get_nth(array, i);
+		if (!object) continue;
+		name = sj_object_get_value_as_string(object, "name");
+		if (!name)
+		{
+			slog("missing entity object name");
+			continue;
+		}
+		if (gfc_strlcmp(name, obj_name) == 0) return object;
+	}
+	return NULL;
+}

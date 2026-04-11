@@ -12,10 +12,15 @@ extern const float gravity;
 static int destroy_stalagmite = 0;
 static int destroy_rope = 0;
 
+typedef struct
+{
+	float distance;
+} ProjectileData;
+
 /**
 * @brief load a projectile from a config file
 * @param proj_name: name of the projectile to load
-* @return NULL on error, a player otherwise
+* @return NULL on error, a world object otherwise
 */
 Entity *projectile_load(const char *proj_name);
 
@@ -33,11 +38,6 @@ void projectile_update(Entity *self);
 * @brief free the projectile
 */
 void projectile_free(Entity *self);
-
-typedef struct
-{
-	float distance;
-} ProjectileData;
 
 Entity *projectile_load(const char *proj_name)
 {
@@ -84,7 +84,7 @@ Entity *projectile_load(const char *proj_name)
 	if (i == c)
 	{
 		free(json);
-		slog("failed to find projectile item '%s'", proj_name);
+		slog("failed to find projectile '%s'", proj_name);
 		return NULL;
 	}
 	pjson = sj_array_get_nth(ejson, i);

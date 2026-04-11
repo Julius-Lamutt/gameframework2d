@@ -47,7 +47,7 @@ Entity *item_pickup_load(const char *item_name)
 	if (!ejson)
 	{
 		free(json);
-		slog("missing item pickup entites object");
+		slog("missing item pickup entities object");
 		return NULL;
 	}
 

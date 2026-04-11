@@ -32,6 +32,7 @@ Entity* drone_new(Entity* owner)
 		slog("Failed to spawn a drone entity");
 		return NULL;
 	}
+	self->layer = EL_PROJECTILE;
 	self->sprite = gf2d_sprite_load_all(
 		"images/drone.png",
 		32,
