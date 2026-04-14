@@ -18,33 +18,50 @@
 #include "world.h"
 
 /*
-* @brief start the demo
+* @brief start running the main game loop
 */
-void start_game();
+void game_start();
 
 /*
-* @brief exit the demo
+* @brief pause the main game loop
 */
-void exit_game();
+void game_pause();
 
-/*game flags*/
+/*
+* @brief exit the game executable
+*/
+void game_exit();
+
+/*
+* @brief update systems that require updates every frame
+*/
+void game_frame_updates();
+
+/*
+* @brief update systems that require updates at fixed intervals
+*/
+void game_fixed_updates();
+
+/*
+* @brief render the current frame for the game world
+*/
+void game_render();
+
+// game flags
 const Bool f_collision_draw = false; // for collision debugging
 
-/*game variables*/
-static int done = 0;
-static int game = 0;
+// game variables
+static Uint8 done = 0;          // closes the window
+static Uint8 game = 0;          // starts/pauses the game
+static int mx, my;              // mouse position variable
+static float mf;                // current mouse frame
+static World *world;            // current world
+static Window *win, *obj;       // windows
+static Sprite *mouse;           // sprite for custom cursor
+static GFC_Color mouse_color;   // color for custom cursor
 
 int main(int argc, char *argv[])
 {
-    /*variable declarations*/
-    int mx,my;
-    float mf = 0;
-    World *world;
-    Window *win, *obj;
-    Entity *player, *item1, *item2, *item3, *item4, *item5, *item6, *stalagmite, *rope, *grass;
-    Sprite *mouse;
-    GFC_Color mouseGFC_Color = gfc_color8(225, 30, 30, 200);
-    
     /*program initializtion*/
     init_logger("gf2d.log",0);
     slog("---==== BEGIN ====---");
@@ -79,53 +96,16 @@ int main(int argc, char *argv[])
     obj->hidden = 1;
     gfc_line_cpy(obj->name, "objectives_menu");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
+    mouse_color = gfc_color8(200, 30, 30, 255);
     slog("press [escape] to quit");
 
     /*main game loop*/
     while(!done)
     {
-        /*update things here*/
-        gfc_input_update(); // inputs/controls
+        game_frame_updates();
+        game_fixed_updates();
+        game_render();
 
-        font_cleanup(); // cleanup the font cache
-
-        SDL_GetMouseState(&mx, &my); // mouse
-        mf += 0.1;
-        if (mf >= 16.0) mf = 0;
-
-        // update physics delta before calling entity think/update functions
-        physics_update_delta();
-
-        // player information
-        if (game) entity_system_think();
-		if (game) entity_system_update();
-
-        // window information
-        window_system_update();
-        
-        gf2d_graphics_clear_screen(); // clears drawing buffers
-        // all drawing should happen betweem clear_screen and next_frame
-    
-            //backgrounds drawn first
-            if (game) world_draw(world);
-
-            //entities drawn next
-            if (game) entity_system_draw();
-
-            //UI elements last
-            window_system_draw();
-
-            gf2d_sprite_draw(
-                mouse,
-                gfc_vector2d(mx,my),
-                NULL,
-                NULL,
-                NULL,
-                NULL,
-                &mouseGFC_Color,
-                (int)mf);
-
-        gf2d_graphics_next_frame(); // render current draw frame and skip to the next frame
         if (game)
         {
             if (gfc_input_key_pressed("m"))
@@ -133,23 +113,74 @@ int main(int argc, char *argv[])
                 if (obj->hidden) obj->hidden = 0;
                 else obj->hidden = 1;
             }
+            if (gfc_input_key_pressed("BACKSPACE"))
+            {
+                world_free(world);
+                entity_system_clear(NULL);
+                game_pause();
+                win = main_menu();
+            }
         }
         if (gfc_input_key_pressed("ESCAPE")) done = 1;
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
-    world_free(world);
+    if (world) world_free(world);
+
     slog("---==== END ====---");
     return 0;
 }
 
-void start_game()
+void game_start() {game = 1;}
+void game_pause() {game = 0;}
+void game_exit() {done = 1;}
+
+void game_frame_updates()
 {
-    game = 1;
+    font_cleanup(); // clean the font cache
+
+    gfc_input_update(); // update inputs
+
+    SDL_GetMouseState(&mx, &my); // update mouse state
+    mf += 0.1;
+    if (mf >= 16.0) mf = 0;
+
+    window_system_update(); // update window and element states
 }
 
-void exit_game()
+void game_fixed_updates()
 {
-    done = 1;
+    physics_update_delta(); // update physics
+
+    // update entity information
+    if (game) entity_system_think();
+    if (game) entity_system_update();
+}
+
+void game_render()
+{
+    gf2d_graphics_clear_screen(); // clears drawing buffers
+    // all drawing should happen betweem clear_screen and next_frame
+
+    //backgrounds drawn first
+    if (game) world_draw(world);
+
+    //entities drawn next
+    if (game) entity_system_draw();
+
+    //UI elements last
+    window_system_draw();
+
+    gf2d_sprite_draw(
+        mouse,
+        gfc_vector2d(mx,my),
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        &mouse_color,
+        (int)mf);
+
+    gf2d_graphics_next_frame(); // render current draw frame and skip to the next frame
 }
 
 /*eol@eof*/

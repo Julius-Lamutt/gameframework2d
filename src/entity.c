@@ -66,13 +66,13 @@ void entity_system_init(Uint32 max)
 
 void entity_system_close()
 {
-	entity_clear_all(NULL);
+	entity_system_clear(NULL);
 	if (_entity_manager.entity_list) free(_entity_manager.entity_list);
 	memset(&_entity_manager, 0, sizeof(EntityManager));
 	slog("entity system closed");
 }
 
-void entity_clear_all(Entity *ignore)
+void entity_system_clear(Entity *ignore)
 {
 	int i;
 	for (i = 0; i < _entity_manager.entity_max; i++)

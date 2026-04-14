@@ -79,7 +79,7 @@ void entity_system_init(Uint32 max);
  * @brief clean up all active entities
  * @param ignore: do not clean up this entity
  */
-void entity_clear_all(Entity* ignore);
+void entity_system_clear(Entity* ignore);
 
 /*
  * @brief get a blank entity for use

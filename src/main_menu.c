@@ -3,8 +3,8 @@
 #include "elements.h"
 #include "main_menu.h"
 
-extern void start_game();
-extern void exit_game();
+extern void game_start();
+extern void game_exit();
 
 typedef struct
 {
@@ -56,13 +56,13 @@ int main_menu_update(Window *win, GFC_List *update_elements)
 			if (element->state == ES_ACTIVE)
 			{
 				window_free(win);
-				start_game();
+				game_start();
 				return 1;
 			}
 		}
 		if (gfc_strlcmp(element->name, "button_quit_demo") == 0)
 		{
-			if (element->state == ES_ACTIVE) exit_game();
+			if (element->state == ES_ACTIVE) game_exit();
 		}
 		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
 		{

@@ -10,7 +10,7 @@
 void physics_system_init(float frame_rate);
 
 /*
-* @breif update delta time for physics system
+* @brief update delta time for physics system
 */
 void physics_update_delta();
 
