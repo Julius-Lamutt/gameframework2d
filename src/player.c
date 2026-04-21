@@ -31,7 +31,7 @@ typedef struct
 	int				jump_anim_start;
 } ClientData;
 
-int	player_focus = 1;
+Uint8 player_focus = 1; // decides whether the camera should focus on the player or not
 
 /**
 * @brief load a player from a config file
@@ -41,24 +41,33 @@ Entity *player_load();
 
 /**
  * @brief run the think function for the player
+ * @param self: the player to think
  */
 void player_think(Entity *self);
 
 /**
  * @brief run the update function for the player
+ * @param self: the player to update
  */
 void player_update(Entity *self);
 
 /**
  * @brief free the player
+ * @param self: the player to free
  */
 void player_free(Entity *self);
+
+/**
+* @brief handle player input for this frame
+* @param self: the player to handle inputs for
+*/
+void player_handle_input(Entity *self);
 
 Entity *player_load()
 {
 	SJson *json, *pjson, *array;
 	const char *name, *filename;
-	float box_w, box_h;
+	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
@@ -133,6 +142,13 @@ Entity *player_load()
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
+	if (!sj_object_get_value_as_float(pjson, "fall_speed", &fall_speed))
+	{
+		free(json);
+		slog("missing fall_speed object for player entity");
+		return NULL;
+	}
+
 	free(json);
 
 	self = entity_new();
@@ -166,6 +182,7 @@ Entity *player_new(GFC_Vector2D position)
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, gravity);
 	self->collision = gfc_vector2d(0, 0);
+	self->move_state = EMS_NONE;
 
 	self->proj = NULL;
 
@@ -190,17 +207,22 @@ void player_think(Entity* self)
 {
 	ClientData* data;
 	Entity* bullet;
-	GFC_Vector2D screen, dir, hook_dir;
+	GFC_Vector2D screen;
 	Sint32 mx = 0, my = 0;
 
 	if (!self) return;
 	data = self->data;
 
 	// offset mouse to account for camera movement
-	screen = camera_get_position();
 	SDL_GetMouseState(&mx, &my);
+	screen = camera_get_position();
 	mx += screen.x;
 	my += screen.y;
+
+	self->velocity.x = 0;
+	physics_update_move_state(self->world->tileCount, self->world->physicsLayer, self->box, &self->move_state); // get move state
+	
+	player_handle_input(self); // handles all player input, including movement
 
 	// check smoke state
 	if (data->smoke_invis)
@@ -212,112 +234,9 @@ void player_think(Entity* self)
 		}
 	}
 
-	// check grappler state
-	if (data->jump_anim)
-	{
-		if (SDL_GetTicks() - data->jump_anim_start > 2000)
-		{
-			data->jump_anim = 0;
-		}
-	}
-
-	if (gfc_input_command_pressed("jump") && player_focus && self->collision.y == 1)
-	{
-		if (inventory_get_item_by_name(&data->inventory, "tool_jump") && !data->jump_anim)
-		{
-			self->velocity.y = -12;
-			inventory_remove_item(&data->inventory, "tool_jump");
-			data->jump_anim = 1;
-			data->jump_anim_start = SDL_GetTicks();
-		}
-	}
-
-	// drone action
-	if (gfc_input_command_pressed("drone") && !data->active_drone)
-	{
-		if (inventory_get_item_by_name(&data->inventory, "tool_drone"))
-		{
-			inventory_remove_item(&data->inventory, "tool_drone");
-			drone_new(self);
-			data->active_drone = 1;
-		}
-	}
-	if (gfc_input_command_pressed("drone_camera") && data->active_drone)
-	{
-		if (player_focus) player_focus = 0;
-		else player_focus = 1;
-	}
-
-	// move the player
-	self->velocity.x = 0;
-	if (player_focus)
-	{
-		if (gfc_input_command_down("up") && self->collision.y == 1) self->velocity.y = -7;
-		if (gfc_input_command_down("right") && !gfc_input_command_down("left")) self->velocity.x = 4;
-		if (gfc_input_command_down("left") && !gfc_input_command_down("right")) self->velocity.x = -4;
-	}
-
-	self->velocity.y += gravity; // gravity
-	if (self->velocity.y > 7) self->velocity.y = 7; // max falling speed
-
-	// teleport player to bullet
-	if (gfc_input_command_released("teleport") && player_focus)
-	{
-		if (!self->proj)
-		{
-			if (inventory_get_item_by_name(&data->inventory, "tool_teleporter"))
-			{
-				inventory_remove_item(&data->inventory, "tool_teleporter");
-				bullet = bullet_new(self, self->position);
-				self->proj = bullet;
-			}
-		}
-		else
-		{
-			bullet = self->proj;
-			self->newPosition = bullet->position;
-			self->velocity = gfc_vector2d(0, 0);
-			entity_free(bullet);
-			self->proj = NULL;
-		}
-	}
-
-	// check new position for world collision
+	// update velocity/new position
+	physics_update_velocity(self->world->tileCount, self->world->physicsLayer, self->box, &self->velocity, 7);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
-	if (self->collision.x == 1)
-	{
-		self->newPosition.x = self->position.x;
-	}
-	if (self->collision.y == 1)
-	{
-		self->newPosition.y = self->position.y;
-		self->velocity.y = 0;
-	}
-
-	dir = gfc_vector2d(self->velocity.x, 0);
-	gfc_vector2d_normalize(&dir);
-	// throw shuriken
-	if (gfc_input_command_pressed("shuriken") && player_focus)
-	{
-		if (inventory_get_item_by_name(&data->inventory, "tool_shuriken"))
-		{
-			inventory_remove_item(&data->inventory, "tool_shuriken");
-			if (dir.x == 0) projectile_new(self, gfc_vector2d(1, 0), "projectile_shuriken");
-			else projectile_new(self, dir, "projectile_shuriken");
-		}
-	}
-
-	if (gfc_input_command_pressed("smoke") && player_focus)
-	{
-		if (inventory_get_item_by_name(&data->inventory, "tool_smoke") && !data->smoke_invis)
-		{
-			inventory_remove_item(&data->inventory, "tool_smoke");
-			data->smoke_invis = 1;
-			data->smoke_invis_start = SDL_GetTicks();
-			self->fade = 1;
-		}
-	}
 }
 
 void player_update(Entity* self)
@@ -420,4 +339,93 @@ void player_free(Entity *self)
 	data = (ClientData*) self->data;
 	inventory_close(&data->inventory);
 	free(data);
+}
+
+void player_handle_input(Entity *self)
+{
+	ClientData *data;
+	Entity *bullet;
+	GFC_Vector2D dir;
+	int a;
+
+	if (!self) return;
+	data = self->data;
+
+	// super jump
+	if (gfc_input_command_pressed("jump") && player_focus && self->move_state == EMS_GROUNDED)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_jump") && !data->jump_anim)
+		{
+			self->velocity.y = -12;
+			inventory_remove_item(&data->inventory, "tool_jump");
+			data->jump_anim = 1;
+			data->jump_anim_start = SDL_GetTicks();
+		}
+	}
+	// drone action
+	if (gfc_input_command_pressed("drone") && !data->active_drone)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_drone"))
+		{
+			inventory_remove_item(&data->inventory, "tool_drone");
+			drone_new(self);
+			data->active_drone = 1;
+		}
+	}
+	if (gfc_input_command_pressed("drone_camera") && data->active_drone)
+	{
+		if (player_focus) player_focus = 0;
+		else player_focus = 1;
+	}
+	// player movement
+	if (player_focus)
+	{
+		if (gfc_input_command_pressed("up") && self->move_state == EMS_GROUNDED) self->velocity.y = -7;
+		if (gfc_input_command_down("right") && !gfc_input_command_down("left")) self->velocity.x = 4;
+		if (gfc_input_command_down("left") && !gfc_input_command_down("right")) self->velocity.x = -4;
+	}
+	// teleport player to bullet
+	if (gfc_input_command_released("teleport") && player_focus)
+	{
+		if (!self->proj)
+		{
+			if (inventory_get_item_by_name(&data->inventory, "tool_teleporter"))
+			{
+				inventory_remove_item(&data->inventory, "tool_teleporter");
+				bullet = bullet_new(self, self->position);
+				self->proj = bullet;
+			}
+		}
+		else
+		{
+			bullet = self->proj;
+			self->newPosition = bullet->position;
+			self->velocity = gfc_vector2d(0, 0);
+			entity_free(bullet);
+			self->proj = NULL;
+		}
+	}
+	// throw shuriken
+	if (gfc_input_command_pressed("shuriken") && player_focus)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_shuriken"))
+		{
+			inventory_remove_item(&data->inventory, "tool_shuriken");
+			dir = gfc_vector2d(self->velocity.x, 0);
+			gfc_vector2d_normalize(&dir);
+			if (dir.x == 0) projectile_new(self, gfc_vector2d(1, 0), "projectile_shuriken");
+			else projectile_new(self, dir, "projectile_shuriken");
+		}
+	}
+	// use smoke
+	if (gfc_input_command_pressed("smoke") && player_focus)
+	{
+		if (inventory_get_item_by_name(&data->inventory, "tool_smoke") && !data->smoke_invis)
+		{
+			inventory_remove_item(&data->inventory, "tool_smoke");
+			data->smoke_invis = 1;
+			data->smoke_invis_start = SDL_GetTicks();
+			self->fade = 1;
+		}
+	}
 }

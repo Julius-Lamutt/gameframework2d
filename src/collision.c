@@ -41,29 +41,9 @@ GFC_Vector2D collide_with_entity_vector(Entity *self, Entity *other)
 	gfc_rect_set(self_box_y, self->box.x, self->box.y + self->velocity.y, self->box.w, self->box.h);
 	gfc_rect_set(other_box, other->box.x + other->velocity.x, other->box.y + other->velocity.y, other->box.w, other->box.h);
 
-	if (!test_both)
-	{
-		if (gfc_rect_overlap(self_box, other_box))
-		{
-			test_both = 1;
-		}
-	}
-
-	if (!test_x)
-	{
-		if (gfc_rect_overlap(self_box_x, other_box))
-		{
-			test_x = 1;
-		}
-	}
-
-	if (!test_y)
-	{
-		if (gfc_rect_overlap(self_box_y, other_box))
-		{
-			test_y = 1;
-		}
-	}
+	if (!test_both && gfc_rect_overlap(self->box, other_box)) test_both = 1;
+	if (!test_x && gfc_rect_overlap(self_box_x, other_box)) test_x = 1;
+	if (!test_y && gfc_rect_overlap(self_box_y, other_box)) test_y = 1;
 	
 	if (test_both)
 	{
@@ -97,29 +77,9 @@ GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_
 		tile.w = physics_layer[i].w;
 		tile.h = physics_layer[i].h;
 
-		if (!test_both)
-		{
-			if (gfc_rect_overlap(box_test, tile))
-			{
-				test_both = 1;
-			}
-		}
-
-		if (!test_x)
-		{
-			if (gfc_rect_overlap(box_test_x, tile))
-			{
-				test_x = 1;
-			}
-		}
-
-		if (!test_y)
-		{
-			if (gfc_rect_overlap(box_test_y, tile))
-			{
-				test_y = 1;
-			}
-		}
+		if (!test_both && gfc_rect_overlap(box_test, tile)) test_both = 1;
+		if (!test_x && gfc_rect_overlap(box_test_x, tile)) test_x = 1;
+		if (!test_y && gfc_rect_overlap(box_test_y, tile)) test_y = 1;
 	}
 	if (test_both)
 	{
@@ -128,4 +88,37 @@ GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_
 		return gfc_vector2d(1, 1);
 	}
 	return gfc_vector2d(0, 0);
+}
+
+Uint8 collide_with_world_floor_or_ceiling(Uint32 tile_count, GFC_Rect* physics_layer, GFC_Rect box)
+{
+	int i;
+	float epsilon = 3;
+	GFC_Rect box_test, box_test_y, tile;
+	GFC_Vector2D offset;
+
+	gfc_rect_set(box_test, box.x - (epsilon/2), box.y - (epsilon/2), box.w + epsilon, box.h + epsilon);
+	gfc_rect_set(box_test_y, box.x, box.y, box.w, box.h);
+
+	offset = camera_get_offset();
+
+	for (i = 0; i < tile_count; i++)
+	{
+		tile.x = physics_layer[i].x + offset.x;
+		tile.y = physics_layer[i].y + offset.y;
+		tile.w = physics_layer[i].w;
+		tile.h = physics_layer[i].h;
+
+		if (gfc_rect_overlap(box_test, tile))
+		{
+			if (box_test.y < tile.y + tile.h && box_test.y > tile.y) return 0; // ceiling
+			if (box_test.y + box_test.h > tile.y && box_test.y + box_test.h < tile.y + tile.h) return 1; // floor
+		}
+		if (gfc_rect_overlap(box_test_y, tile))
+		{
+			if (box_test_y.y < tile.y + tile.h && box_test_y.y > tile.y) return 0; // ceiling
+			if (box_test_y.y + box_test_y.h > tile.y && box_test_y.y + box_test_y.h < tile.y + tile.h) return 1; // floor
+		}
+	}
+	return 2; // falling
 }

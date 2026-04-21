@@ -30,23 +30,30 @@ typedef enum
 	EL_ALL = 31
 } EntityLayers;
 
+typedef enum
+{
+	EMS_NONE,
+	EMS_GROUNDED,
+	EMS_FALLLING
+} EntityMoveState;
+
 typedef struct Entity_S
 {
 	// basic info for all entities
-	GFC_TextLine	name;				/* name of entity */
+	GFC_TextLine	name;				/* entity name */
 	Uint8			_inuse;				/* no touchy */
-	Uint32			id;					/* unique id for entity */
-	Uint32			layer;				/* draw layer for entity */
-	Uint32			mask;				/* collision mask for entity */
+	Uint32			id;					/* unique entity id */
+	Uint32			layer;				/* draw layer */
+	Uint32			mask;				/* collision mask, i.e. what entities can be touched */
 	GFC_Rect		box;				/* bounding box */
 	World			*world;				/* current world the entity is in */
 
 	// rendering
-	Sprite			*sprite;			/* sprite for the entity */
-	GFC_Vector2D    scale;				/* scale for sprite */
-	float           rotation;			/* rotation for sprite*/
+	Sprite			*sprite;			/* entity sprite */
+	GFC_Vector2D    scale;				/* sprite scale */
+	float           rotation;			/* sprite rotation */
 	int				fade;				/* enable/disable fade effect for sprite draws */
-	float			frame;				/* frame of sprite sheet for entity */
+	float			frame;				/* sprite sheet frame to be used for this render frame */
 
 	// physics
 	GFC_Vector2D	position;			/* current position */
@@ -54,6 +61,8 @@ typedef struct Entity_S
 	GFC_Vector2D    velocity;			/* current velocity */
 	GFC_Vector2D	acceleration;		/* current acceleration */
 	GFC_Vector2D    collision;			/* xy collision test on world */
+	float			fall_speed;			/* max fall speed */
+	Uint32			move_state;			/* grounded, falling, hit ceiling, etc. */		
 	GFC_List		*entity_touches;	/* list of entities clipped this frame */
 
 	// projectile info
@@ -79,7 +88,7 @@ void entity_system_init(Uint32 max);
  * @brief clean up all active entities
  * @param ignore: do not clean up this entity
  */
-void entity_system_clear(Entity* ignore);
+void entity_system_clear(Entity *ignore);
 
 /*
  * @brief get a blank entity for use
@@ -127,5 +136,11 @@ void entity_system_set_world(World *world);
 * @return NULL if not found, a sjson entity object otherwise
 */
 SJson *entity_object_get_by_name(SJson *array, const char *obj_name);
+
+/**
+* @brief find the entities touched by an entity this frame
+* @param self: the entity to find touches for
+*/
+void entity_set_entity_touches(Entity *self);
 
 #endif

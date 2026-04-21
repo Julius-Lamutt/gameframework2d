@@ -148,20 +148,25 @@ void entity_free(Entity *self)
 
 void entity_think(Entity *self)
 {
-	int i, c;
+	int i;
 	Entity *other;
 
 	if (!self) return;
 	if (self->think) self->think(self);
 
-	c = gfc_list_get_count(self->entity_touches);
-	if (c) gfc_list_clear(self->entity_touches);
+	gfc_list_clear(self->entity_touches);
 	for (i = 0; i < _entity_manager.entity_max; i++)
 	{
 		other = &_entity_manager.entity_list[i];
 		if (!other) continue;
 		if (!other->_inuse) continue;
-		if (self->layer == other->layer) continue;
+
+		if (other->layer == EL_PLAYER && (!self->mask & EL_PLAYER)) continue;
+		if (other->layer == EL_MONSTER && (!self->mask & EL_MONSTER)) continue;
+		if (other->layer == EL_ITEM && (!self->mask & EL_ITEM)) continue;
+		if (other->layer == EL_PROJECTILE && (!self->mask & EL_PROJECTILE)) continue;
+		if (other->layer == EL_WORLD && (!self->mask & EL_WORLD)) continue;
+
 		if (collide_with_entity(self, other)) gfc_list_append(self->entity_touches, other);
 	}
 }
@@ -271,4 +276,26 @@ SJson *entity_object_get_by_name(SJson *array, const char *obj_name)
 		if (gfc_strlcmp(name, obj_name) == 0) return object;
 	}
 	return NULL;
+}
+
+void entity_set_entity_touches(Entity *self)
+{
+	int i;
+	Entity *other;
+
+	gfc_list_clear(self->entity_touches);
+	for (i = 0; i < _entity_manager.entity_max; i++)
+	{
+		other = &_entity_manager.entity_list[i];
+		if (!other || !other->_inuse) continue;
+		if (other == self) continue;
+
+		if (other->layer == EL_PLAYER && (!self->mask & EL_PLAYER)) continue;
+		if (other->layer == EL_MONSTER && (!self->mask & EL_MONSTER)) continue;
+		if (other->layer == EL_ITEM && (!self->mask & EL_ITEM)) continue;
+		if (other->layer == EL_PROJECTILE && (!self->mask & EL_PROJECTILE)) continue;
+		if (other->layer == EL_WORLD && (!self->mask & EL_WORLD)) continue;
+
+		if (collide_with_entity(self, other)) gfc_list_append(self->entity_touches, other);
+	}
 }

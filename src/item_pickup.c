@@ -1,5 +1,5 @@
 #include "simple_logger.h"
-#include "collision.h"
+#include "physics.h"
 #include "item_pickup.h"
 
 extern const float gravity;
@@ -175,21 +175,8 @@ void item_pickup_think(Entity* self)
 {
 	if (!self) return;
 
-	self->velocity.y += gravity; // gravity
-	if (self->velocity.y > 7) self->velocity.y = 7; // max falling speed
-
-	// check new position for world collision
+	physics_update_velocity(self->world->tileCount, self->world->physicsLayer, self->box, &self->velocity, 7);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
-	if (self->collision.x == 1)
-	{
-		self->newPosition.x = self->position.x;
-	}
-	if (self->collision.y == 1)
-	{
-		self->newPosition.y = self->position.y;
-		self->velocity.y = 0;
-	}
 }
 
 void item_pickup_update(Entity* self)

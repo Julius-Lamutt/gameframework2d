@@ -1,31 +1,31 @@
 #include "simple_logger.h"
 #include "simple_json.h"
+#include "collision.h"
 #include "physics.h"
 
 typedef struct
 {
-	float frame_rate;
-	float last_frame;
-	float delta;
+	Uint32		tile_count;
+	GFC_Rect	*physics_layer;
 } PhysicsData;
-
-PhysicsData physics_data = {0};
 
 const float gravity = 0.13;
 
-void physics_system_init(float frame_rate)
+void physics_update_move_state(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Rect box, Uint32 *move_state)
 {
-	physics_data.frame_rate = frame_rate;
-	physics_data.last_frame = SDL_GetTicks();
-	slog("physics system initialized");
+	*move_state = collide_with_world_floor_or_ceiling(tile_count,physics_layer, box);
 }
 
-void physics_update_delta()
+void physics_update_velocity(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Rect box, GFC_Vector2D *velocity, float fall_speed)
 {
-	Uint32 current_frame;
+	GFC_Vector2D collision;
 
-	current_frame = SDL_GetTicks();
-	physics_data.delta = (current_frame - physics_data.last_frame) * 0.001 * physics_data.frame_rate;
-	physics_data.last_frame = current_frame;
-	//slog("delta is: %f", physics_manager.delta);
+	// apply gravity
+	velocity->y += gravity;
+	if (velocity->y > fall_speed) velocity->y = fall_speed;
+	
+	// test for collision with world/entity
+	collision = collide_with_world(tile_count, physics_layer, box, *velocity);
+	if (collision.x == 1) velocity->x = 0;
+	if (collision.y == 1) velocity->y = 0;
 }

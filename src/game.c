@@ -4,15 +4,9 @@
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
 #include "physics.h"
-#include "font.h"
 #include "windows.h"
 #include "camera.h"
 #include "entity.h"
-#include "interactables.h"
-#include "items.h"
-#include "item_pickup.h"
-#include "player.h"
-#include "bullet.h"
 #include "main_menu.h"
 #include "objectives_menu.h"
 #include "world.h"
@@ -33,14 +27,9 @@ void game_pause();
 void game_exit();
 
 /*
-* @brief update systems that require updates every frame
-*/
-void game_frame_updates();
-
-/*
 * @brief update systems that require updates at fixed intervals
 */
-void game_fixed_updates();
+void game_update();
 
 /*
 * @brief render the current frame for the game world
@@ -48,17 +37,20 @@ void game_fixed_updates();
 void game_render();
 
 // game flags
-const Bool f_collision_draw = false; // for collision debugging
+const Bool f_collision_draw = true; // for collision debugging
 
 // game variables
-static Uint8 done = 0;          // closes the window
-static Uint8 game = 0;          // starts/pauses the game
-static int mx, my;              // mouse position variable
-static float mf;                // current mouse frame
-static World *world;            // current world
-static Window *win, *obj;       // windows
-static Sprite *mouse;           // sprite for custom cursor
-static GFC_Color mouse_color;   // color for custom cursor
+static Uint8 done = 0;                      // closes the window
+static Uint8 game = 0;                      // starts/pauses the game
+
+static int mx, my;                          // mouse position variable
+static float mf;                            // current mouse frame
+static Sprite *mouse;                       // sprite for custom mouse
+static GFC_Color mouse_color;               // color for custom mouse
+
+static World *world;                        // current world
+
+static Window *win, *obj;                   // windows
 
 int main(int argc, char *argv[])
 {
@@ -77,7 +69,6 @@ int main(int argc, char *argv[])
     gf2d_sprite_init(1024);
     font_init();
     window_system_init(64);
-    physics_system_init(60.0);
 	entity_system_init(1024);
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");
@@ -102,8 +93,7 @@ int main(int argc, char *argv[])
     /*main game loop*/
     while(!done)
     {
-        game_frame_updates();
-        game_fixed_updates();
+        game_update();
         game_render();
 
         if (game)
@@ -134,7 +124,7 @@ void game_start() {game = 1;}
 void game_pause() {game = 0;}
 void game_exit() {done = 1;}
 
-void game_frame_updates()
+void game_update()
 {
     font_cleanup(); // clean the font cache
 
@@ -144,16 +134,11 @@ void game_frame_updates()
     mf += 0.1;
     if (mf >= 16.0) mf = 0;
 
-    window_system_update(); // update window and element states
-}
-
-void game_fixed_updates()
-{
-    physics_update_delta(); // update physics
-
     // update entity information
     if (game) entity_system_think();
     if (game) entity_system_update();
+
+    window_system_update(); // update window and element states
 }
 
 void game_render()

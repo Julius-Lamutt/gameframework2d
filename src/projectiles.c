@@ -12,8 +12,16 @@ extern const float gravity;
 static int destroy_stalagmite = 0;
 static int destroy_rope = 0;
 
+typedef enum
+{
+	PCT_FALL,
+	PCT_STICK,
+	PCT_BOUNCE
+} ProjectileContactType;
+
 typedef struct
 {
+	Uint32 contact_type;
 	float distance;
 } ProjectileData;
 
