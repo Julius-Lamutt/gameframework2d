@@ -3,7 +3,6 @@
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
-#include "windows.h"
 #include "objectives_menu.h"
 #include "physics.h"
 #include "camera.h"
@@ -61,7 +60,13 @@ void player_free(Entity *self);
 * @brief handle player input for this frame
 * @param self: the player to handle inputs for
 */
-void player_handle_input(Entity *self);
+void player_get_input(Entity *self);
+
+/**
+* @brief get the player's touch updates for this frame
+* @param self: the player to get touch updates for
+*/
+void player_get_touch_updates(Entity *self);
 
 Entity *player_load()
 {
@@ -160,6 +165,7 @@ Entity *player_load()
 	gfc_line_cpy(self->name, name);
 	self->box = box;
 	self->sprite = sprite;
+	self->fall_speed = fall_speed;
 	return self;
 }
 
@@ -181,7 +187,6 @@ Entity *player_new(GFC_Vector2D position)
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, gravity);
-	self->collision = gfc_vector2d(0, 0);
 	self->move_state = EMS_NONE;
 
 	self->proj = NULL;
@@ -210,8 +215,8 @@ void player_think(Entity* self)
 	GFC_Vector2D screen;
 	Sint32 mx = 0, my = 0;
 
-	if (!self) return;
-	data = self->data;
+	if (!self || !self->data) return;
+	data = (ClientData*) self->data;
 
 	// offset mouse to account for camera movement
 	SDL_GetMouseState(&mx, &my);
@@ -220,9 +225,9 @@ void player_think(Entity* self)
 	my += screen.y;
 
 	self->velocity.x = 0;
-	physics_update_move_state(self->world->tileCount, self->world->physicsLayer, self->box, &self->move_state); // get move state
-	
-	player_handle_input(self); // handles all player input, including movement
+
+	// handle all player input, including movement
+	player_get_input(self);
 
 	// check smoke state
 	if (data->smoke_invis)
@@ -234,89 +239,32 @@ void player_think(Entity* self)
 		}
 	}
 
-	// update velocity/new position
-	physics_update_velocity(self->world->tileCount, self->world->physicsLayer, self->box, &self->velocity, 7);
+	// get entities that were touched, then add to the update queue
+	player_get_touch_updates(self);
+
+	// get current velocity, then get new position
+	physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 }
 
 void player_update(Entity* self)
 {
-	int i, c;
 	Entity* other;
 	ClientData* data;
 	Window *win;
 
-	if (!self) return;
-	data = self->data;
+	if (!self || !self->data) return;
+	data = (ClientData*) self->data;
 	win = window_find_by_name("objectives_menu");
 
-	// check for collision with other entities
-	c = gfc_list_get_count(self->entity_touches);
-	for (i = 0; i < c; i++)
-	{
-		other = gfc_list_get_nth(self->entity_touches, i);
-		if (!other) continue;
-		if (other->layer == EL_ITEM)
-		{
-			if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
-			{
-				inventory_add_item(&data->inventory, "tool_shuriken");
-				entity_free(other);
-				item1 = 1;
-			}
-			if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
-			{
-				inventory_add_item(&data->inventory, "tool_teleporter");
-				inventory_add_item(&data->inventory, "tool_teleporter");
-				entity_free(other);
-				item2 = 1;
-			}
-			if (gfc_strlcmp(other->name, "pickup_drone") == 0)
-			{
-				inventory_add_item(&data->inventory, "tool_drone");
-				entity_free(other);
-				item3 = 1;
-			}
-			if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
-			{
-				inventory_add_item(&data->inventory, "tool_smoke");
-				inventory_add_item(&data->inventory, "tool_smoke");
-				entity_free(other);
-				item4 = 1;
-			}
-			if (gfc_strlcmp(other->name, "pickup_jump") == 0)
-			{
-				inventory_add_item(&data->inventory, "tool_jump");
-				inventory_add_item(&data->inventory, "tool_jump");
-				entity_free(other);
-				item5 = 1;
-			}
-			if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
-			{
-				inventory_add_item(&data->inventory, "diamond");
-				entity_free(other);
-				if (win) objective_complete(win, 3);
-			}
-		}
-		else if (other->layer == EL_WORLD)
-		{
-			self->collision = collide_with_entity_vector(self, other);
-			if (self->collision.x == 1)
-			{
-				if (gfc_strlcmp(other->name, "grass") == 0) other->fade = 1;
-				else self->newPosition.x = self->position.x;
-			}
-			if (self->collision.y == 1)
-			{
-				if (gfc_strlcmp(other->name, "grass") == 0) other->fade = 1;
-				else
-				{
-					self->newPosition.y = self->position.y;
-					self->velocity.y = 0;
-				}
-			}
-		}
-	}
+	// update physics
+	physics_update_move_state(self->box, &self->move_state);
+	self->position = self->newPosition;
+
+	// update camera position
+	if (player_focus) camera_center_on(self->position);
+
+	// update objective 1 completion
 	if (item1 && item2 && item3 && item4 && item5)
 	{
 		objective_complete(win, 1);
@@ -326,9 +274,6 @@ void player_update(Entity* self)
 		item4 = 0;
 		item5 = 0;
 	}
-
-	self->position = self->newPosition;
-	if (player_focus) camera_center_on(self->position);
 }
 
 void player_free(Entity *self)
@@ -341,15 +286,14 @@ void player_free(Entity *self)
 	free(data);
 }
 
-void player_handle_input(Entity *self)
+void player_get_input(Entity *self)
 {
 	ClientData *data;
 	Entity *bullet;
 	GFC_Vector2D dir;
-	int a;
 
-	if (!self) return;
-	data = self->data;
+	if (!self || !self->data) return;
+	data = (ClientData*) self->data;
 
 	// super jump
 	if (gfc_input_command_pressed("jump") && player_focus && self->move_state == EMS_GROUNDED)
@@ -426,6 +370,80 @@ void player_handle_input(Entity *self)
 			data->smoke_invis = 1;
 			data->smoke_invis_start = SDL_GetTicks();
 			self->fade = 1;
+		}
+	}
+}
+
+void player_get_touch_updates(Entity *self)
+{
+	int i, c;
+	Entity *other;
+	ClientData *data;
+	Window *win;
+	GFC_Vector2D collision;
+
+	if (!self || !self->data) return;
+	data = (ClientData*) self->data;
+	win = window_find_by_name("objectives_menu");
+
+	entity_get_entity_touches(self); // get entities touched this frame
+
+	c = gfc_list_get_count(self->entity_touches);
+	for (i = 0; i < c; i++)
+	{
+		other = gfc_list_get_nth(self->entity_touches, i);
+		if (!other) continue;
+		if (other->layer == EL_ITEM)
+		{
+			if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_shuriken");
+				entity_free(other);
+				item1 = 1;
+			}
+			if (gfc_strlcmp(other->name, "pickup_teleporter") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_teleporter");
+				inventory_add_item(&data->inventory, "tool_teleporter");
+				entity_free(other);
+				item2 = 1;
+			}
+			if (gfc_strlcmp(other->name, "pickup_drone") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_drone");
+				entity_free(other);
+				item3 = 1;
+			}
+			if (gfc_strlcmp(other->name, "pickup_smoke") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_smoke");
+				inventory_add_item(&data->inventory, "tool_smoke");
+				entity_free(other);
+				item4 = 1;
+			}
+			if (gfc_strlcmp(other->name, "pickup_jump") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_jump");
+				inventory_add_item(&data->inventory, "tool_jump");
+				entity_free(other);
+				item5 = 1;
+			}
+			if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
+			{
+				inventory_add_item(&data->inventory, "diamond");
+				entity_free(other);
+				if (win) objective_complete(win, 3);
+			}
+		}
+		else if (other->layer == EL_WORLD)
+		{
+			if (gfc_strlcmp(other->name, "object_grass") == 0) other->fade = 1;
+			else
+			{
+				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);
+				if (collision.x == 1) self->velocity.x = 0;
+				if (collision.y == 1) self->velocity.y = 0;
+			}
 		}
 	}
 }

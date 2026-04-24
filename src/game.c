@@ -1,8 +1,10 @@
 #include <SDL.h>
 #include "simple_logger.h"
-#include "gfc_input.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "gfc_input.h"
+#include "items.h"
+#include "font.h"
 #include "physics.h"
 #include "windows.h"
 #include "camera.h"
@@ -79,6 +81,8 @@ int main(int argc, char *argv[])
     /*demo setup*/
     world = world_load("defs/maps/testworld.json");
     world_setup_camera(world);
+    physics_update_world_data(world->tileCount, world->physicsLayer);
+
     //stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
     //rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
     //grass = interactable_new(gfc_vector2d(3000, 1358), "grass", "images/grass.png", 128, 96);

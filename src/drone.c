@@ -1,6 +1,6 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
-#include "collision.h"
+#include "physics.h"
 #include "camera.h"
 #include "item_pickup.h"
 #include "drone.h"
@@ -43,7 +43,6 @@ Entity* drone_new(Entity* owner)
 	self->position = owner->position;
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
-	self->collision = gfc_vector2d(0, 0);
 	self->owner = owner;
 	self->think = drone_think;
 	self->update = drone_update;
@@ -58,6 +57,7 @@ void drone_think(Entity* self)
 
 	if (!self) return;
 
+	// drone movement
 	dir = gfc_vector2d(0, 0);
 	if (!player_focus)
 	{
@@ -66,27 +66,23 @@ void drone_think(Entity* self)
 		if (gfc_input_command_down("left")) dir.x += -1;
 		if (gfc_input_command_down("right")) dir.x += 1;
 	}
-
 	gfc_vector2d_normalize(&dir);
 	gfc_vector2d_scale(self->velocity, dir, 4);
 
-	// check new position for world collision
+	// get current velocity, then get new position
+	float fall_speed = 1;
+	physics_get_velocity(self->box, &self->velocity, &fall_speed);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
-	if (self->collision.x == 1)
-	{
-		self->newPosition.x = self->position.x;
-	}
-	if (self->collision.y == 1)
-	{
-		self->newPosition.y = self->position.y;
-	}
 }
 
 void drone_update(Entity* self)
 {
 	if (!self) return;
+
+	// update physics
 	self->position = self->newPosition;
+
+	// center camera on drone if it is being used
 	if (!player_focus) camera_center_on(self->position);
 }
 

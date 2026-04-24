@@ -1,49 +1,36 @@
 #include "simple_logger.h"
-#include "gfc_shape.h"
 #include "collision.h"
 #include "camera.h"
 
-Bool collide_with_entity(Entity *self, Entity *other)
+Bool collide_with_entity(GFC_Rect self_box, GFC_Vector2D self_velocity, GFC_Rect other_box, GFC_Vector2D other_velocity)
 {
-	GFC_Rect self_box;
-	GFC_Rect other_box;
+	GFC_Rect self_rect;
+	GFC_Rect other_rect;
 
-	if (!self || !other)
-	{
-		slog("missing one or more entities for collision test");
-		return false;
-	}
+	gfc_rect_set(self_rect, self_box.x + self_velocity.x, self_box.y + self_velocity.y, self_box.w, self_box.h);
+	gfc_rect_set(other_rect, other_box.x + other_velocity.x, other_box.y + other_velocity.y, other_box.w, other_box.h);
 
-	gfc_rect_set(self_box, self->box.x + self->velocity.x, self->box.y + self->velocity.y, self->box.w, self->box.h);
-	gfc_rect_set(other_box, other->box.x + other->velocity.x, other->box.y + other->velocity.y, other->box.w, other->box.h);
-
-	if (gfc_rect_overlap(self_box, other_box)) return true;
+	if (gfc_rect_overlap(self_rect, other_rect)) return true;
 	return false;
 }
 
-GFC_Vector2D collide_with_entity_vector(Entity *self, Entity *other)
+GFC_Vector2D collide_with_entity_vector(GFC_Rect self_box, GFC_Vector2D self_velocity, GFC_Rect other_box, GFC_Vector2D other_velocity)
 {
 	int test_both, test_x, test_y;
-	GFC_Rect self_box, self_box_x, self_box_y, other_box;
-
-	if (!self || !other)
-	{
-		slog("missing one or more entities for collision test");
-		return gfc_vector2d(0, 0);
-	}
+	GFC_Rect self_rect, self_rect_x, self_rect_y, other_rect;
 
 	test_both = 0;
 	test_x = 0;
 	test_y = 0;
 
-	gfc_rect_set(self_box, self->box.x + self->velocity.x, self->box.y + self->velocity.y, self->box.w, self->box.h);
-	gfc_rect_set(self_box_x, self->box.x + self->velocity.x, self->box.y, self->box.w, self->box.h);
-	gfc_rect_set(self_box_y, self->box.x, self->box.y + self->velocity.y, self->box.w, self->box.h);
-	gfc_rect_set(other_box, other->box.x + other->velocity.x, other->box.y + other->velocity.y, other->box.w, other->box.h);
+	gfc_rect_set(self_rect, self_box.x + self_velocity.x, self_box.y + self_velocity.y, self_box.w, self_box.h);
+	gfc_rect_set(self_rect_x, self_box.x + self_velocity.x, self_box.y, self_box.w, self_box.h);
+	gfc_rect_set(self_rect_y, self_box.x, self_box.y + self_velocity.y, self_box.w, self_box.h);
+	gfc_rect_set(other_rect, other_box.x + other_velocity.x, other_box.y + other_velocity.y, other_box.w, other_box.h);
 
-	if (!test_both && gfc_rect_overlap(self->box, other_box)) test_both = 1;
-	if (!test_x && gfc_rect_overlap(self_box_x, other_box)) test_x = 1;
-	if (!test_y && gfc_rect_overlap(self_box_y, other_box)) test_y = 1;
+	if (!test_both && gfc_rect_overlap(self_rect, other_rect)) test_both = 1;
+	if (!test_x && gfc_rect_overlap(self_rect_x, other_rect)) test_x = 1;
+	if (!test_y && gfc_rect_overlap(self_rect_y, other_rect)) test_y = 1;
 	
 	if (test_both)
 	{

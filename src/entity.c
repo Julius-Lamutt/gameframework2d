@@ -12,7 +12,6 @@ typedef struct
 	Entity  *entity_list;
 	Uint32	entity_max;
 	Uint32  entity_pool;
-	World	*world;
 } EntityManager;
 
 static EntityManager _entity_manager = {0};
@@ -96,9 +95,6 @@ Entity *entity_new()
 		if (_entity_manager.entity_list[i]._inuse) continue;
 		memset(&_entity_manager.entity_list[i], 0, sizeof(Entity));
 
-		//set entity world
-		_entity_manager.entity_list[i].world = _entity_manager.world;
-
 		//initialize entity collision list
 		_entity_manager.entity_list[i].entity_touches = gfc_list_new();
 		if (!_entity_manager.entity_list[i].entity_touches)
@@ -153,22 +149,6 @@ void entity_think(Entity *self)
 
 	if (!self) return;
 	if (self->think) self->think(self);
-
-	gfc_list_clear(self->entity_touches);
-	for (i = 0; i < _entity_manager.entity_max; i++)
-	{
-		other = &_entity_manager.entity_list[i];
-		if (!other) continue;
-		if (!other->_inuse) continue;
-
-		if (other->layer == EL_PLAYER && (!self->mask & EL_PLAYER)) continue;
-		if (other->layer == EL_MONSTER && (!self->mask & EL_MONSTER)) continue;
-		if (other->layer == EL_ITEM && (!self->mask & EL_ITEM)) continue;
-		if (other->layer == EL_PROJECTILE && (!self->mask & EL_PROJECTILE)) continue;
-		if (other->layer == EL_WORLD && (!self->mask & EL_WORLD)) continue;
-
-		if (collide_with_entity(self, other)) gfc_list_append(self->entity_touches, other);
-	}
 }
 
 void entity_system_think()
@@ -208,12 +188,10 @@ void entity_draw(Entity *self)
 		offset = camera_get_offset();
 		gfc_vector2d_add(position, self->position, offset);
 		gfc_vector2d_sub(position, position, gfc_vector2d(0.5 * self->sprite->frame_w, 0.5 * self->sprite->frame_h));
-		if (self->layer == EL_PLAYER)
-		{
-			self->box = gfc_rect(position.x + ((self->sprite->frame_w - self->box.w) / 2),
-				position.y + ((self->sprite->frame_h - self->box.h) / 2), self->box.w, self->box.h);
-		}
-		else self->box = gfc_rect(position.x, position.y, self->sprite->frame_w, self->sprite->frame_h);
+
+		// center collision box on the sprite's center
+		self->box = gfc_rect(position.x + ((self->sprite->frame_w - self->box.w) / 2),
+			position.y + ((self->sprite->frame_h - self->box.h) / 2), self->box.w, self->box.h);
 		
 		color = gfc_color8(255, 255, 255, 255);
 		if (self->fade) color = gfc_color8(255, 255, 255, 125);
@@ -248,11 +226,6 @@ void entity_system_draw()
 	}
 }
 
-void entity_system_set_world(World *world)
-{
-	_entity_manager.world = world;
-}
-
 SJson *entity_object_get_by_name(SJson *array, const char *obj_name)
 {
 	int i, c;
@@ -278,7 +251,7 @@ SJson *entity_object_get_by_name(SJson *array, const char *obj_name)
 	return NULL;
 }
 
-void entity_set_entity_touches(Entity *self)
+void entity_get_entity_touches(Entity *self)
 {
 	int i;
 	Entity *other;
@@ -290,12 +263,30 @@ void entity_set_entity_touches(Entity *self)
 		if (!other || !other->_inuse) continue;
 		if (other == self) continue;
 
-		if (other->layer == EL_PLAYER && (!self->mask & EL_PLAYER)) continue;
-		if (other->layer == EL_MONSTER && (!self->mask & EL_MONSTER)) continue;
-		if (other->layer == EL_ITEM && (!self->mask & EL_ITEM)) continue;
-		if (other->layer == EL_PROJECTILE && (!self->mask & EL_PROJECTILE)) continue;
-		if (other->layer == EL_WORLD && (!self->mask & EL_WORLD)) continue;
+		// test for only certain touches based on collision mask
+		switch (other->layer)
+		{
+			case EL_PLAYER:
+				if (!(self->mask & EL_PLAYER)) continue;
+				break;
 
-		if (collide_with_entity(self, other)) gfc_list_append(self->entity_touches, other);
+			case EL_MONSTER:
+				if (!(self->mask & EL_MONSTER)) continue;
+				break;
+
+			case EL_ITEM:
+				if (!(self->mask & EL_ITEM)) continue;
+				break;
+
+			case EL_PROJECTILE:
+				if (!(self->mask & EL_PROJECTILE)) continue;
+				break;
+
+			case EL_WORLD:
+				if (!(self->mask & EL_WORLD)) continue;
+				break;
+		}
+
+		if (collide_with_entity(self->box, self->velocity, other->box, other->velocity)) gfc_list_append(self->entity_touches, other);
 	}
 }

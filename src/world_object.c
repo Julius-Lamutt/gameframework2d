@@ -306,7 +306,6 @@ Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
 	self->newPosition = self->position;
 	if (data->is_static) self->acceleration = gfc_vector2d(0, 0);
 	else self->acceleration = gfc_vector2d(0, gravity);
-	self->collision = gfc_vector2d(0, 0);
 
 	self->think = world_object_think;
 	self->update = world_object_update;
@@ -328,7 +327,9 @@ void world_object_think(Entity *self)
 	// physics
 	if (!data->is_static)
 	{
-		physics_update_velocity(self->world->tileCount, self->world->physicsLayer, self->box, &self->velocity, 7);
+		// get current velocity, then get new position
+		float fall_speed = 7;
+		physics_get_velocity(self->box, &self->velocity, &fall_speed);
 		gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 	}
 
@@ -348,8 +349,8 @@ void world_object_think(Entity *self)
 
 void world_object_update(Entity *self)
 {
-	WorldObjectData *data;
 	int i, c;
+	WorldObjectData *data;
 	WorldObjectUpdate *update;
 
 	if (!self) return;
@@ -357,7 +358,7 @@ void world_object_update(Entity *self)
 
 	self->position = self->newPosition;	// update position
 	
-	// update handling
+	// world object update handling
 	if (data->triggered)
 	{
 		c = gfc_list_get_count(data->update_list);

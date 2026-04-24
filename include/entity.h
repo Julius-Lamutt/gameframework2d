@@ -46,7 +46,6 @@ typedef struct Entity_S
 	Uint32			layer;				/* draw layer */
 	Uint32			mask;				/* collision mask, i.e. what entities can be touched */
 	GFC_Rect		box;				/* bounding box */
-	World			*world;				/* current world the entity is in */
 
 	// rendering
 	Sprite			*sprite;			/* entity sprite */
@@ -124,11 +123,6 @@ void entity_system_update();
  */
 void entity_system_draw();
 
-/*
-* @brief set the world for all entities
-*/
-void entity_system_set_world(World *world);
-
 /**
 * @brief find an entity object from a sjson array by name
 * @param array: the sjson array to search in
@@ -141,6 +135,6 @@ SJson *entity_object_get_by_name(SJson *array, const char *obj_name);
 * @brief find the entities touched by an entity this frame
 * @param self: the entity to find touches for
 */
-void entity_set_entity_touches(Entity *self);
+void entity_get_entity_touches(Entity *self);
 
 #endif

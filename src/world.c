@@ -272,7 +272,6 @@ World *world_load(const char *filename)
 	);
 
 	world_build_tile_layer(world);
-	entity_system_set_world(world); // HACK: for entities not spawned on world load or by trigger, delete later
 	world_entity_load(world, ejson);
 	sj_free(json);
 	return world;

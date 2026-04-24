@@ -22,6 +22,7 @@ typedef enum
 typedef struct
 {
 	Uint32 contact_type;
+	Uint8 made_contact;
 	float distance;
 } ProjectileData;
 
@@ -47,12 +48,18 @@ void projectile_update(Entity *self);
 */
 void projectile_free(Entity *self);
 
+/**
+* @brief get the projectiles's touch updates for this frame
+* @param self: the projectile to get touch updates for
+*/
+void projectile_get_touch_updates(Entity *self);
+
 Entity *projectile_load(const char *proj_name)
 {
 	SJson *json, *ejson, *pjson, *array;
 	int i, c;
 	const char *name, *filename;
-	float box_w, box_h;
+	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
@@ -152,6 +159,13 @@ Entity *projectile_load(const char *proj_name)
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
+	if (!sj_object_get_value_as_float(pjson, "fall_speed", &fall_speed))
+	{
+		free(json);
+		slog("missing fall_speed object for player entity");
+		return NULL;
+	}
+
 	free(json);
 
 	self = entity_new();
@@ -163,6 +177,7 @@ Entity *projectile_load(const char *proj_name)
 	gfc_line_cpy(self->name, name);
 	self->box = box;
 	self->sprite = sprite;
+	self->fall_speed = fall_speed;
 	return self;
 }
 
@@ -183,7 +198,6 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 	self->position = owner->position;
 	gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 30, dir.y * 30));
 	self->newPosition = self->position;
-	self->box = gfc_rect(self->position.x, self->position.y, self->sprite->frame_w, self->sprite->frame_h);
 	gfc_vector2d_scale(self->velocity, dir, 12);
 	self->acceleration = gfc_vector2d(0, gravity);
 	self->collision = gfc_vector2d(0, 0);
@@ -197,7 +211,12 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 
 	// projectile data
 	data = gfc_allocate_array(sizeof(ProjectileData), 1);
-	if (data) self->data = data;
+	if (data)
+	{
+		self->data = data;
+		data->made_contact = 0;
+		data->distance = 0;
+	}
 	return self;
 }
 
@@ -205,16 +224,22 @@ void projectile_think(Entity *self)
 {
 	ProjectileData* data;
 
-	if (!self) return;
+	if ((!self) || (!self->data)) return;
+	data = (ProjectileData*) self->data;
 
-	data = self->data; // get projectile data
+	projectile_get_touch_updates(self);
 
+	// get current velocity, then get new position
+	float fall_speed = 4;
+	physics_get_velocity_based_on_collision(self->box, &self->velocity, &fall_speed, PCT_STICK, &data->made_contact);
+	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
+
+	/*
 	if (self->velocity.x != 0) self->velocity.y += gravity; // gravity
 	if (self->velocity.y > 4) self->velocity.y = 4; // max falling speed
-
 	// check new position for world collision
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = collide_with_world(self->world->tileCount, self->world->physicsLayer, self->box, self->velocity);
+	self->collision = physics_collide_with_world(self->box, &self->velocity);
 	if (self->collision.x == 1)
 	{
 		self->newPosition.x = self->position.x;
@@ -231,6 +256,7 @@ void projectile_think(Entity *self)
 	{
 		data->distance += gfc_vector2d_magnitude(self->velocity);
 	}
+	*/
 }
 
 void projectile_update(Entity *self)
@@ -240,11 +266,51 @@ void projectile_update(Entity *self)
 	ProjectileData *data;
 	Window *win;
 
-	if (!self) return;
+	if ((!self) || (!self->data)) return;
+	data = (ProjectileData*) self->data;
 	win = window_find_by_name("objectives_menu");
 
-	data = self->data; // get projectile data
-	// check for collision with other entities
+	// update physics
+	self->position = self->newPosition;
+
+	// destroy projectile if range is exceeded
+	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)
+	{
+		item_pickup_new(self->position, "pickup_shuriken");
+		entity_free(self);
+	}
+
+	// update objective #2
+	if (destroy_rope && destroy_stalagmite)
+	{
+		objective_complete(win, 2);
+		destroy_rope = 0;
+		destroy_stalagmite = 0;
+	}
+}
+
+void projectile_free(Entity *self)
+{
+	ProjectileData* data;
+
+	if ((!self) || (!self->data)) return;
+	data = (ProjectileData*) self->data;
+	free(data);
+}
+
+void projectile_get_touch_updates(Entity *self)
+{
+	int i, c;
+	Entity *other;
+	ProjectileData *data;
+	Window *win;
+
+	if ((!self) || (!self->data)) return;
+	data = (ProjectileData*) self->data;
+	win = window_find_by_name("objectives_menu");
+
+	entity_get_entity_touches(self); // get entities touched this frame
+
 	c = gfc_list_get_count(self->entity_touches);
 	for (i = 0; i < c; i++)
 	{
@@ -270,27 +336,4 @@ void projectile_update(Entity *self)
 			}
 		}
 	}
-
-	if (destroy_rope && destroy_stalagmite)
-	{
-		objective_complete(win, 2);
-		destroy_rope = 0;
-		destroy_stalagmite = 0;
-	}
-
-	self->position = self->newPosition;
-	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)
-	{
-		item_pickup_new(self->position, "pickup_shuriken");
-		entity_free(self);
-	}
-}
-
-void projectile_free(Entity *self)
-{
-	ProjectileData* data;
-
-	if ((!self) || (!self->data)) return;
-	data = (ProjectileData*) self->data;
-	free(data);
 }

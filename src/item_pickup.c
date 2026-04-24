@@ -31,7 +31,7 @@ Entity *item_pickup_load(const char *item_name)
 	SJson *json, *ejson, *ijson, *array;
 	int i, c;
 	const char *name, *filename;
-	float box_w, box_h;
+	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
@@ -131,6 +131,13 @@ Entity *item_pickup_load(const char *item_name)
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
+	if (!sj_object_get_value_as_float(ijson, "fall_speed", &fall_speed))
+	{
+		free(json);
+		slog("missing fall_speed object for player entity");
+		return NULL;
+	}
+
 	free(json);
 
 	self = entity_new();
@@ -142,6 +149,7 @@ Entity *item_pickup_load(const char *item_name)
 	gfc_line_cpy(self->name, name);
 	self->box = box;
 	self->sprite = sprite;
+	self->fall_speed = fall_speed;
 	return self;
 }
 
@@ -162,7 +170,6 @@ Entity *item_pickup_new(GFC_Vector2D position, const char *item_name)
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
 	self->acceleration = gfc_vector2d(0, gravity);
-	self->collision = gfc_vector2d(0, 0);
 
 	self->think = item_pickup_think;
 	self->update = item_pickup_update;
@@ -175,14 +182,17 @@ void item_pickup_think(Entity* self)
 {
 	if (!self) return;
 
-	physics_update_velocity(self->world->tileCount, self->world->physicsLayer, self->box, &self->velocity, 7);
+	// get current velocity, then get new position
+	physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 }
 
 void item_pickup_update(Entity* self)
 {
-	self->position = self->newPosition;
 	if (!self) return;
+
+	// update physics
+	self->position = self->newPosition;
 }
 
 void item_pickup_free(Entity *self)

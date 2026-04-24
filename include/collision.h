@@ -2,24 +2,26 @@
 #define __COLLISION_H__
 
 #include "gfc_shape.h"
-#include "entity.h"
-#include "world.h"
 
 /**
 * @brief test to see if one entity will collide with another entity
-* @param self: the entity testing for collision
-* @param other: the entity being tested for collision by the first entity
+* @param self_box: the collision box for the first entity
+* @param self_velocity: the velocity of the first entity
+* @param other_box: the colllison box for the second entity
+* @param other_velocity: the velocity of the second entity
 * @return true if collision, false otherwise
 */
-Bool collide_with_entity(Entity *self, Entity *other);
+Bool collide_with_entity(GFC_Rect self_box, GFC_Vector2D self_velocity, GFC_Rect other_box, GFC_Vector2D other_velocity);
 
 /**
 * @brief test to see if one entity will collide with another entity
-* @param self: the entity testing for collision
-* @param other: the entity being tested for collision by the first entity
+* @param self_box: the collision box for the first entity
+* @param self_velocity: the velocity of the first entity
+* @param other_box: the colllison box for the second entity
+* @param other_velocity: the velocity of the second entity
 * @return for both x and y: true if collision, false otherwise
 */
-GFC_Vector2D collide_with_entity_vector(Entity *self, Entity *other);
+GFC_Vector2D collide_with_entity_vector(GFC_Rect self_box, GFC_Vector2D self_velocity, GFC_Rect other_box, GFC_Vector2D other_velocity);
 
 /**
 * @brief test to see if an entity will collide with the world

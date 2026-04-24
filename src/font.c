@@ -6,12 +6,12 @@
 
 typedef struct
 {
-	char *text;
-	SDL_Texture *texture;
-	FontStyles style;
-	GFC_Vector2D size;
-	GFC_Color color;
-	Uint32 timestamp;
+	char			*text;
+	SDL_Texture		*texture;
+	FontStyles		style;
+	GFC_Vector2D	size;
+	GFC_Color		color;
+	Uint32			timestamp;
 } FontCache;
 
 typedef struct
