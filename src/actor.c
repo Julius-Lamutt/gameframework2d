@@ -19,6 +19,8 @@ void actor_update(Entity *self);
 */
 void actor_free(Entity *self);
 
+/*
+
 Entity *actor_new(GFC_Vector2D position, const char *name, const char *filename, int frame_w, int frame_h)
 {
 	Entity *self;
@@ -79,3 +81,4 @@ void actor_free(Entity *self)
 {
 	if (!self) return;
 }
+*/

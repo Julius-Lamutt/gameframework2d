@@ -20,6 +20,7 @@ void interactable_update(Entity *self);
 */
 void interactable_free(Entity *self);
 
+/*
 Entity *interactable_new(GFC_Vector2D position, const char *name, const char *filename, int frame_w, int frame_h)
 {
 	Entity *self;
@@ -77,3 +78,4 @@ void interactable_free(Entity *self)
 		entity_free(self->proj);
 	}
 }
+*/

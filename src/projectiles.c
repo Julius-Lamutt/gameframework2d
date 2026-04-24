@@ -200,7 +200,6 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 	self->newPosition = self->position;
 	gfc_vector2d_scale(self->velocity, dir, 12);
 	self->acceleration = gfc_vector2d(0, gravity);
-	self->collision = gfc_vector2d(0, 0);
 
 	self->range = 1000;
 	self->owner = owner;
@@ -233,30 +232,6 @@ void projectile_think(Entity *self)
 	float fall_speed = 4;
 	physics_get_velocity_based_on_collision(self->box, &self->velocity, &fall_speed, PCT_STICK, &data->made_contact);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-
-	/*
-	if (self->velocity.x != 0) self->velocity.y += gravity; // gravity
-	if (self->velocity.y > 4) self->velocity.y = 4; // max falling speed
-	// check new position for world collision
-	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	self->collision = physics_collide_with_world(self->box, &self->velocity);
-	if (self->collision.x == 1)
-	{
-		self->newPosition.x = self->position.x;
-		self->velocity = gfc_vector2d(0, 0);
-		data->distance = 0;
-	}
-	if (self->collision.y == 1)
-	{
-		self->newPosition.y = self->position.y;
-		self->velocity = gfc_vector2d(0, 0);
-		data->distance = 0;
-	}
-	if (self->collision.x == 0 && self->collision.y == 0)
-	{
-		data->distance += gfc_vector2d_magnitude(self->velocity);
-	}
-	*/
 }
 
 void projectile_update(Entity *self)
@@ -274,19 +249,10 @@ void projectile_update(Entity *self)
 	self->position = self->newPosition;
 
 	// destroy projectile if range is exceeded
-	if (data->distance >= self->range || self->collision.x == 1 || self->collision.y == 1)
-	{
-		item_pickup_new(self->position, "pickup_shuriken");
-		entity_free(self);
-	}
+	if (data->distance >= self->range) entity_free(self);
 
 	// update objective #2
-	if (destroy_rope && destroy_stalagmite)
-	{
-		objective_complete(win, 2);
-		destroy_rope = 0;
-		destroy_stalagmite = 0;
-	}
+	if (destroy_rope && destroy_stalagmite) objective_complete(win, 2);
 }
 
 void projectile_free(Entity *self)
@@ -318,22 +284,7 @@ void projectile_get_touch_updates(Entity *self)
 		if (!other) continue;
 		if (other->layer == EL_WORLD)
 		{
-			if (gfc_strlcmp(other->name, "good_stalagmite") == 0)
-			{
-				interactable_new(other->position, "bad_stalagmite", "images/stalagmite_cracked.png", 32, 64);
-				entity_free(other);
-				destroy_stalagmite = 1;
-			}
-			else if (gfc_strlcmp(other->name, "bad_stalagmite") == 0)
-			{
-				actor_new(other->position, "actor_stalagmite", "images/stalagmite_cracked.png", 32, 64);
-				entity_free(other);
-			}
-			else if (gfc_strlcmp(other->name, "rope") == 0)
-			{
-				entity_free(other);
-				destroy_rope = 1;
-			}
+			continue;
 		}
 	}
 }

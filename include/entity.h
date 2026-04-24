@@ -59,7 +59,6 @@ typedef struct Entity_S
 	GFC_Vector2D    newPosition;		/* position to be tested for collisions */
 	GFC_Vector2D    velocity;			/* current velocity */
 	GFC_Vector2D	acceleration;		/* current acceleration */
-	GFC_Vector2D    collision;			/* xy collision test on world */
 	float			fall_speed;			/* max fall speed */
 	Uint32			move_state;			/* grounded, falling, hit ceiling, etc. */		
 	GFC_List		*entity_touches;	/* list of entities clipped this frame */

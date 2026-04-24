@@ -435,6 +435,14 @@ void player_get_touch_updates(Entity *self)
 				if (win) objective_complete(win, 3);
 			}
 		}
+		else if (other->layer == EL_PROJECTILE)
+		{
+			if (gfc_strlcmp(other->name, "projectile_shuriken") == 0)
+			{
+				inventory_add_item(&data->inventory, "tool_shuriken");
+				entity_free(other);
+			}
+		}
 		else if (other->layer == EL_WORLD)
 		{
 			if (gfc_strlcmp(other->name, "object_grass") == 0) other->fade = 1;
