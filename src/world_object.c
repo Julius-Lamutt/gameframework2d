@@ -34,6 +34,10 @@ typedef struct
 	Uint32		trigger_type;
 	GFC_List	*update_list;
 	Entity		*linked_ent;
+	Entity      *linked_ent2;
+	Uint8		moving;
+	float		move_speed;
+	Uint32		move_time;
 } WorldObjectData;
 
 /**
@@ -331,13 +335,23 @@ Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
 	// world object data
 	data->triggered = 0;
 	data->linked_ent = NULL;
+	data->linked_ent2 = NULL;
 
 	// special data for rope
 	if (gfc_strlcmp(self->name, "object_rope") == 0)
 	{
 		data->linked_ent = world_object_new(gfc_vector2d(self->position.x, self->position.y + 60), "object_light");
 	}
-
+	// special data for elevator
+	else if (gfc_strlcmp(self->name, "object_elevator") == 0)
+	{
+		self->fade = 1;
+		data->moving = 0;
+		data->move_speed = -1;
+		data->move_time = 0;
+		data->linked_ent = world_object_new(gfc_vector2d(self->position.x, self->position.y - 64), "object_elevator_floor");
+		data->linked_ent2 = world_object_new(gfc_vector2d(self->position.x, self->position.y + 64), "object_elevator_floor");
+	}
 	return self;
 }
 
@@ -356,6 +370,28 @@ void world_object_think(Entity *self)
 		// get current velocity, then get new position
 		physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
 		gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
+	}
+
+	// elevator physics
+	if (data->moving)
+	{
+		self->velocity = gfc_vector2d(0, data->move_speed);
+		gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
+
+		data->linked_ent->velocity = gfc_vector2d(0, data->move_speed);
+		gfc_vector2d_add(data->linked_ent->newPosition, data->linked_ent->newPosition, data->linked_ent->velocity);
+
+		data->linked_ent2->velocity = gfc_vector2d(0, data->move_speed);
+		gfc_vector2d_add(data->linked_ent2->newPosition, data->linked_ent2->newPosition, data->linked_ent2->velocity);
+
+		if (SDL_GetTicks() - data->move_time > 5000)
+		{
+			data->moving = 0;
+			data->move_speed *= -1;
+			self->velocity = gfc_vector2d(0, 0);
+			data->linked_ent->velocity = gfc_vector2d(0, 0);
+			data->linked_ent2->velocity = gfc_vector2d(0, 0);
+		}
 	}
 }
 
@@ -390,6 +426,8 @@ void world_object_update(Entity *self)
 					break;
 
 				case WOUT_MOVE:
+					data->moving = 1;
+					data->move_time = SDL_GetTicks();
 					break;
 
 				case WOUT_FADE:
@@ -409,7 +447,7 @@ void world_object_update(Entity *self)
 	else
 	{
 		// set defaults when there is no updates
-		self->fade = 0;
+		if (gfc_strlcmp(self->name, "object_elevator") != 0) self->fade = 0;
 	}
 }
 

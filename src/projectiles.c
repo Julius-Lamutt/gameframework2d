@@ -3,8 +3,6 @@
 #include "collision.h"
 #include "windows.h"
 #include "objectives_menu.h"
-#include "interactables.h"
-#include "actor.h"
 #include "item_pickup.h"
 #include "projectiles.h"
 

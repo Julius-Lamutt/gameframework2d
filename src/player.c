@@ -456,6 +456,7 @@ void player_get_touch_updates(Entity *self)
 		else if (other->layer == EL_WORLD)
 		{
 			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
+			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
 			else
 			{
 				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);
@@ -466,6 +467,10 @@ void player_get_touch_updates(Entity *self)
 					self->move_state = collide_with_object_floor_or_ceiling(self->box, other->box);
 				}
 				if (collision.x == 1 && self->move_state != EMS_GROUNDED) self->velocity.x = 0;
+				if (gfc_strlcmp(other->name, "object_elevator_floor") == 0 && self->move_state == EMS_GROUNDED)
+				{
+					self->velocity.y = other->velocity.y;
+				}
 			}
 		}
 	}
