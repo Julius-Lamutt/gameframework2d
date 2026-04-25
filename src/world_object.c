@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "gfc_input.h"
 #include "physics.h"
 #include "world_object.h"
 
@@ -22,8 +23,8 @@ typedef enum
 
 typedef struct
 {
-	GFC_TextLine	object;
 	Uint32			update_type;
+	GFC_TextLine	object;
 } WorldObjectUpdate;
 
 typedef struct
@@ -32,6 +33,7 @@ typedef struct
 	Uint8		triggered;
 	Uint32		trigger_type;
 	GFC_List	*update_list;
+	Entity		*linked_ent;
 } WorldObjectData;
 
 /**
@@ -56,11 +58,17 @@ void world_object_update(Entity *self);
 */
 void world_object_free(Entity *self);
 
+/**
+* @brief get the world object's touch updates for this frame
+* @param self: the world object to get touch updates for
+*/
+void world_object_get_touch_updates(Entity *self);
+
 Entity *world_object_load(const char *obj_name)
 {
 	SJson *json, *ejson, *ojson, *ujson, *array;
 	const char *name, *filename, *trigger;
-	float box_w, box_h;
+	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
@@ -149,6 +157,13 @@ Entity *world_object_load(const char *obj_name)
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
+	if (!sj_object_get_value_as_float(ojson, "fall_speed", &fall_speed))
+	{
+		free(json);
+		slog("missing fall_speed object for player entity");
+		return NULL;
+	}
+
 	// get world object data
 	if (!sj_object_get_value_as_uint8(ojson, "static", &is_static))
 	{
@@ -177,6 +192,7 @@ Entity *world_object_load(const char *obj_name)
 		gfc_line_cpy(self->name, name);
 		self->box = box;
 		self->sprite = sprite;
+		self->fall_speed = fall_speed;
 
 		data = gfc_allocate_array(sizeof(WorldObjectData), 1);
 		if (!data)
@@ -227,7 +243,7 @@ Entity *world_object_load(const char *obj_name)
 		if (!object)
 		{
 			free(json);
-			slog("missing object object in update #%i for world object entity", i);
+			slog("missing new_object object in update #%i for world object entity", i);
 			return NULL;
 		}
 
@@ -272,6 +288,7 @@ Entity *world_object_load(const char *obj_name)
 	gfc_line_cpy(self->name, name);
 	self->box = box;
 	self->sprite = sprite;
+	self->fall_speed = fall_speed;
 
 	// set world object data
 	data = gfc_allocate_array(sizeof(WorldObjectData), 1);
@@ -313,6 +330,13 @@ Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
 
 	// world object data
 	data->triggered = 0;
+	data->linked_ent = NULL;
+
+	// special data for rope
+	if (gfc_strlcmp(self->name, "object_rope") == 0)
+	{
+		data->linked_ent = world_object_new(gfc_vector2d(self->position.x, self->position.y + 60), "object_light");
+	}
 
 	return self;
 }
@@ -324,26 +348,14 @@ void world_object_think(Entity *self)
 	if (!self) return;
 	data = self->data;
 
-	// physics
+	world_object_get_touch_updates(self);
+
+	// update physics for non-static world objects
 	if (!data->is_static)
 	{
 		// get current velocity, then get new position
-		float fall_speed = 7;
-		physics_get_velocity(self->box, &self->velocity, &fall_speed);
+		physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
 		gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
-	}
-
-	// trigger detection
-	switch (data->trigger_type)
-	{
-		case WOTT_NONE:
-			break;
-		case WOTT_PLAYER:
-			break;
-		case WOTT_PROJECTILE:
-			break;
-		case WOTT_INPUT:
-			break;
 	}
 }
 
@@ -370,17 +382,34 @@ void world_object_update(Entity *self)
 			switch (update->update_type)
 			{
 				case WOUT_SPAWN:
+					if (gfc_strlcmp(self->name, "object_rope") == 0)
+					{
+						world_object_new(gfc_vector2d(self->position.x, self->position.y + 60), update->object);
+					}
+					else world_object_new(self->position, update->object);
 					break;
+
 				case WOUT_MOVE:
 					break;
+
 				case WOUT_FADE:
-					data->triggered = 0;
 					self->fade = 1;
 					break;
+
 				case WOUT_DELETE:
+					if (gfc_strlcmp(self->name, "object_rope") == 0)
+					{
+						entity_free(data->linked_ent);
+					}
+					else entity_free(self);
 					break;
 			}
 		}
+	}
+	else
+	{
+		// set defaults when there is no updates
+		self->fade = 0;
 	}
 }
 
@@ -395,3 +424,35 @@ void world_object_free(Entity *self)
 	free(data);
 }
 
+void world_object_get_touch_updates(Entity *self)
+{
+	int i, c;
+	Entity *other;
+	WorldObjectData *data;
+	GFC_Vector2D collision;
+
+	if (!self || !self->data) return;
+	data = (WorldObjectData*) self->data;
+	data->triggered = 0; // reset trigger
+
+	entity_get_entity_touches(self); // get entities touched this frame
+
+	c = gfc_list_get_count(self->entity_touches);
+	for (i = 0; i < c; i++)
+	{
+		other = gfc_list_get_nth(self->entity_touches, i);
+		if (!other) continue;
+		if (other->layer == EL_PLAYER)
+		{
+			if (data->trigger_type == WOTT_PLAYER) data->triggered = 1;
+			if (data->trigger_type == WOTT_INPUT)
+			{
+				if (gfc_input_key_pressed("e")) data->triggered = 1;
+			}
+		}
+		else if (other->layer == EL_PROJECTILE)
+		{
+			if (data->trigger_type == WOTT_PROJECTILE) data->triggered = 1;
+		}
+	}
+}

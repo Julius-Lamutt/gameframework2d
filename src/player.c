@@ -30,7 +30,9 @@ typedef struct
 	int				jump_anim_start;
 } ClientData;
 
-Uint8 player_focus = 1; // decides whether the camera should focus on the player or not
+Uint8 player_focus = 1; // should camera focus on player right now
+
+static Uint8 ignore_gravity = 0; // prevents falling due to gravity
 
 /**
 * @brief load a player from a config file
@@ -226,9 +228,6 @@ void player_think(Entity* self)
 
 	self->velocity.x = 0;
 
-	// handle all player input, including movement
-	player_get_input(self);
-
 	// check smoke state
 	if (data->smoke_invis)
 	{
@@ -239,11 +238,19 @@ void player_think(Entity* self)
 		}
 	}
 
-	// get entities that were touched, then add to the update queue
+	// handle all player input, including movement
+	player_get_input(self);
+	self->move_state = 2;
+
 	player_get_touch_updates(self);
 
 	// get current velocity, then get new position
-	physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
+	if (!ignore_gravity) physics_get_velocity(self->box, &self->velocity, &self->fall_speed);
+	else
+	{
+		float fall_speed = -1;
+		physics_get_velocity(self->box, &self->velocity, &fall_speed);
+	}
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 }
 
@@ -260,6 +267,7 @@ void player_update(Entity* self)
 	// update physics
 	physics_update_move_state(self->box, &self->move_state);
 	self->position = self->newPosition;
+	ignore_gravity = 0;
 
 	// update camera position
 	if (player_focus) camera_center_on(self->position);
@@ -398,6 +406,8 @@ void player_get_touch_updates(Entity *self)
 			if (gfc_strlcmp(other->name, "pickup_shuriken") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_shuriken");
+				inventory_add_item(&data->inventory, "tool_shuriken");
+				inventory_add_item(&data->inventory, "tool_shuriken");
 				entity_free(other);
 				item1 = 1;
 			}
@@ -445,12 +455,17 @@ void player_get_touch_updates(Entity *self)
 		}
 		else if (other->layer == EL_WORLD)
 		{
-			if (gfc_strlcmp(other->name, "object_grass") == 0) other->fade = 1;
+			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
 			else
 			{
 				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);
-				if (collision.x == 1) self->velocity.x = 0;
-				if (collision.y == 1) self->velocity.y = 0;
+				if (collision.y == 1)
+				{
+					ignore_gravity = 1;
+					self->velocity.y = 0;
+					self->move_state = collide_with_object_floor_or_ceiling(self->box, other->box);
+				}
+				if (collision.x == 1 && self->move_state != EMS_GROUNDED) self->velocity.x = 0;
 			}
 		}
 	}

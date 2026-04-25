@@ -38,7 +38,12 @@ void physics_cleanup()
 
 void physics_update_move_state(GFC_Rect box, Uint32 *move_state)
 {
-	*move_state = collide_with_world_floor_or_ceiling(physics_system.tile_count, physics_system.physics_layer, box);
+	Uint8 temp_state;
+
+	temp_state = collide_with_world_floor_or_ceiling(physics_system.tile_count, physics_system.physics_layer, box);
+	if (*move_state == 2) *move_state = temp_state;
+	else if (*move_state == 1 && temp_state == 0) *move_state = temp_state;
+	else return;
 }
 
 void physics_get_velocity(GFC_Rect box, GFC_Vector2D *velocity, float *fall_speed)

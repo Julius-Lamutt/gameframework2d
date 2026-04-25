@@ -109,3 +109,22 @@ Uint8 collide_with_world_floor_or_ceiling(Uint32 tile_count, GFC_Rect* physics_l
 	}
 	return 2; // falling
 }
+
+Uint8 collide_with_object_floor_or_ceiling(GFC_Rect self_box, GFC_Rect other_box)
+{
+	float epsilon = 5;
+	GFC_Rect self_rect, self_rect_y, other_rect, other_rect_y;
+
+	gfc_rect_set(self_rect, self_box.x - (epsilon/2), self_box.y - (epsilon/2), self_box.w + epsilon, self_box.h + epsilon);
+	gfc_rect_set(self_rect_y, self_box.x, self_box.y, self_box.w, self_box.h);
+
+	gfc_rect_set(other_rect, other_box.x, other_box.y, other_box.w, other_box.h);
+	gfc_rect_set(self_rect_y, other_box.x, other_box.y, other_box.w, other_box.h);
+
+	if (gfc_rect_overlap(self_rect, other_rect))
+	{
+		if (self_rect.y < other_rect.y + other_rect.h && self_rect.y > other_rect.y) return 0; // ceiling
+		if (self_rect.y + self_rect.h > other_rect.y && self_rect.y + self_rect.h < other_rect.y + other_rect.h) return 1; // floor
+	}
+	return 2; // falling
+}

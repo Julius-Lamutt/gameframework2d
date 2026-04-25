@@ -23,6 +23,7 @@ typedef struct
 {
 	Uint32 contact_type;
 	Uint8 made_contact;
+	Uint8 proj_kill;
 	float distance;
 } ProjectileData;
 
@@ -214,6 +215,7 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 	{
 		self->data = data;
 		data->made_contact = 0;
+		data->proj_kill = 0;
 		data->distance = 0;
 	}
 	return self;
@@ -248,11 +250,11 @@ void projectile_update(Entity *self)
 	// update physics
 	self->position = self->newPosition;
 
-	// destroy projectile if range is exceeded
-	if (data->distance >= self->range) entity_free(self);
-
 	// update objective #2
 	if (destroy_rope && destroy_stalagmite) objective_complete(win, 2);
+
+	// destroy projectile if certain conditions are met
+	if (data->distance >= self->range || data->proj_kill) entity_free(self);
 }
 
 void projectile_free(Entity *self)
@@ -284,7 +286,7 @@ void projectile_get_touch_updates(Entity *self)
 		if (!other) continue;
 		if (other->layer == EL_WORLD)
 		{
-			continue;
+			data->proj_kill = 1;
 		}
 	}
 }
