@@ -49,4 +49,11 @@ void world_draw(World *world);
 */
 void world_setup_camera(World *world);
 
+/**
+* @brief get the dimensions for the world
+* @param world: the world to get the dimensions of
+* @return the dimensions of the world as a rect
+*/
+GFC_Rect world_get_dimensions(World *world);
+
 #endif

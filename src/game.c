@@ -5,6 +5,7 @@
 #include "gfc_input.h"
 #include "items.h"
 #include "font.h"
+#include "shadow_map.h"
 #include "physics.h"
 #include "windows.h"
 #include "camera.h"
@@ -39,7 +40,7 @@ void game_update();
 void game_render();
 
 // game flags
-const Bool f_collision_draw = true; // for collision debugging
+const Bool f_collision_draw = false; // for collision debugging
 
 // game variables
 static Uint8 done = 0;                      // closes the window
@@ -51,6 +52,7 @@ static Sprite *mouse;                       // sprite for custom mouse
 static GFC_Color mouse_color;               // color for custom mouse
 
 static World *world;                        // current world
+static ShadowMap *shadow_map;               // current shadow map
 
 static Window *win, *obj;                   // windows
 
@@ -82,6 +84,7 @@ int main(int argc, char *argv[])
     world = world_load("defs/maps/testworld.json");
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
+    shadow_map = shadow_map_new(world_get_dimensions(world));
 
     //stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
     //rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
@@ -150,13 +153,16 @@ void game_render()
     gf2d_graphics_clear_screen(); // clears drawing buffers
     // all drawing should happen betweem clear_screen and next_frame
 
-    //backgrounds drawn first
+    // backgrounds drawn first
     if (game) world_draw(world);
 
-    //entities drawn next
+    // entities drawn next
     if (game) entity_system_draw();
 
-    //UI elements last
+    // shadow map next
+    if (game) shadow_map_draw(shadow_map);
+
+    // UI elements last
     window_system_draw();
 
     gf2d_sprite_draw(

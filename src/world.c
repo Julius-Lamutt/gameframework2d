@@ -26,6 +26,13 @@ void world_build_tile_layer(World *world);
 void world_build_physics_layer(World *world);
 
 /*
+* @brief build the shadow layer for the world
+* @param world: the world to build shadow layer on
+* @param sjson: the json array of shadows to load
+*/
+void world_build_shadow_layer(World *world, SJson *sjson);
+
+/*
 * @brief load pre-cached entities for the world
 * @param world: the world to load the entities in
 * @param ejson: the json array of entities to load
@@ -131,6 +138,11 @@ void world_build_physics_layer(World *world)
 	}
 }
 
+void world_build_shadow_layer(World *world, SJson *sjson)
+{
+	return;
+}
+
 void world_entity_load(World *world, SJson *ejson)
 {
 	int i, c;
@@ -198,7 +210,7 @@ World *world_load(const char *filename)
 	int i, j, tile, frame_w, frame_h, frames_per_line, w = 0, h = 0;
 	const char *background, *tileSet;
 	World *world = NULL;
-	SJson *json, *wjson, *ejson, *vertical, *horizontal, *item;
+	SJson *json, *wjson, *sjson, *ejson, *vertical, *horizontal, *item;
 
 	if (!filename)
 	{
@@ -222,6 +234,13 @@ World *world_load(const char *filename)
 	if (!vertical)
 	{
 		slog("%s missing tileMap object", filename);
+		sj_free(json);
+		return NULL;
+	}
+	sjson = sj_object_get_value(wjson, "shadowMap");
+	if (!sjson)
+	{
+		slog("%s missing shadowMap object", filename);
 		sj_free(json);
 		return NULL;
 	}
@@ -272,6 +291,7 @@ World *world_load(const char *filename)
 	);
 
 	world_build_tile_layer(world);
+	world_build_shadow_layer(world, sjson);
 	world_entity_load(world, ejson);
 	sj_free(json);
 	return world;
@@ -349,4 +369,13 @@ void world_setup_camera(World *world)
 	camera_set_bounds(gfc_rect(0, 0, world->tileLayer->surface->w, world->tileLayer->surface->h));
 	camera_apply_bounds();
 	camera_enable_binding(true);
+}
+
+GFC_Rect world_get_dimensions(World *world)
+{
+	GFC_Vector2D offset;
+
+	if (!world) return;
+	offset = camera_get_offset();
+	return gfc_rect(offset.x, offset.y, world->tileLayer->frame_w, world->tileLayer->frame_h);
 }

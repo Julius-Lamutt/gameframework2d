@@ -159,7 +159,7 @@ Entity *world_object_load(const char *obj_name)
 		slog("one or more sprite parameters are invalid for world object entity");
 		return NULL;
 	}
-	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
+	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 
 	if (!sj_object_get_value_as_float(ojson, "fall_speed", &fall_speed))
 	{

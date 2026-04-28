@@ -23,6 +23,11 @@ GFC_Vector2D camera_get_position()
 	return _camera.position;
 }
 
+GFC_Rect camera_get_rect()
+{
+	return gfc_rect(_camera.position.x, _camera.position.y, _camera.size.x, _camera.size.y);
+}
+
 void camera_set_position(GFC_Vector2D position)
 {
 	gfc_vector2d_copy(_camera.position, position);

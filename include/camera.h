@@ -16,6 +16,12 @@ GFC_Vector2D camera_get_offset();
 GFC_Vector2D camera_get_position();
 
 /*
+* @brief get an rectangle that represents the camera's vision
+* @return a rectangle
+*/
+GFC_Rect camera_get_rect();
+
+/*
 * @brief move camera to the given position
 * @param position: where to move the camera
 */
