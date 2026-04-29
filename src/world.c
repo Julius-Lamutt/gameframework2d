@@ -26,11 +26,11 @@ void world_build_tile_layer(World *world);
 void world_build_physics_layer(World *world);
 
 /*
-* @brief build the shadow layer for the world
-* @param world: the world to build shadow layer on
-* @param sjson: the json array of shadows to load
+* @brief create the shadow mask for the world
+* @param world: the world to create shadow mask for
+* @param sjson: the json array of lights to load
 */
-void world_build_shadow_layer(World *world, SJson *sjson);
+void world_create_shadow_mask(World *world, SJson *ljson);
 
 /*
 * @brief load pre-cached entities for the world
@@ -138,9 +138,41 @@ void world_build_physics_layer(World *world)
 	}
 }
 
-void world_build_shadow_layer(World *world, SJson *sjson)
+void world_create_shadow_mask(World *world, SJson *sjson)
 {
-	return;
+	int i, j;
+	SJson *row, *col;
+	GFC_List *lights;
+	GFC_Vector2D pos;
+	float r1, r2;
+
+	if (!world) return;
+	
+	lights = gfc_list_new();
+	if (!lights)
+	{
+		world->shadowMap = NULL;
+		slog("failed to allocate gfc list for shadow map");
+		return;
+	}
+
+	for (j = 0; j < world->tileHeight; j++)
+	{
+		row = sj_array_get_nth(sjson, j);
+		if (!row) continue;
+		for (i = 0; i < world->tileWidth; i++)
+		{
+			r2 = r1 = 0;
+			col = sj_array_get_nth(row, i);
+			if (!col) continue;
+			pos = gfc_vector2d(i * world->tileSet->frame_w, j * world->tileSet->frame_h);
+			sj_get_float_value(col, &r1);
+			r2 = r1;
+			if (r1 > 0 && r2 > 0) gfc_list_append(lights, light_new(pos, r1, r2));
+		}
+	}
+	world->shadowMap = shadow_map_new(world->tileWidth, world->tileHeight, world->tileSet->frame_w, lights);
+	if (!world->shadowMap) slog("failed to create shadow map for world");
 }
 
 void world_entity_load(World *world, SJson *ejson)
@@ -291,7 +323,7 @@ World *world_load(const char *filename)
 	);
 
 	world_build_tile_layer(world);
-	world_build_shadow_layer(world, sjson);
+	world_create_shadow_mask(world, sjson);
 	world_entity_load(world, ejson);
 	sj_free(json);
 	return world;
@@ -323,6 +355,7 @@ World *world_new(Uint32 width, Uint32 height)
 void world_free(World *world)
 {
 	if (!world) return;
+	if (world->shadowMap) shadow_map_free(world->shadowMap);
 	gf2d_sprite_free(world->background);
 	gf2d_sprite_free(world->tileSet);
 	gf2d_sprite_free(world->tileLayer);
@@ -369,13 +402,4 @@ void world_setup_camera(World *world)
 	camera_set_bounds(gfc_rect(0, 0, world->tileLayer->surface->w, world->tileLayer->surface->h));
 	camera_apply_bounds();
 	camera_enable_binding(true);
-}
-
-GFC_Rect world_get_dimensions(World *world)
-{
-	GFC_Vector2D offset;
-
-	if (!world) return;
-	offset = camera_get_offset();
-	return gfc_rect(offset.x, offset.y, world->tileLayer->frame_w, world->tileLayer->frame_h);
 }

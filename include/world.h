@@ -3,6 +3,7 @@
 
 #include "gfc_shape.h"
 #include "gf2d_sprite.h"
+#include "shadow_map.h"
 
 typedef struct
 {
@@ -14,6 +15,7 @@ typedef struct
 	Uint32		tileHeight;		/* how many tiles tall the map is */
 	Uint32      tileCount;		/* number of tiles for physics layer */
 	GFC_Rect	*physicsLayer;	/* bounding boxes for collision testing on world */
+	ShadowMap	*shadowMap;		/* shadow mask for the world */
 } World;
 
 /**
@@ -48,12 +50,5 @@ void world_draw(World *world);
 * @param world: the world set up the camera in
 */
 void world_setup_camera(World *world);
-
-/**
-* @brief get the dimensions for the world
-* @param world: the world to get the dimensions of
-* @return the dimensions of the world as a rect
-*/
-GFC_Rect world_get_dimensions(World *world);
 
 #endif

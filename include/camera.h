@@ -16,8 +16,8 @@ GFC_Vector2D camera_get_offset();
 GFC_Vector2D camera_get_position();
 
 /*
-* @brief get an rectangle that represents the camera's vision
-* @return a rectangle
+* @brief get a rectangle representing the camera's vision
+* @return a gfc_rect of the camera's vision
 */
 GFC_Rect camera_get_rect();
 
