@@ -53,8 +53,6 @@ static GFC_Color mouse_color;               // color for custom mouse
 
 static World *world;                        // current world
 
-static Light *light = NULL;                 // light shenanigans
-
 static Window *win, *obj;                   // windows
 
 int main(int argc, char *argv[])
@@ -105,22 +103,6 @@ int main(int argc, char *argv[])
             {
                 if (obj->hidden) obj->hidden = 0;
                 else obj->hidden = 1;
-            }
-            if (gfc_input_key_pressed("j"))
-            {
-                if (!light)
-                {
-                    light = light_new(gfc_vector2d(500, 1300), 12, 12);
-                    shadow_map_add_light(world->shadowMap, light);
-                }
-            }
-            if (gfc_input_key_pressed("k"))
-            {
-                if (light)
-                {
-                    shadow_map_remove_light(world->shadowMap, light);
-                    light = NULL;
-                }
             }
             if (gfc_input_key_pressed("BACKSPACE"))
             {

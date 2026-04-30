@@ -1,9 +1,8 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
+#include "shadow_map.h"
 #include "physics.h"
 #include "world_object.h"
-
-extern const float gravity;
 
 typedef enum
 {
@@ -18,6 +17,7 @@ typedef enum
 	WOUT_SPAWN,
 	WOUT_MOVE,
 	WOUT_FADE,
+	WOUT_LIGHT,
 	WOUT_DELETE
 } WorldObjectUpdateType;
 
@@ -29,6 +29,7 @@ typedef struct
 
 typedef struct
 {
+	World		*world;
 	Uint8		is_static;
 	Uint8		triggered;
 	Uint32		trigger_type;
@@ -261,6 +262,7 @@ Entity *world_object_load(const char *obj_name)
 		if (gfc_strlcmp(type, "spawn") == 0) update_type = WOUT_SPAWN;
 		else if (gfc_strlcmp(type, "move") == 0) update_type = WOUT_MOVE;
 		else if (gfc_strlcmp(type, "fade") == 0) update_type = WOUT_FADE;
+		else if (gfc_strlcmp(type, "light") == 0) update_type = WOUT_LIGHT;
 		else if (gfc_strlcmp(type, "delete") == 0) update_type = WOUT_DELETE;
 		else
 		{
@@ -308,7 +310,7 @@ Entity *world_object_load(const char *obj_name)
 	return self;
 }
 
-Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
+Entity *world_object_new(World *world, GFC_Vector2D position, const char *obj_name)
 {
 	Entity* self;
 	WorldObjectData* data;
@@ -325,14 +327,13 @@ Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
 
 	self->position = position;
 	self->newPosition = self->position;
-	if (data->is_static) self->acceleration = gfc_vector2d(0, 0);
-	else self->acceleration = gfc_vector2d(0, gravity);
 
 	self->think = world_object_think;
 	self->update = world_object_update;
 	self->free = world_object_free;
 
 	// world object data
+	data->world = world;
 	data->triggered = 0;
 	data->linked_ent = NULL;
 	data->linked_ent2 = NULL;
@@ -340,17 +341,28 @@ Entity *world_object_new(GFC_Vector2D position, const char *obj_name)
 	// special data for rope
 	if (gfc_strlcmp(self->name, "object_rope") == 0)
 	{
-		data->linked_ent = world_object_new(gfc_vector2d(self->position.x, self->position.y + 60), "object_light");
+		data->linked_ent = world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y + 60), "object_light");
 	}
 	// special data for elevator
 	else if (gfc_strlcmp(self->name, "object_elevator") == 0)
 	{
 		self->fade = 1;
 		data->moving = 0;
-		data->move_speed = -1;
+		data->move_speed = -2.5;
 		data->move_time = 0;
-		data->linked_ent = world_object_new(gfc_vector2d(self->position.x, self->position.y - 64), "object_elevator_floor");
-		data->linked_ent2 = world_object_new(gfc_vector2d(self->position.x, self->position.y + 64), "object_elevator_floor");
+		data->linked_ent = world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y - 64), "object_elevator_floor");
+		data->linked_ent2 = world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y + 64), "object_elevator_floor");
+	}
+	// special data for light
+	else if (gfc_strlcmp(self->name, "object_lamp") == 0)
+	{
+		self->layer = EL_NONE;
+		data->linked_ent = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
+		if (world)
+		{
+			shadow_map_add_light(world->shadowMap, data->linked_ent);
+		}
+		else slog("missing world for light world object creation");
 	}
 	return self;
 }
@@ -384,7 +396,7 @@ void world_object_think(Entity *self)
 		data->linked_ent2->velocity = gfc_vector2d(0, data->move_speed);
 		gfc_vector2d_add(data->linked_ent2->newPosition, data->linked_ent2->newPosition, data->linked_ent2->velocity);
 
-		if (SDL_GetTicks() - data->move_time > 5000)
+		if (SDL_GetTicks() - data->move_time > 3000)
 		{
 			data->moving = 0;
 			data->move_speed *= -1;
@@ -420,9 +432,9 @@ void world_object_update(Entity *self)
 				case WOUT_SPAWN:
 					if (gfc_strlcmp(self->name, "object_rope") == 0)
 					{
-						world_object_new(gfc_vector2d(self->position.x, self->position.y + 60), update->object);
+						world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y + 60), update->object);
 					}
-					else world_object_new(self->position, update->object);
+					else world_object_new(data->world, self->position, update->object);
 					break;
 
 				case WOUT_MOVE:
@@ -432,6 +444,27 @@ void world_object_update(Entity *self)
 
 				case WOUT_FADE:
 					self->fade = 1;
+					break;
+
+				case WOUT_LIGHT:
+					if (!data->linked_ent)
+					{
+						data->linked_ent = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
+						if (data->world)
+						{
+							shadow_map_add_light(data->world->shadowMap, data->linked_ent);
+						}
+						else slog("missing world for light world object creation");
+					}
+					else
+					{
+						if (data->world)
+						{
+							shadow_map_remove_light(data->world->shadowMap, data->linked_ent);
+						}
+						else slog("missing world for light world object creation");
+						data->linked_ent = NULL;
+					}
 					break;
 
 				case WOUT_DELETE:
@@ -483,7 +516,7 @@ void world_object_get_touch_updates(Entity *self)
 		if (other->layer == EL_PLAYER)
 		{
 			if (data->trigger_type == WOTT_PLAYER) data->triggered = 1;
-			if (data->trigger_type == WOTT_INPUT)
+			if (data->trigger_type == WOTT_INPUT && !data->moving)
 			{
 				if (gfc_input_key_pressed("e")) data->triggered = 1;
 			}

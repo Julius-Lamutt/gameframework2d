@@ -457,6 +457,7 @@ void player_get_touch_updates(Entity *self)
 		{
 			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
+			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
 			else
 			{
 				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);

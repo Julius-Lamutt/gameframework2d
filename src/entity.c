@@ -215,6 +215,14 @@ void entity_draw(Entity *self)
 void entity_system_draw()
 {
 	int i, j;
+
+	for (i = 0; i < _entity_manager.entity_max; i++)
+	{
+		if (!_entity_manager.entity_list[i]._inuse) continue;
+		if (_entity_manager.entity_list[i].layer != 0) continue;
+		entity_draw(&_entity_manager.entity_list[i]);
+	}
+
 	for (j = 1; j < EL_ALL; j *= 2)
 	{
 		for (i = 0; i < _entity_manager.entity_max; i++)
