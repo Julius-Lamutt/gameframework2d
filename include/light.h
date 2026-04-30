@@ -4,6 +4,7 @@
 #include <SDL.h>
 #include "gfc_vector.h"
 
+/* NOTE: default radius is 64 pixels, use fractional radii for smaller light sources */
 typedef struct
 {
 	GFC_Vector2D	pos;	// where to place the light

@@ -53,6 +53,8 @@ static GFC_Color mouse_color;               // color for custom mouse
 
 static World *world;                        // current world
 
+static Light *light = NULL;                 // light shenanigans
+
 static Window *win, *obj;                   // windows
 
 int main(int argc, char *argv[])
@@ -83,10 +85,6 @@ int main(int argc, char *argv[])
     world = world_load("defs/maps/testworld.json");
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
-
-    //stalagmite = interactable_new(gfc_vector2d(1500, 1057), "good_stalagmite", "images/stalagmite.png", 32, 64);
-    //rope = interactable_new(gfc_vector2d(1900, 1056), "rope", "images/rope.png", 8, 64);
-    //grass = interactable_new(gfc_vector2d(3000, 1358), "grass", "images/grass.png", 128, 96);
     win = main_menu();
     obj = objectives_menu();
     obj->hidden = 1;
@@ -108,9 +106,26 @@ int main(int argc, char *argv[])
                 if (obj->hidden) obj->hidden = 0;
                 else obj->hidden = 1;
             }
+            if (gfc_input_key_pressed("j"))
+            {
+                if (!light)
+                {
+                    light = light_new(gfc_vector2d(500, 1300), 12, 12);
+                    shadow_map_add_light(world->shadowMap, light);
+                }
+            }
+            if (gfc_input_key_pressed("k"))
+            {
+                if (light)
+                {
+                    shadow_map_remove_light(world->shadowMap, light);
+                    light = NULL;
+                }
+            }
             if (gfc_input_key_pressed("BACKSPACE"))
             {
                 world_free(world);
+                world = NULL;
                 entity_system_clear(NULL);
                 game_pause();
                 win = main_menu();

@@ -8,8 +8,11 @@
 
 typedef struct
 {
-	SDL_Texture	*shadow_mask;
-	Light		*lights;
+	SDL_Texture	*shadow_mask;	/* texture to be modulated onto render for shadowing */
+	Light		*lights;		/* data for creating light in the shadow map */
+	Uint16		world_w;		/* width in tiles of the world the shadow map is for */
+	Uint16		world_h;		/* height in tiles of the world the shadow map is for */
+	float		tile_size;		/* the width/height of each tile */
 } ShadowMap;
 
 /*
@@ -20,6 +23,20 @@ typedef struct
 * @return NULL on error, a shadow map otherwise
 */
 ShadowMap *shadow_map_new(Uint16 world_w, Uint16 world_h, float tile_size, Light *lights);
+
+/*
+* @brief add a light to the shadow map
+* @param shadow_map: the shadow map to add the light to
+* @param light: the light to add
+*/
+void shadow_map_add_light(ShadowMap *shadow_map, Light *light);
+
+/*
+* @brief remove a light from the shadow map
+* @param shadow_map: the shadow map to remove the light from
+* @param light: the light to remove
+*/
+void shadow_map_remove_light(ShadowMap *shadow_map, Light *light);
 
 /*
 * @brief draw the shadow map
