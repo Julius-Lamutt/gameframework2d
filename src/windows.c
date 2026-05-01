@@ -106,8 +106,22 @@ void window_free(Window *win)
 
 void window_update(Window* win)
 {
+	int i, c;
+	GFC_List *updates;
+	Element *element;
+
 	if (!win) return;
-	if (win->update) win->update(win, win->elements);
+
+	updates = gfc_list_new();
+	c = gfc_list_get_count(win->elements);
+	for (i = 0; i < c; i++)
+	{
+		element = gfc_list_get_nth(win->elements, i);
+		if (!element) continue;
+		if (element->updated == 1) gfc_list_append(updates, element);
+	}
+	if (win->update) win->update(win, updates);
+	gfc_list_delete(updates);
 }
 
 void window_system_update()
@@ -154,7 +168,6 @@ void window_draw(Window* win)
 		0);
 		
 	if (win->draw) win->draw(win);
-
 	element_list_draw(win->elements);
 }
 

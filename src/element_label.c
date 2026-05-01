@@ -81,15 +81,15 @@ LabelElement *element_label_load(SJson *windel)
 	return label;
 }
 
-void element_label_free(LabelElement *label)
-{
-	if (!label) return;
-	free(label);
-}
-
 void element_label_draw(LabelElement *label, GFC_Rect bounds)
 {
 	if (!label) return;
 	if (label->wrap) font_draw_text(label->text, label->style, label->color, gfc_vector2d(bounds.x, bounds.y), bounds.w);
 	else font_draw_text(label->text, label->style, label->color, gfc_vector2d(bounds.x, bounds.y), 0);
+}
+
+void element_label_free(LabelElement *label)
+{
+	if (!label) return;
+	free(label);
 }

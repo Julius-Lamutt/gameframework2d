@@ -7,9 +7,9 @@
 typedef struct
 {
 	GFC_TextBlock	text;	/* the text for the label */
-	FontStyles		style;  /* the style for the label */
+	Uint32			style;  /* the style for the label */
 	GFC_Color		color;	/* the color for the label */
-	int				wrap;	/* if true wrap at element width */
+	Uint8			wrap;	/* if true wrap at element width */
 } LabelElement;
 
 /*
@@ -20,16 +20,16 @@ typedef struct
 LabelElement *element_label_load(SJson *windel);
 
 /*
-* @brief free a label element from memory
-* @param label: the label element to be freed
-*/
-void element_label_free(LabelElement *label);
-
-/*
-* @brief draws a label element
+* @brief draw a label element
 * @param label: the label element to draw
 * @param bounds: the bounds for the label element
 */
 void element_label_draw(LabelElement *label, GFC_Rect bounds);
+
+/*
+* @brief free a label element from memory
+* @param label: the label element to be freed
+*/
+void element_label_free(LabelElement *label);
 
 #endif

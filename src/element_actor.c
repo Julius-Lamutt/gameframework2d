@@ -70,13 +70,6 @@ ActorElement *element_actor_load(SJson *windel)
 	return actor;
 }
 
-void element_actor_free(ActorElement *actor)
-{
-	if (!actor) return;
-	gf2d_sprite_free(actor->image);
-	free(actor);
-}
-
 void element_actor_draw(ActorElement *actor, GFC_Rect bounds)
 {
 	GFC_Vector2D position, scale;
@@ -95,4 +88,11 @@ void element_actor_draw(ActorElement *actor, GFC_Rect bounds)
 		NULL,
 		&color_shift,
 		0);
+}
+
+void element_actor_free(ActorElement *actor)
+{
+	if (!actor) return;
+	gf2d_sprite_free(actor->image);
+	free(actor);
 }

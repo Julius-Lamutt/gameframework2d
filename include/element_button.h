@@ -29,16 +29,16 @@ typedef struct
 ButtonElement *element_button_load(SJson *windel);
 
 /*
-* @brief free a button element from memory
-* @param label: the button element to be freed
-*/
-void element_button_free(ButtonElement *button);
-
-/*
 * @brief draws a button element
 * @param button: the button element to draw
 * @param element: a pointer to basic element data
 */
 void element_button_draw(ButtonElement *button, Element *element);
+
+/*
+* @brief free a button element from memory
+* @param label: the button element to be freed
+*/
+void element_button_free(ButtonElement *button);
 
 #endif

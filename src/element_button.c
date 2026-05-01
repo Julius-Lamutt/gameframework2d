@@ -104,14 +104,6 @@ ButtonElement *element_button_load(SJson *windel)
 	return button;
 }
 
-void element_button_free(ButtonElement *button)
-{
-	if (!button) return;
-	if (button->label) element_label_free(button->label);
-	if (button->actor) element_actor_free(button->actor);
-	free(button);
-}
-
 void element_button_draw(ButtonElement *button, Element *element)
 {
 	GFC_Rect text_bounds;
@@ -130,4 +122,12 @@ void element_button_draw(ButtonElement *button, Element *element)
 		text_bounds.h = element->bounds.h;
 		element_label_draw(button->label, text_bounds);
 	}
+}
+
+void element_button_free(ButtonElement *button)
+{
+	if (!button) return;
+	if (button->label) element_label_free(button->label);
+	if (button->actor) element_actor_free(button->actor);
+	free(button);
 }

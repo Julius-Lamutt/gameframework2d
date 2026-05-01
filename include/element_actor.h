@@ -18,16 +18,16 @@ typedef struct
 ActorElement *element_actor_load(SJson *windel);
 
 /*
-* @brief free an actor element from memory
-* @param label: the actor element to be freed
-*/
-void element_actor_free(ActorElement *actor);
-
-/*
 * @brief draws an actor element
 * @param actor: the actor element to draw
 * @param bounds: the bounds for the actor element
 */
 void element_actor_draw(ActorElement *actor, GFC_Rect bounds);
+
+/*
+* @brief free an actor element from memory
+* @param label: the actor element to be freed
+*/
+void element_actor_free(ActorElement *actor);
 
 #endif

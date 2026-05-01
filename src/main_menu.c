@@ -34,23 +34,22 @@ int main_menu_draw(Window *win);
 */
 int main_menu_free(Window *win);
 
-int main_menu_update(Window *win, GFC_List *update_elements)
+int main_menu_update(Window *win, GFC_List *updates)
 {
 	Element *element;
 	MainMenuData *data;
 	int i, c, mx, my;
 
 	if (!win) return 0;
-	if (!update_elements) return 0;
+	if (!updates) return 0;
 	data = (MainMenuData*)win->data;
 	if (!data) return 0;
 	SDL_GetMouseState(&mx, &my);
-	c = gfc_list_get_count(update_elements);
+	c = gfc_list_get_count(updates);
 	for (i = 0; i < c; i++)
 	{
-		element = gfc_list_get_nth(update_elements, i);
+		element = gfc_list_get_nth(updates, i);
 		if (!element) continue;
-		if (element->index == -1) continue;
 		if (gfc_strlcmp(element->name, "button_start_demo") == 0)
 		{
 			if (element->state == ES_ACTIVE)

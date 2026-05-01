@@ -48,23 +48,22 @@ void objective_complete(Window *win, int objective)
 	if (objective == 3) data->diamond_stolen = 1;
 }
 
-int objectives_menu_update(Window *win, GFC_List *update_elements)
+int objectives_menu_update(Window *win, GFC_List *elements)
 {
 	Element *element;
 	ObjectivesMenuData *data;
 	int i, c, mx, my;
 
 	if (!win) return 0;
-	if (!update_elements) return 0;
+	if (!elements) return 0;
 	data = (ObjectivesMenuData*)win->data;
 	if (!data) return 0;
 	SDL_GetMouseState(&mx, &my);
-	c = gfc_list_get_count(update_elements);
+	c = gfc_list_get_count(elements);
 	for (i = 0; i < c; i++)
 	{
-		element = gfc_list_get_nth(update_elements, i);
+		element = gfc_list_get_nth(elements, i);
 		if (!element) continue;
-		if (element->index == -1) continue;
 		if (gfc_strlcmp(element->name, "label_objective_1") == 0)
 		{
 			if (data->item_pickup) element_update_label(element, "Completed!!");

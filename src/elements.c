@@ -9,24 +9,24 @@
 * @param element: the window element to load
 * @return NULL on error, a pointer to an element otherwise
 */
-Element *element_load(SJson *windel);
-
-/*
-* @brief free an element from memory
-* @param element: the element to be freed
-*/
-void element_free(Element *element);
+static Element *element_load(SJson *windel);
 
 /*
 * @brief draw an element
 * @param element: the element to draw
 */
-void element_draw(Element *element);
+static void element_draw(Element *element);
 
-Element *element_load(SJson *windel)
+/*
+* @brief free an element from memory
+* @param element: the element to be freed
+*/
+static void element_free(Element *element);
+
+static Element *element_load(SJson *windel)
 {
 	const char *name, *type_name;
-	int index, type, can_focus;
+	int type, can_focus;
 	GFC_Vector4D bound_dims;
 	GFC_Rect bounds;
 	GFC_Color color;
@@ -53,13 +53,6 @@ Element *element_load(SJson *windel)
 		return NULL;
 	}
 
-	if (!sj_object_get_value_as_int(windel, "index", &index))
-	{
-		free(element);
-		slog("failed to find index object for window element '%s'", name);
-		return NULL;
-	}
-
 	type_name = sj_object_get_value_as_string(windel, "type");
 	if (!type_name)
 	{
@@ -71,7 +64,6 @@ Element *element_load(SJson *windel)
 	else if (gfc_strlcmp(type_name, "actor") == 0) type = ET_ACTOR;
 	else if (gfc_strlcmp(type_name, "button") == 0) type = ET_BUTTON;
 	else if (gfc_strlcmp(type_name, "entry") == 0) type = ET_ENTRY;
-	else if (gfc_strlcmp(type_name, "list") == 0) type = ET_LIST;
 	else
 	{
 		free(element);
@@ -135,9 +127,9 @@ Element *element_load(SJson *windel)
 	color.ct = CT_RGBA8;
 
 	gfc_line_cpy(element->name, name);
-	element->index = index;
 	element->type = type;
 	element->state = ES_IDLE;
+	element->updated = 1;
 	element->can_focus = can_focus;
 	element->has_focus = 0;
 	element->bounds = bounds;
@@ -156,10 +148,7 @@ Element *element_load(SJson *windel)
 			break;
 		case ET_ENTRY:
 			break;
-		case ET_LIST:
-			break;
 	}
-
 	return element;
 }
 
@@ -193,38 +182,74 @@ GFC_List *element_list_load(SJson *element_list, Window *win)
 			continue;
 			return NULL;
 		}
-		element->win = win;
 		gfc_list_append(elements, element);
 	}
 	return elements;
 }
 
-void element_free(Element *element)
+static void element_draw(Element *element)
 {
 	int type;
-	void *data;
-	
-	if (!element || !element->data) return;
+
+	if (!element) return;
 	type = element->type;
 
 	switch (type)
 	{
 		case ET_LABEL:
-			data = (LabelElement*) element->data;
-			element_label_free(data);
+			element_label_draw(element->data, element->bounds);
 			break;
 		case ET_ACTOR:
-			data = (ActorElement*) element->data;
-			element_actor_free(data);
+			element_actor_draw(element->data, element->bounds);
 			break;
 		case ET_BUTTON:
-			data = (ButtonElement*) element->data;
-			element_button_free(data);
+			element_button_draw(element->data, element);
 			break;
 		case ET_ENTRY:
 			break;
-		case ET_LIST:
-			break;
+	}
+}
+
+void element_list_draw(GFC_List *element_list)
+{
+	int i, c;
+	Element *element;
+
+	if (!element_list) return;
+	c = gfc_list_get_count(element_list);
+	for (i = 0; i < c; i++)
+	{
+		element = gfc_list_get_nth(element_list, i);
+		if (!element) continue;
+		if (element->state == ES_HIDDEN) continue;
+		element_draw(element);
+	}
+}
+
+static void element_free(Element *element)
+{
+	int type;
+	void *data;
+
+	if (!element || !element->data) return;
+	type = element->type;
+
+	switch (type)
+	{
+	case ET_LABEL:
+		data = (LabelElement*) element->data;
+		element_label_free(data);
+		break;
+	case ET_ACTOR:
+		data = (ActorElement*) element->data;
+		element_actor_free(data);
+		break;
+	case ET_BUTTON:
+		data = (ButtonElement*) element->data;
+		element_button_free(data);
+		break;
+	case ET_ENTRY:
+		break;
 	}
 	free(element);
 }
@@ -245,44 +270,19 @@ void element_list_free(GFC_List *element_list)
 	gfc_list_delete(element_list);
 }
 
-void element_draw(Element* element)
+void element_update_state(Element *element)
 {
-	int type;
+	void *data;
 
 	if (!element) return;
-	type = element->type;
 
-	switch (type)
+	if (element->type == ET_BUTTON)
 	{
-		case ET_LABEL:
-			element_label_draw(element->data, element->bounds);
-			break;
-		case ET_ACTOR:
-			element_actor_draw(element->data, element->bounds);
-			break;
-		case ET_BUTTON:
-			element_button_draw(element->data, element);
-			break;
-		case ET_ENTRY:
-			break;
-		case ET_LIST:
-			break;
+		
 	}
-}
-
-void element_list_draw(GFC_List *element_list)
-{
-	int i, c;
-	Element *element;
-
-	if (!element_list) return;
-	c = gfc_list_get_count(element_list);
-	for (i = 0; i < c; i++)
+	else if (element->type == ET_ENTRY)
 	{
-		element = gfc_list_get_nth(element_list, i);
-		if (!element) continue;
-		if (element->state == ES_HIDDEN) continue;
-		element_draw(element);
+		return;
 	}
 }
 

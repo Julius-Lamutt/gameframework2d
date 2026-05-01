@@ -19,32 +19,24 @@ typedef enum
 
 typedef enum
 {
-	EUR_NONE,		/* updated */
-	EUR_UPDATED		/* not updated */
-} ElementUpdatedReturn;
-
-typedef enum
-{
 	ET_LABEL,	/* text blocks */
 	ET_ACTOR,	/* sprites/animations */
 	ET_BUTTON,	/* triggers an action on click */
-	ET_ENTRY,	/* allows user keyboard inputs */
-	ET_LIST,	/* a list of elements */
+	ET_ENTRY	/* allows user keyboard inputs */
 } ElementTypes;
 
 typedef struct Element_S
 {
 	GFC_TextLine	name;		/* name of element, should be unique */
-	int				index;		/* order of highlights, -1 to disable highlights */
-	int				type;		/* element type e.g. label, actor */
-	int				state;		/* element state e.g. disable, highlight */
-	int				can_focus;	/* true if element can be the focus of keyboard input */
-	int				has_focus;	/* true if element has the focus of keyboard input */
+	Uint32			type;		/* element type e.g. label, actor */
+	Uint32			state;		/* element state e.g. disable, highlight */
+	Uint8			updated;	/* if true then element will be acted on by parent window */
+	Uint8			can_focus;	/* true if element can be the focus of keyboard input */
+	Uint8			has_focus;	/* true if element has the focus of keyboard input */
 	GFC_Rect		bounds;		/* drawing bounds for element */
 	GFC_Color		color;		/* color for the element */
-	Window			*win;		/* parent window */
 
-	void *data;
+	void *data; // used for specific element data determined by type
 } Element;
 
 /*
@@ -56,22 +48,28 @@ typedef struct Element_S
 GFC_List *element_list_load(SJson *element_list, Window *win);
 
 /*
-* @brief free a list of elements from memory
-* @param element_list: the list of elements to be freed
-*/
-void element_list_free(GFC_List *element_list);
-
-/*
 * @brief draw elements from a list
 * @param element_list: the list of elements to draw
 */
 void element_list_draw(GFC_List *element_list);
 
 /*
+* @brief free a list of elements from memory
+* @param element_list: the list of elements to be freed
+*/
+void element_list_free(GFC_List *element_list);
+
+/*
+* @brief update an element state based on its type
+* @param element: the element to update the state for
+*/
+void element_update_state(Element *element);
+
+/*
 * @brief update the text for a label
 * @param element: the element to update
 * @param text: the new text for the label
 */
-void element_update_label(Element *element, const char* text);
+void element_update_label(Element *element, const char *text);
 
 #endif
