@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
+    world_save();
     world = world_load("defs/maps/testworld.json");
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);

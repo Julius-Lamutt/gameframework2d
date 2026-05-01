@@ -329,6 +329,348 @@ World *world_load(const char *filename)
 	return world;
 }
 
+void world_save() // NOTE: will be used lack-a-daisily rn for testing
+{
+	SJson *json;
+	SJson *wjson;
+	SJson *ejson;
+	SJson *temp;
+	SJson *entity;
+	SJson *outer_array;
+	SJson *inner_array;
+
+	json = sj_object_new();
+	wjson = sj_object_new();
+
+	// world data
+	temp = sj_new_str("images/backgrounds/bg_flat.png");
+	sj_object_insert(wjson, "background", temp);
+	temp = sj_new_str("images/backgrounds/tileset.png");
+	sj_object_insert(wjson, "tileSet", temp);
+	temp = sj_new_int(128);
+	sj_object_insert(wjson, "frame_w", temp);
+	temp = sj_new_int(128);
+	sj_object_insert(wjson, "frame_h", temp);
+	temp = sj_new_int(1);
+	sj_object_insert(wjson, "frames_per_line", temp);
+	temp = sj_new_int(1);
+	sj_object_insert(wjson, "keep_surface", temp);
+
+	// world tilemap data
+	outer_array = sj_array_new();
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	sj_object_insert(wjson, "tileMap", outer_array);
+
+	// world shadow map data
+	outer_array = sj_array_new();
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	inner_array = sj_array_new();
+
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(0);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(1);
+	sj_array_append(inner_array, temp);
+
+	sj_array_append(outer_array, inner_array);
+	sj_object_insert(wjson, "shadowMap", outer_array);
+
+	sj_object_insert(json, "world", wjson);
+
+	// entities
+	outer_array = sj_array_new();
+	entity = sj_object_new();
+
+	temp = sj_new_str("player");
+	sj_object_insert(entity, "name", temp);
+
+	inner_array = sj_array_new();
+	temp = sj_new_int(500);
+	sj_array_append(inner_array, temp);
+	temp = sj_new_int(500);
+	sj_array_append(inner_array, temp);
+	sj_object_insert(entity, "location", inner_array);
+	sj_array_append(outer_array, entity);
+
+	sj_object_insert(json, "entities", outer_array);
+	sj_save(json, "defs/maps/testsave.json");
+	sj_free(json);
+}
+
+void world_create(const char *filename)
+{
+	return;
+}
+
 World *world_new(Uint32 width, Uint32 height)
 {
 	World *world;
