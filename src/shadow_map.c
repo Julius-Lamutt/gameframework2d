@@ -64,7 +64,6 @@ ShadowMap *shadow_map_new(Uint16 world_w, Uint16 world_h, float tile_size, Light
 			surface
 		);
 	}
-
 	shadow_map->shadow_mask = SDL_CreateTextureFromSurface(gf2d_graphics_get_renderer(), surface);
 	SDL_SetTextureBlendMode(shadow_map->shadow_mask, SDL_BLENDMODE_MOD);
 

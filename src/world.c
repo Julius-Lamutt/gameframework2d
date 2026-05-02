@@ -341,7 +341,7 @@ void world_save() // NOTE: will be used lack-a-daisily rn for testing
 
 	json = sj_object_new();
 	wjson = sj_object_new();
-
+	
 	// world data
 	temp = sj_new_str("images/backgrounds/bg_flat.png");
 	sj_object_insert(wjson, "background", temp);
