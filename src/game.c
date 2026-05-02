@@ -53,7 +53,6 @@ static Sprite *mouse;                       // sprite for custom mouse
 static GFC_Color mouse_color;               // color for custom mouse
 
 static World *world;                        // current world
-static Level *level;                        // level test (delete later)
 
 static Window *win, *obj;                   // windows
 
@@ -82,20 +81,6 @@ int main(int argc, char *argv[])
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
-    level = level_new("coolworld", 8, 7);
-    level_add_tile(level, gfc_vector2d(2, 1), 1);
-    level_add_tile(level, gfc_vector2d(3, 1), 1);
-    level_add_tile(level, gfc_vector2d(2, 1), 2);
-    level_delete_tile(level, gfc_vector2d(2, 1));
-    level_add_light(level, gfc_vector2d(2, 1), 1);
-    level_add_light(level, gfc_vector2d(3, 1), 1);
-    level_add_light(level, gfc_vector2d(2, 1), 2);
-    level_delete_light(level, gfc_vector2d(2, 1));
-    level_add_entity(level, gfc_vector2d(50, 100), "player");
-    level_add_entity(level, gfc_vector2d(100, 100), "player");
-    level_add_entity(level, gfc_vector2d(50, 100), "object_light");
-    level_delete_entity(level, gfc_vector2d(50, 100));
-    level_save(level);
     world = world_load("defs/maps/testworld.json");
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);

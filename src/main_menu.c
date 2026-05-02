@@ -52,23 +52,14 @@ int main_menu_update(Window *win, GFC_List *updates)
 		if (!element) continue;
 		if (gfc_strlcmp(element->name, "button_start_demo") == 0)
 		{
-			if (element->state == ES_ACTIVE)
-			{
-				window_free(win);
-				game_start();
-				return 1;
-			}
+			window_free(win);
+			game_start();
+			return 1;
 		}
-		if (gfc_strlcmp(element->name, "button_quit_demo") == 0)
+		else if (gfc_strlcmp(element->name, "button_quit_demo") == 0)
 		{
-			if (element->state == ES_ACTIVE) game_exit();
+			game_exit();
 		}
-		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
-		{
-			if (gfc_input_mouse_left_pressed()) element->state = ES_ACTIVE;
-			else element->state = ES_HIGHLIGHT;
-		}
-		else element->state = ES_IDLE;
 	}
 	return 1;
 }

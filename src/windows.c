@@ -118,7 +118,8 @@ void window_update(Window* win)
 	{
 		element = gfc_list_get_nth(win->elements, i);
 		if (!element) continue;
-		if (element->updated == 1) gfc_list_append(updates, element);
+		element_update_state(element);
+		if (element->state == ES_ACTIVE) gfc_list_append(updates, element);
 	}
 	if (win->update) win->update(win, updates);
 	gfc_list_delete(updates);

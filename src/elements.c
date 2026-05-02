@@ -3,6 +3,7 @@
 #include "element_actor.h"
 #include "element_button.h"
 #include "elements.h"
+#include "gfc_input.h"
 
 /*
 * @brief load a window element
@@ -272,13 +273,22 @@ void element_list_free(GFC_List *element_list)
 
 void element_update_state(Element *element)
 {
+	int mx, my;
 	void *data;
 
 	if (!element) return;
 
 	if (element->type == ET_BUTTON)
 	{
-		
+		SDL_GetMouseState(&mx, &my);
+		data = (ButtonElement*) element->data;
+
+		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
+		{
+			if (gfc_input_mouse_left_pressed()) element->state = ES_ACTIVE;
+			else element->state = ES_HIGHLIGHT;
+		}
+		else element->state = ES_IDLE;
 	}
 	else if (element->type == ET_ENTRY)
 	{
