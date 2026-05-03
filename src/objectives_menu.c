@@ -52,17 +52,17 @@ int objectives_menu_update(Window *win, GFC_List *elements)
 {
 	Element *element;
 	ObjectivesMenuData *data;
-	int i, c, mx, my;
+	int i, c;
 
 	if (!win) return 0;
 	if (!elements) return 0;
 	data = (ObjectivesMenuData*)win->data;
 	if (!data) return 0;
-	SDL_GetMouseState(&mx, &my);
-	c = gfc_list_get_count(elements);
+
+	c = gfc_list_get_count(win->elements);
 	for (i = 0; i < c; i++)
 	{
-		element = gfc_list_get_nth(elements, i);
+		element = gfc_list_get_nth(win->elements, i);
 		if (!element) continue;
 		if (gfc_strlcmp(element->name, "label_objective_1") == 0)
 		{

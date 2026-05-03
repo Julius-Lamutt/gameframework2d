@@ -5,6 +5,7 @@
 
 extern void game_start();
 extern void game_exit();
+extern void game_new();
 
 typedef struct
 {
@@ -38,25 +39,24 @@ int main_menu_update(Window *win, GFC_List *updates)
 {
 	Element *element;
 	MainMenuData *data;
-	int i, c, mx, my;
+	int i, c;
 
 	if (!win) return 0;
 	if (!updates) return 0;
 	data = (MainMenuData*)win->data;
 	if (!data) return 0;
-	SDL_GetMouseState(&mx, &my);
 	c = gfc_list_get_count(updates);
 	for (i = 0; i < c; i++)
 	{
 		element = gfc_list_get_nth(updates, i);
 		if (!element) continue;
-		if (gfc_strlcmp(element->name, "button_start_demo") == 0)
+		if (gfc_strlcmp(element->name, "button_new_game") == 0)
 		{
 			window_free(win);
-			game_start();
+			game_new();
 			return 1;
 		}
-		else if (gfc_strlcmp(element->name, "button_quit_demo") == 0)
+		else if (gfc_strlcmp(element->name, "button_quit") == 0)
 		{
 			game_exit();
 		}

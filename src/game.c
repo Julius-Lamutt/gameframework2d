@@ -31,14 +31,35 @@ void game_pause();
 void game_exit();
 
 /*
+* @brief start the game from the beginning
+*/
+void game_new();
+
+/*
+* @brief load the game using save data
+* @param filename: name of the save file
+*/
+void game_load(const char *filename);
+
+/*
+* @brief transition to the next level
+*/
+void game_next_level();
+
+/*
+* @brief return to the game main menu
+*/
+void game_return_to_menu();
+
+/*
 * @brief update systems that require updates at fixed intervals
 */
-void game_update();
+static void game_update();
 
 /*
 * @brief render the current frame for the game world
 */
-void game_render();
+static void game_render();
 
 // game flags
 const Bool f_collision_draw = false; // for collision debugging
@@ -53,6 +74,7 @@ static Sprite *mouse;                       // sprite for custom mouse
 static GFC_Color mouse_color;               // color for custom mouse
 
 static World *world;                        // current world
+static Uint8 level = 0;                     // current level (max of 3)
 
 static Window *win, *obj;                   // windows
 
@@ -77,17 +99,12 @@ int main(int argc, char *argv[])
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");
     items_init("defs/items.json");
-
     SDL_ShowCursor(SDL_DISABLE);
     
     /*demo setup*/
-    world = world_load("defs/maps/testworld.json");
-    world_setup_camera(world);
-    physics_update_world_data(world->tileCount, world->physicsLayer);
     win = main_menu();
     obj = objectives_menu();
     obj->hidden = 1;
-    gfc_line_cpy(obj->name, "objectives_menu");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     mouse_color = gfc_color8(200, 30, 30, 255);
     slog("press [escape] to quit");
@@ -107,11 +124,7 @@ int main(int argc, char *argv[])
             }
             if (gfc_input_key_pressed("BACKSPACE"))
             {
-                world_free(world);
-                world = NULL;
-                entity_system_clear(NULL);
-                game_pause();
-                win = main_menu();
+                game_return_to_menu();
             }
         }
         if (gfc_input_key_pressed("ESCAPE")) done = 1;
@@ -127,7 +140,57 @@ void game_start() {game = 1;}
 void game_pause() {game = 0;}
 void game_exit() {done = 1;}
 
-void game_update()
+void game_new()
+{
+    game_start();
+    level++;
+    world = world_load("defs/maps/level_1.json");
+    world_setup_camera(world);
+    physics_update_world_data(world->tileCount, world->physicsLayer);
+}
+
+void game_load(const char *filename)
+{
+
+}
+
+void game_next_level()
+{
+    if (level == 3)
+    {
+        game_return_to_menu();
+        return;
+    }
+
+    world_free(world);
+    world = NULL;
+    entity_system_clear(NULL);
+
+    if (level == 1) world = world_load("defs/maps/level_2.json");
+    else if (level == 2) world = world_load("defs/maps/level_2.json");
+    else
+    {
+        slog("oops messed up level transitioning somewhere");
+        world_free(world);
+        world = NULL;
+        game_exit();
+    }
+    level++;
+    world_setup_camera(world);
+    physics_update_world_data(world->tileCount, world->physicsLayer);
+}
+
+void game_return_to_menu()
+{
+    game_pause();
+    level = 0;
+    world_free(world);
+    world = NULL;
+    entity_system_clear(NULL);
+    win = main_menu();
+}
+
+static void game_update()
 {
     font_cleanup(); // clean the font cache
 
@@ -144,7 +207,7 @@ void game_update()
     window_system_update(); // update window and element states
 }
 
-void game_render()
+static void game_render()
 {
     gf2d_graphics_clear_screen(); // clears drawing buffers
     // all drawing should happen betweem clear_screen and next_frame

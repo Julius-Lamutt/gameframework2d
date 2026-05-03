@@ -13,7 +13,8 @@
 #include "collision.h"
 #include "player.h"
 
-extern const float gravity;
+extern void game_next_level();
+
 static int item1 = 0;
 static int item2 = 0;
 static int item3 = 0;
@@ -188,7 +189,6 @@ Entity *player_new(GFC_Vector2D position)
 	self->position = position;
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
-	self->acceleration = gfc_vector2d(0, gravity);
 	self->move_state = EMS_NONE;
 
 	self->proj = NULL;
@@ -443,6 +443,7 @@ void player_get_touch_updates(Entity *self)
 				inventory_add_item(&data->inventory, "diamond");
 				entity_free(other);
 				if (win) objective_complete(win, 3);
+				game_next_level();
 			}
 		}
 		else if (other->layer == EL_PROJECTILE)

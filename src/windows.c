@@ -407,8 +407,6 @@ Window *window_load(const char *filename)
 	pname = sj_object_get_value_as_string(window, "parent");
 	if (!pname) parent = NULL;
 	else parent = window_find_by_name(pname);
-
-	sj_free(file);
 	gfc_line_cpy(win->name, name);
 	win->background = background;
 	win->border = border;
@@ -419,6 +417,7 @@ Window *window_load(const char *filename)
 	win->canvas = canvas;
 	win->parent = parent;
 	if (parent) parent->child = win;
+	sj_free(file);
 	return win;
 }
 
