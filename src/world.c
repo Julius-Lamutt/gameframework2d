@@ -725,10 +725,12 @@ void world_draw_physics_layer(World *world, GFC_Vector2D offset)
 void world_draw(World *world)
 {
 	GFC_Vector2D offset;
+	GFC_Vector2D scale;
 
 	if (!world) return;
 	offset = camera_get_offset();
-	gf2d_sprite_draw_image(world->background, gfc_vector2d(0,0));
+	scale =  gfc_vector2d(2, 2);
+	gf2d_sprite_draw(world->background, gfc_vector2d(0, 0), &scale, NULL, NULL, NULL, NULL, 0);
 	gf2d_sprite_draw_image(world->tileLayer, offset);
 	if (f_collision_draw) world_draw_physics_layer(world, offset);
 }

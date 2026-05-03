@@ -167,7 +167,7 @@ void game_next_level()
     entity_system_clear(NULL);
 
     if (level == 1) world = world_load("defs/maps/level_2.json");
-    else if (level == 2) world = world_load("defs/maps/level_2.json");
+    else if (level == 2) world = world_load("defs/maps/level_3.json");
     else
     {
         slog("oops messed up level transitioning somewhere");

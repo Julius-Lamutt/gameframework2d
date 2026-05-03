@@ -74,7 +74,7 @@ Level *level_new(const char *name, Uint16 width, Uint16 height)
 	}
 	
 	// boilerplate level data
-	temp = sj_new_str("images/backgrounds/bg_flat.png");
+	temp = sj_new_str("images/backgrounds/museum.png");
 	sj_object_insert(level->wjson, "background", temp);
 	temp = sj_new_str("images/backgrounds/tileset.png");
 	sj_object_insert(level->wjson, "tileSet", temp);

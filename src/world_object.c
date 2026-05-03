@@ -39,6 +39,7 @@ typedef struct
 	Uint8		moving;
 	float		move_speed;
 	Uint32		move_time;
+	Uint16		move_dis;
 } WorldObjectData;
 
 /**
@@ -348,8 +349,9 @@ Entity *world_object_new(World *world, GFC_Vector2D position, const char *obj_na
 	{
 		self->fade = 1;
 		data->moving = 0;
-		data->move_speed = -2.5;
+		data->move_speed = -2;
 		data->move_time = 0;
+		data->move_dis = 0;
 		data->linked_ent = world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y - 64), "object_elevator_floor");
 		data->linked_ent2 = world_object_new(data->world, gfc_vector2d(self->position.x, self->position.y + 64), "object_elevator_floor");
 	}
@@ -396,10 +398,13 @@ void world_object_think(Entity *self)
 		data->linked_ent2->velocity = gfc_vector2d(0, data->move_speed);
 		gfc_vector2d_add(data->linked_ent2->newPosition, data->linked_ent2->newPosition, data->linked_ent2->velocity);
 
-		if (SDL_GetTicks() - data->move_time > 3000)
+		data->move_dis += abs(data->move_speed);
+
+		if (data->move_dis >= 768)
 		{
 			data->moving = 0;
 			data->move_speed *= -1;
+			data->move_dis = 0;
 			self->velocity = gfc_vector2d(0, 0);
 			data->linked_ent->velocity = gfc_vector2d(0, 0);
 			data->linked_ent2->velocity = gfc_vector2d(0, 0);
