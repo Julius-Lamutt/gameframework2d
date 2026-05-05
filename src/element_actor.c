@@ -45,7 +45,11 @@ ActorElement *element_actor_load(SJson *windel)
 		slog("one or more image parameters are invalid for actor element");
 		return NULL;
 	}
-	image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
+	if (gfc_strlcmp(filename, "images/backgrounds/tileset.png") == 0)
+	{
+		image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
+	}
+	else image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
 
 	array = sj_object_get_value(windel, "color_shift");
 	if (sj_array_get_count(array) != 4)
@@ -67,6 +71,7 @@ ActorElement *element_actor_load(SJson *windel)
 
 	actor->image = image;
 	actor->color_shift = color;
+	actor->frame = 0;
 	return actor;
 }
 
@@ -87,7 +92,7 @@ void element_actor_draw(ActorElement *actor, GFC_Rect bounds)
 		NULL,
 		NULL,
 		&color_shift,
-		0);
+		actor->frame);
 }
 
 void element_actor_free(ActorElement *actor)

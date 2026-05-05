@@ -12,7 +12,8 @@
 #include "entity.h"
 #include "main_menu.h"
 #include "objectives_menu.h"
-#include "level_editor.h"
+#include "editor_menu.h"
+#include "level.h"
 #include "world.h"
 
 /*
@@ -52,6 +53,16 @@ void game_next_level();
 void game_return_to_menu();
 
 /*
+* @brief go to the editor
+*/
+void game_start_editor();
+
+/*
+* @brief leave the editor and return to the main menu
+*/
+void game_exit_editor();
+
+/*
 * @brief update systems that require updates at fixed intervals
 */
 static void game_update();
@@ -71,12 +82,12 @@ static Uint8 game = 0;                      // starts/pauses the game
 static int mx, my;                          // mouse position variable
 static float mf;                            // current mouse frame
 static Sprite *mouse;                       // sprite for custom mouse
-static GFC_Color mouse_color;               // color for custom mouse
+GFC_Color mouse_color;                      // color for custom mouse
 
 static World *world;                        // current world
 static Uint8 level = 0;                     // current level (max of 3)
 
-static Window *win, *obj;                   // windows
+static Window *win, *obj, *edit;            // windows
 
 int main(int argc, char *argv[])
 {
@@ -187,6 +198,17 @@ void game_return_to_menu()
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);
+    win = main_menu();
+}
+
+void game_start_editor()
+{
+    edit = editor_menu();
+}
+
+void game_exit_editor()
+{
+    mouse_color = gfc_color8(220, 30, 30, 255);
     win = main_menu();
 }
 

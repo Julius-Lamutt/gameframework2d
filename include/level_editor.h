@@ -1,106 +1,151 @@
 #ifndef __LEVEL_EDITOR_H__
 #define __LEVEL_EDITOR_H__
 
-#include "simple_json.h"
+#include <SDL.h>
 #include "gfc_text.h"
 #include "gfc_list.h"
-#include "gfc_vector.h"
+#include "gf2d_sprite.h"
+
+typedef enum
+{
+	MSS_NONE,
+	MSS_ENTITY,
+	MSS_TILE,
+	MSS_LIGHT,
+	MSS_ERASE,
+	MSS_MAX
+} MouseSelectState;
 
 typedef struct
 {
-	GFC_Vector2D	pos;	/* position relative to other tiles */
-	Uint8			index;	/* the type of tile to use */
-} LevelTile;
+	GFC_TextLine	editor_name;	/* menu name of entity */
+	GFC_TextLine	name;			/* system name of entity */
+	Sprite			*sprite;		/* menu image of entity */
+} EntData;
 
 typedef struct
 {
-	GFC_Vector2D	pos;	/* tile position of light */
-	float			rad;	/* radius of the light */
-} LevelLight;
-
-typedef struct
-{
-	GFC_Vector2D	pos;	/* pixel position of the entity */
-	GFC_TextLine	name;	/* name of the entity */
-} LevelEntity;
-
-typedef struct
-{
-	GFC_TextLine	filename;	/* name of the config file where level data will be transferred */
-	Uint16			width;		/* width of level in tiles */
-	Uint16			height;		/* height of level in tiles */
-	SJson			*json;		/* json object containing all data needed for level creation */
-	SJson			*wjson;		/* world data */
-	SJson			*ejson;		/* entity data */
-	GFC_List		*tiles;		/* list of tiles */
-	GFC_List		*lights;	/* list of tiles */
-	GFC_List		*entities;	/* list of tiles */
-} Level;
+	Uint32		select;		/* the operation currently selected */
+	Uint32		width;		/* width of the level */
+	Uint32		height;		/* height of the level */
+	Uint8		ent;		/* number corresponding to entity */
+	Uint8		tile;		/* number corresponding to tile */
+	Uint8		light;		/* light radius */
+	GFC_List	*ent_list;	/* list of entity menu data */
+} LevelEditor;
 
 /*
-* @brief create a new level
-* @param name: name of the level
-* @param width: width of the level
-* @param height: height of the level
-* @return NULL on error, a new level otherwise
+* @brief creates a collection of level editor data to be used by the editor menu
+* @return NULL on error, a level editor otherwise
 */
-Level *level_new(const char *name, Uint16 width, Uint16 height);
+LevelEditor *level_editor_new();
 
 /*
-* @brief add a tile to the level
-* @param level: the level to add the tile for
-* @param pos: position of the tile
-* @param index: index of tile to use
+* @brief get the width data from the level editor
+* @param level_editor: the editor to get the data from
+* @return the current level width
 */
-void level_add_tile(Level *level, GFC_Vector2D pos, Uint8 index);
+Uint32 level_editor_get_width(LevelEditor *level_editor);
 
 /*
-* @brief add a light to the level
-* @param level: the level to add the light for
-* @param pos: position of the light
-* @param rad: radius of the light
+* @brief increase the width for the level editor
+* @param level_editor: the level editor to modify
 */
-void level_add_light(Level *level, GFC_Vector2D pos, float rad);
+void level_editor_increase_width(LevelEditor *level_editor);
 
 /*
-* @brief add an entity to the level
-* @param level: the level to add the entity for
-* @param pos: position of the entity
-* @param name: name of the entity
+* @brief decrease the width for the level editor
+* @param level_editor: the level editor to modify
 */
-void level_add_entity(Level *level, GFC_Vector2D pos, const char *name);
+void level_editor_decrease_width(LevelEditor *level_editor);
 
 /*
-* @brief remove a tile from the level
-* @param level: the level to delete the tile for
-* @param pos: position of the tile to delete
+* @brief get the height data from the level editor
+* @param level_editor: the editor to get the data from
+* @return the current level height
 */
-void level_delete_tile(Level *level, GFC_Vector2D pos);
+Uint32 level_editor_get_height(LevelEditor *level_editor);
 
 /*
-* @brief remove a light from the level
-* @param level: the level to delete the light for
-* @param pos: position of the light to delete
+* @brief increase the height for the level editor
+* @param level_editor: the level editor to modify
 */
-void level_delete_light(Level *level, GFC_Vector2D pos);
+void level_editor_increase_height(LevelEditor *level_editor);
 
 /*
-* @brief remove an entity from the level
-* @param level: the level to delete the entity for
-* @param pos: position of the entity to delete
+* @brief decrease the height for the level editor
+* @param level_editor: the level editor to modify
 */
-void level_delete_entity(Level *level, GFC_Vector2D pos);
+void level_editor_decrease_height(LevelEditor *level_editor);
 
 /*
-* @brief save the level as a json file
-* @param level: the level to save
+* @brief get the ent data from the level editor
+* @param level_editor: the editor to get the data from
+* @return the current ent in ent_list
 */
-void level_save(Level *level);
+EntData *level_editor_get_ent(LevelEditor *level_editor);
 
 /*
-* @brief free level information
-* @param level: the level to free
+* @brief select the next entity for the level editor
+* @param level_editor: the level editor to modify
 */
-void level_free(Level *level);
+void level_editor_next_entity(LevelEditor *level_editor);
+
+/*
+* @brief select the previous entity for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_previous_entity(LevelEditor *level_editor);
+
+/*
+* @brief get the tile data from the level editor
+* @param level_editor: the editor to get the data from
+* @return the current tile index
+*/
+Uint8 level_editor_get_tile(LevelEditor *level_editor);
+
+/*
+* @brief select the next tile for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_next_tile(LevelEditor *level_editor);
+
+/*
+* @brief select the previous tile for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_previous_tile(LevelEditor *level_editor);
+
+/*
+* @brief get the light radius data from the level editor
+* @param level_editor: the editor to get the data from
+* @return the current light radius
+*/
+Uint8 level_editor_get_light(LevelEditor *level_editor);
+
+/*
+* @brief increase the light radius for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_increase_light(LevelEditor *level_editor);
+
+/*
+* @brief decrease the light radius for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_decrease_light(LevelEditor *level_editor);
+
+/*
+* @brief change the selected mouse operation
+* @param level_editor: the level editor to modify
+*/
+void level_editor_change_select(LevelEditor *level_editor, Uint32 select);
+
+/*
+* @brief free level editor data
+* @param level_editor: the level editor to modify
+* @param level_editor: the level editor data to be freed
+*/
+void level_editor_free(LevelEditor *level_editor);
 
 #endif

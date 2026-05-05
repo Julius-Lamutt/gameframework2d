@@ -8,6 +8,7 @@ typedef struct
 {
 	Sprite		*image;			/* the sprite for the actor */
 	GFC_Color	color_shift;	/* the color shift for the actor */
+	Uint8		frame;			/* the frame of the actor to draw */
 } ActorElement;
 
 /*

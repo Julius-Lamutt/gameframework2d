@@ -1,9 +1,9 @@
 #include "simple_logger.h"
+#include "gfc_input.h"
 #include "element_label.h"
 #include "element_actor.h"
 #include "element_button.h"
 #include "elements.h"
-#include "gfc_input.h"
 
 /*
 * @brief load a window element
@@ -306,6 +306,21 @@ void element_update_label(Element *element, const char* text)
 		slog("cannot call element_update_label on a non-label");
 		return;
 	}
-	data = element->data;
+	data = (LabelElement*)element->data;
 	gfc_line_cpy(data->text, text);
+}
+
+void element_update_actor(Element *element, Sprite *sprite, Uint8 frame)
+{
+	ActorElement *data;
+
+	if (!element) return;
+	if (element->type != ET_ACTOR)
+	{
+		slog("cannot call element_update_actor on a non-actor");
+		return;
+	}
+	data = (ActorElement*)element->data;
+	if (sprite) data->image = sprite;
+	data->frame = frame;
 }

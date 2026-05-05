@@ -729,7 +729,7 @@ void world_draw(World *world)
 
 	if (!world) return;
 	offset = camera_get_offset();
-	scale =  gfc_vector2d(2, 2);
+	scale =  gfc_vector2d(2, 2.3);
 	gf2d_sprite_draw(world->background, gfc_vector2d(0, 0), &scale, NULL, NULL, NULL, NULL, 0);
 	gf2d_sprite_draw_image(world->tileLayer, offset);
 	if (f_collision_draw) world_draw_physics_layer(world, offset);

@@ -72,4 +72,11 @@ void element_update_state(Element *element);
 */
 void element_update_label(Element *element, const char *text);
 
+/*
+* @brief update the sprite for an actor
+* @param sprite: the new sprite for the actor (NULL to keep the same sprite)
+* @param frame: which frame should be used for the actor
+*/
+void element_update_actor(Element *element, Sprite *sprite, Uint8 frame);
+
 #endif

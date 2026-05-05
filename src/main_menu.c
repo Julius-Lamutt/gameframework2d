@@ -1,11 +1,11 @@
 #include "simple_logger.h"
-#include "gfc_input.h"
 #include "elements.h"
 #include "main_menu.h"
 
 extern void game_start();
 extern void game_exit();
 extern void game_new();
+extern void game_start_editor();
 
 typedef struct
 {
@@ -16,10 +16,10 @@ typedef struct
 /*
 * @brief update the main menu
 * @param win: the current window
-* @param update_elements: the list of elements to be updated
+* @param updates: the list of elements to be updated
 * @return 0 on error or no update, 1 otherwise
 */
-int main_menu_update(Window *win, GFC_List *update_elements);
+int main_menu_update(Window *win, GFC_List *updates);
 
 /*
 * @brief draw the main menu
@@ -54,6 +54,12 @@ int main_menu_update(Window *win, GFC_List *updates)
 		{
 			window_free(win);
 			game_new();
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_editor") == 0)
+		{
+			window_free(win);
+			game_start_editor();
 			return 1;
 		}
 		else if (gfc_strlcmp(element->name, "button_quit") == 0)
