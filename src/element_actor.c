@@ -49,7 +49,7 @@ ActorElement *element_actor_load(SJson *windel)
 	{
 		image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 	}
-	else image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
+	else image = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 
 	array = sj_object_get_value(windel, "color_shift");
 	if (sj_array_get_count(array) != 4)

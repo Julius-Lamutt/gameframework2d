@@ -285,7 +285,7 @@ void element_update_state(Element *element)
 
 		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
 		{
-			if (gfc_input_mouse_left_pressed()) element->state = ES_ACTIVE;
+			if (gfc_input_mouse_left_pressed() || gfc_input_mouse_right_held()) element->state = ES_ACTIVE;
 			else element->state = ES_HIGHLIGHT;
 		}
 		else element->state = ES_IDLE;

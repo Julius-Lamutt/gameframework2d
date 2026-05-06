@@ -1,4 +1,6 @@
 #include "simple_logger.h"
+#include "gfc_input.h"
+#include "camera.h"
 #include "editor_menu.h"
 #include "level_editor.h"
 #include "elements.h"
@@ -40,19 +42,47 @@ int editor_menu_update(Window *win, GFC_List *updates)
 {
 	Element *element;
 	EditorMenuData *data;
-	int i, c;
+	int i, c, mx, my;
 
 	if (!win) return 0;
 	if (!updates) return 0;
 	data = (EditorMenuData*)win->data;
 	if (!data) return 0;
 
+	// camera update
+	camera_set_bounds(gfc_rect(0, 0, data->editor->width, data->editor->height));
+	camera_apply_bounds();
+	camera_center_on(data->editor->pos);
+
+	// add to level
+	SDL_GetMouseState(&mx, &my);
+	if (gfc_point_in_rect(gfc_vector2d(mx, my), gfc_rect(175, 160, 600, 400)))
+	{
+		if (gfc_input_mouse_left_pressed())
+		{
+			//slog("hit");
+			level_editor_apply_select(data->editor);
+		}
+	}
+
 	c = gfc_list_get_count(win->elements);
 	for (i = 0; i < c; i++)
 	{
 		element = gfc_list_get_nth(win->elements, i);
 		if (!element) continue;
-		if (gfc_strlcmp(element->name, "label_width_number") == 0)
+		if (gfc_strlcmp(element->name, "label_x_number") == 0)
+		{
+			GFC_TextWord buffer;
+			_itoa((int)data->editor->pos.x, &buffer, 10);
+			element_update_label(element, buffer);
+		}
+		else if (gfc_strlcmp(element->name, "label_y_number") == 0)
+		{
+			GFC_TextWord buffer;
+			_itoa((int)data->editor->pos.y, &buffer, 10);
+			element_update_label(element, buffer);
+		}
+		else if (gfc_strlcmp(element->name, "label_width_number") == 0)
 		{
 			GFC_TextWord buffer;
 			_itoa(level_editor_get_width(data->editor), &buffer, 10);
@@ -92,6 +122,33 @@ int editor_menu_update(Window *win, GFC_List *updates)
 		{
 			window_free(win);
 			game_exit_editor();
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_save") == 0)
+		{
+			level_save(data->editor->level, "defs/maps/world.json");
+			window_free(win);
+			game_exit_editor();
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_level_left") == 0)
+		{
+			level_editor_pos_left(data->editor);
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_level_right") == 0)
+		{
+			level_editor_pos_right(data->editor);
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_level_up") == 0)
+		{
+			level_editor_pos_up(data->editor);
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_level_down") == 0)
+		{
+			level_editor_pos_down(data->editor);
 			return 1;
 		}
 		else if (gfc_strlcmp(element->name, "button_decrease_width") == 0)
@@ -183,6 +240,8 @@ int editor_menu_draw(Window *win)
 	if (!win) return 0;
 	if (!win->data) return 0;
 	data = win->data;
+
+	level_editor_draw(data->editor, gfc_rect(175, 160, 600, 400));
 	return 1;
 }
 
@@ -192,6 +251,7 @@ int editor_menu_free(Window *win)
 
 	if ((!win) || (!win->data)) return 0;
 	data = (EditorMenuData*) win->data;
+	camera_set_size(gfc_vector2d(1200, 720));
 	level_editor_free(data->editor);
 	free(data);
 	return 0;
@@ -207,6 +267,8 @@ Window *editor_menu()
 		slog("failed to load editor menu");
 		return NULL;
 	}
+	camera_set_size(gfc_vector2d(600, 400));
+	camera_enable_binding(true);
 	win->update = editor_menu_update;
 	win->draw = editor_menu_draw;
 	win->free =editor_menu_free;

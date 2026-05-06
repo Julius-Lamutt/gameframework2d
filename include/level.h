@@ -5,6 +5,7 @@
 #include "gfc_text.h"
 #include "gfc_list.h"
 #include "gfc_vector.h"
+#include "gf2d_sprite.h"
 
 typedef struct
 {
@@ -20,18 +21,15 @@ typedef struct
 
 typedef struct
 {
-	GFC_Vector2D	pos;	/* pixel position of the entity */
-	GFC_TextLine	name;	/* name of the entity */
+	GFC_Vector2D	pos;		/* pixel position of the entity */
+	GFC_TextLine	name;		/* name of the entity */
+	Sprite			*sprite;	/* sprite menu data for the entity */
 } LevelEntity;
 
 typedef struct
 {
-	GFC_TextLine	filename;	/* name of the config file where level data will be transferred */
 	Uint16			width;		/* width of level in tiles */
 	Uint16			height;		/* height of level in tiles */
-	SJson			*json;		/* json object containing all data needed for level creation */
-	SJson			*wjson;		/* world data */
-	SJson			*ejson;		/* entity data */
 	GFC_List		*tiles;		/* list of tiles */
 	GFC_List		*lights;	/* list of tiles */
 	GFC_List		*entities;	/* list of tiles */
@@ -39,12 +37,11 @@ typedef struct
 
 /*
 * @brief create a new level
-* @param name: name of the level
 * @param width: width of the level
 * @param height: height of the level
 * @return NULL on error, a new level otherwise
 */
-Level *level_new(const char *name, Uint16 width, Uint16 height);
+Level *level_new(Uint16 width, Uint16 height);
 
 /*
 * @brief add a tile to the level
@@ -68,7 +65,7 @@ void level_add_light(Level *level, GFC_Vector2D pos, float rad);
 * @param pos: position of the entity
 * @param name: name of the entity
 */
-void level_add_entity(Level *level, GFC_Vector2D pos, const char *name);
+void level_add_entity(Level *level, GFC_Vector2D pos, const char *name, Sprite *sprite);
 
 /*
 * @brief remove a tile from the level
@@ -94,8 +91,9 @@ void level_delete_entity(Level *level, GFC_Vector2D pos);
 /*
 * @brief save the level as a json file
 * @param level: the level to save
+* @param name: name of the level
 */
-void level_save(Level *level);
+void level_save(Level *level, const char *name);
 
 /*
 * @brief free level information

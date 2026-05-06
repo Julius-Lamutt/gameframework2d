@@ -4,7 +4,9 @@
 #include <SDL.h>
 #include "gfc_text.h"
 #include "gfc_list.h"
+#include "gfc_shape.h"
 #include "gf2d_sprite.h"
+#include "level.h"
 
 typedef enum
 {
@@ -25,13 +27,17 @@ typedef struct
 
 typedef struct
 {
-	Uint32		select;		/* the operation currently selected */
-	Uint32		width;		/* width of the level */
-	Uint32		height;		/* height of the level */
-	Uint8		ent;		/* number corresponding to entity */
-	Uint8		tile;		/* number corresponding to tile */
-	Uint8		light;		/* light radius */
-	GFC_List	*ent_list;	/* list of entity menu data */
+	Level			*level;			/* level that is being made by the level editor */
+	Uint32			select;			/* the operation currently selected */
+	Uint32			width;			/* width of the level */
+	Uint32			height;			/* height of the level */
+	Uint8			ent;			/* number corresponding to entity */
+	Uint8			tile;			/* number corresponding to tile */
+	Uint8			light;			/* light radius */
+	GFC_Vector2D	pos;			/* the current placing position */
+	GFC_List		*ent_list;		/* list of entity menu data */
+	SDL_Texture		*bg;			/* texture representing the level background */
+	SDL_Texture		*world;			/* texture representing the level the level editor will make */
 } LevelEditor;
 
 /*
@@ -136,10 +142,52 @@ void level_editor_increase_light(LevelEditor *level_editor);
 void level_editor_decrease_light(LevelEditor *level_editor);
 
 /*
+* @brief move the current placing position to the left
+* @param level_editor: the level editor to modify
+*/
+void level_editor_pos_left(LevelEditor *level_editor);
+
+/*
+* @brief move the current placing position to the right
+* @param level_editor: the level editor to modify
+*/
+void level_editor_pos_right(LevelEditor *level_editor);
+
+/*
+* @brief move the current placing position upward
+* @param level_editor: the level editor to modify
+*/
+void level_editor_pos_up(LevelEditor *level_editor);
+
+/*
+* @brief move the current placing position downard
+* @param level_editor: the level editor to modify
+*/
+void level_editor_pos_down(LevelEditor *level_editor);
+
+/*
 * @brief change the selected mouse operation
 * @param level_editor: the level editor to modify
 */
 void level_editor_change_select(LevelEditor *level_editor, Uint32 select);
+
+/*
+* brief add to the level based on the current mouse selection
+* @param level_editor: the level editor to add to
+*/
+void level_editor_apply_select(LevelEditor *level_editor);
+
+/*
+* @brief update the level texture for the level editor
+* @param level_editor: the level editor to modify
+*/
+void level_editor_update_texture(LevelEditor *level_editor);
+
+/*
+* @brief draw the current level state for the level editor
+* @param bounds: the position and size of the level state render
+*/
+void level_editor_draw(LevelEditor *level_editor, GFC_Rect rect);
 
 /*
 * @brief free level editor data
