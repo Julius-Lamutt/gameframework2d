@@ -65,6 +65,7 @@ int editor_menu_update(Window *win, GFC_List *updates)
 		}
 	}
 
+	// update labels/actors
 	c = gfc_list_get_count(win->elements);
 	for (i = 0; i < c; i++)
 	{

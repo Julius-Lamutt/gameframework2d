@@ -11,6 +11,7 @@
 #include "camera.h"
 #include "entity.h"
 #include "main_menu.h"
+#include "inventory_menu.h"
 #include "objectives_menu.h"
 #include "editor_menu.h"
 #include "level.h"
@@ -87,7 +88,7 @@ GFC_Color mouse_color;                      // color for custom mouse
 static World *world;                        // current world
 static Uint8 level = 0;                     // current level (max of 3)
 
-static Window *win, *obj, *edit;            // windows
+static Window *win, *obj, *edit, *inv;      // windows
 
 int main(int argc, char *argv[])
 {
@@ -154,8 +155,9 @@ void game_exit() {done = 1;}
 void game_new()
 {
     game_start();
+    inv = inventory_menu();
     level++;
-    world = world_load("defs/maps/world.json"); //level_1
+    world = world_load("defs/maps/level_1.json"); //level_1
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
 }
@@ -194,6 +196,7 @@ void game_next_level()
 void game_return_to_menu()
 {
     game_pause();
+    window_free(inv);
     level = 0;
     world_free(world);
     world = NULL;
