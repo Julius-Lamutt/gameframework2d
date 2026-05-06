@@ -103,7 +103,7 @@ void inventory_remove_item(Inventory *inventory, const char *name)
 		{
 			inventory_menu_update_shuriken(win, item->count);
 		}
-		else if (gfc_strlcmp(item->name, "tool_teleport") == 0)
+		else if (gfc_strlcmp(item->name, "tool_teleporter") == 0)
 		{
 			inventory_menu_update_teleport(win, item->count);
 		}

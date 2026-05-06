@@ -239,6 +239,15 @@ void player_think(Entity* self)
 		}
 	}
 
+	// check jump state
+	if (data->jump_anim)
+	{
+		if (SDL_GetTicks() - data->jump_anim_start > 5000)
+		{
+			data->jump_anim = 0;
+		}
+	}
+
 	// handle all player input, including movement
 	player_get_input(self);
 	self->move_state = 2;
