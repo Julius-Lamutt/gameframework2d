@@ -477,9 +477,9 @@ void level_editor_update_texture(LevelEditor *level_editor)
 		light = gfc_list_get_nth(level_editor->level->lights, i);
 		if (!light) continue;
 
-		pos = gfc_vector2d(128 * light->pos.x - 0.5 * light->rad * 128, 128 * light->pos.y - 0.5 * light->rad * 128);
+		pos = gfc_vector2d(light->pos.x * 128 - 0.5 * light->rad * 128, light->pos.y * 128 - 0.5 * light->rad * 128);
 		scale = gfc_vector2d(light->rad, light->rad);
-		gf2d_sprite_draw_to_surface(sprite, light->pos, &scale, NULL, 0, world_surf);
+		gf2d_sprite_draw_to_surface(sprite, pos, &scale, NULL, 0, world_surf);
 	}
 
 	// draw tiles second

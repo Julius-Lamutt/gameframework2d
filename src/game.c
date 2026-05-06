@@ -155,7 +155,7 @@ void game_new()
 {
     game_start();
     level++;
-    world = world_load("defs/maps/level_1.json");
+    world = world_load("defs/maps/world.json"); //level_1
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
 }
