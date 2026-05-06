@@ -106,11 +106,11 @@ int editor_menu_update(Window *win, GFC_List *updates)
 			EntData *ent_data;
 			ent_data = level_editor_get_ent(data->editor);
 			
-			element_update_actor(element, ent_data->sprite, 0);
+			element_update_actor(element, ent_data->sprite, 0, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "actor_tile") == 0)
 		{
-			element_update_actor(element, NULL, level_editor_get_tile(data->editor));
+			element_update_actor(element, NULL, level_editor_get_tile(data->editor), NULL);
 		}
 	}
 

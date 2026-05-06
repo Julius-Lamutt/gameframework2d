@@ -310,9 +310,10 @@ void element_update_label(Element *element, const char* text)
 	gfc_line_cpy(data->text, text);
 }
 
-void element_update_actor(Element *element, Sprite *sprite, Uint8 frame)
+void element_update_actor(Element *element, Sprite *sprite, Uint8 frame, GFC_Color *color_shift)
 {
 	ActorElement *data;
+	GFC_Color color;
 
 	if (!element) return;
 	if (element->type != ET_ACTOR)
@@ -323,4 +324,9 @@ void element_update_actor(Element *element, Sprite *sprite, Uint8 frame)
 	data = (ActorElement*)element->data;
 	if (sprite) data->image = sprite;
 	data->frame = frame;
+	if (color_shift)
+	{
+		color = *color_shift;
+		data->color_shift = color;
+	}
 }

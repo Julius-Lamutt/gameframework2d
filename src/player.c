@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
+#include "inventory_menu.h"
 #include "objectives_menu.h"
 #include "physics.h"
 #include "camera.h"
@@ -299,9 +300,11 @@ void player_get_input(Entity *self)
 	ClientData *data;
 	Entity *bullet;
 	GFC_Vector2D dir;
+	Window *inv;
 
 	if (!self || !self->data) return;
 	data = (ClientData*) self->data;
+	inv = window_find_by_name("inventory");
 
 	// super jump
 	if (gfc_input_command_pressed("jump") && player_focus && self->move_state == EMS_GROUNDED)
@@ -326,6 +329,7 @@ void player_get_input(Entity *self)
 	}
 	if (gfc_input_command_pressed("drone_camera") && data->active_drone)
 	{
+		inventory_menu_update_drone(inv);
 		if (player_focus) player_focus = 0;
 		else player_focus = 1;
 	}
