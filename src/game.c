@@ -108,6 +108,10 @@ int main(int argc, char *argv[])
     gfc_input_init("defs/config.json");
     items_init("defs/items.json");
     SDL_ShowCursor(SDL_DISABLE);
+
+    GFC_Sound *sound;
+    sound = gfc_sound_load("audio/menu_music.wav", 30, 2);
+    gfc_sound_play(sound, -1, 30, -1, -1);
     
     /*demo setup*/
     win = main_menu();
@@ -139,6 +143,7 @@ int main(int argc, char *argv[])
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
     if (world) world_free(world);
+    if (sound) gfc_sound_free(sound);
 
     slog("---==== END ====---");
     return 0;
