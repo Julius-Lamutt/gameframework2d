@@ -7,6 +7,7 @@
 #include "collision.h"
 #include "item_pickup.h"
 #include "world_object.h"
+#include "monster.h"
 #include "player.h"
 #include "camera.h"
 #include "world.h"
@@ -229,6 +230,7 @@ void world_entity_load(World *world, SJson *ejson)
 		if (strcmp("player", name) == 0) entity = player_new(position);
 		else if (strncmp("pickup", name, 6) == 0) entity = item_pickup_new(position, name);
 		else if (strncmp("object", name, 6) == 0) entity = world_object_new(world, position, name);
+		else if (strncmp("monster", name, 7) == 0) entity = monster_new(position, name);
 		else
 		{
 			slog("entity #%i in entities list has invalid entity name", i);

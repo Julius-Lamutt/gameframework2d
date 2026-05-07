@@ -169,7 +169,6 @@ Entity *item_pickup_new(GFC_Vector2D position, const char *item_name)
 	self->position = position;
 	self->newPosition = self->position;
 	self->velocity = gfc_vector2d(0, 0);
-	self->acceleration = gfc_vector2d(0, gravity);
 
 	self->think = item_pickup_think;
 	self->update = item_pickup_update;

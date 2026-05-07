@@ -14,9 +14,10 @@ typedef enum
 
 /**
 * @brief spawn a monster
-* @param type: the type of monster to create
-* return NULL on error, a pointer to the player otherwise
+* @param pos: where to spawn the monster
+* @param obj_name: name of the monster to spawn
+* @return NULL on error, a monster otherwise
 **/
-Entity* monster_new(Uint32 type);
+Entity *monster_new(GFC_Vector2D position, const char *obj_name);
 
 #endif

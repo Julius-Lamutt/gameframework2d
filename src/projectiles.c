@@ -198,7 +198,6 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 	gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 30, dir.y * 30));
 	self->newPosition = self->position;
 	gfc_vector2d_scale(self->velocity, dir, 12);
-	self->acceleration = gfc_vector2d(0, gravity);
 
 	self->range = 1000;
 	self->owner = owner;

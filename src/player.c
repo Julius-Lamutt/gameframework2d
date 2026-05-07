@@ -40,39 +40,39 @@ static Uint8 ignore_gravity = 0; // prevents falling due to gravity
 * @brief load a player from a config file
 * @return NULL on error, a player otherwise
 */
-Entity *player_load();
+static Entity *player_load();
 
 /**
  * @brief run the think function for the player
  * @param self: the player to think
  */
-void player_think(Entity *self);
+static void player_think(Entity *self);
 
 /**
  * @brief run the update function for the player
  * @param self: the player to update
  */
-void player_update(Entity *self);
+static void player_update(Entity *self);
 
 /**
  * @brief free the player
  * @param self: the player to free
  */
-void player_free(Entity *self);
+static void player_free(Entity *self);
 
 /**
 * @brief handle player input for this frame
 * @param self: the player to handle inputs for
 */
-void player_get_input(Entity *self);
+static void player_get_input(Entity *self);
 
 /**
 * @brief get the player's touch updates for this frame
 * @param self: the player to get touch updates for
 */
-void player_get_touch_updates(Entity *self);
+static void player_get_touch_updates(Entity *self);
 
-Entity *player_load()
+static Entity *player_load()
 {
 	SJson *json, *pjson, *array;
 	const char *name, *filename;
@@ -212,7 +212,7 @@ Entity *player_new(GFC_Vector2D position)
 	return self;
 }
 
-void player_think(Entity* self)
+static void player_think(Entity* self)
 {
 	ClientData* data;
 	Entity* bullet;
@@ -265,7 +265,7 @@ void player_think(Entity* self)
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 }
 
-void player_update(Entity* self)
+static void player_update(Entity* self)
 {
 	Entity* other;
 	ClientData* data;
@@ -295,7 +295,7 @@ void player_update(Entity* self)
 	}
 }
 
-void player_free(Entity *self)
+static void player_free(Entity *self)
 {
 	ClientData* data;
 
@@ -306,7 +306,7 @@ void player_free(Entity *self)
 	free(data);
 }
 
-void player_get_input(Entity *self)
+static void player_get_input(Entity *self)
 {
 	ClientData *data;
 	Entity *bullet;
@@ -397,7 +397,7 @@ void player_get_input(Entity *self)
 	}
 }
 
-void player_get_touch_updates(Entity *self)
+static void player_get_touch_updates(Entity *self)
 {
 	int i, c;
 	Entity *other;
