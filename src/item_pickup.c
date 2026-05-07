@@ -129,7 +129,7 @@ Entity *item_pickup_load(const char *item_name)
 		slog("one or more sprite parameters are invalid for item pickup entity");
 		return NULL;
 	}
-	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
+	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 
 	if (!sj_object_get_value_as_float(ijson, "fall_speed", &fall_speed))
 	{

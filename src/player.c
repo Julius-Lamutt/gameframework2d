@@ -149,7 +149,7 @@ Entity *player_load()
 		slog("one or more sprite parameters are invalid for player entity");
 		return NULL;
 	}
-	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 0);
+	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 
 	if (!sj_object_get_value_as_float(pjson, "fall_speed", &fall_speed))
 	{
@@ -204,6 +204,7 @@ Entity *player_new(GFC_Vector2D position)
 	{
 		self->data = data;
 		inventory_init(&data->inventory);
+		inventory_load_data(&data->inventory, "defs/inventory_data.json");
 		data->active_drone = 0;
 		data->smoke_invis = 0;
 		data->jump_anim = 0;

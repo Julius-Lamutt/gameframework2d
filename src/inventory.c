@@ -182,3 +182,69 @@ void inventory_save_data(Inventory *inventory, const char *filename)
 	sj_save(json, filename);
 	free(json);
 }
+
+void inventory_load_data(Inventory *inventory, const char *filename)
+{
+	int i, c;
+	SJson *json, *djson, *ijson;
+	Window *win;
+
+	if ((!inventory) || (!filename)) return;
+
+	win = window_find_by_name("inventory");
+
+	json = sj_load(filename);
+	if (!json)
+	{
+		slog("failed to load inventory data");
+		return;
+	}
+	djson = sj_object_get_value(json, "inventory_data");
+	if (!djson)
+	{
+		slog("failed to get inventory_data object in file '%s'", filename);
+		return;
+	}
+
+	c = sj_array_get_count(djson);
+	for (i = 0; i < c; i++)
+	{
+		const char *name;
+		int j, count;
+
+		ijson = sj_array_get_nth(djson, i);
+		if (!ijson) continue;
+
+		name = sj_object_get_value_as_string(ijson, "name");
+		if (!name)
+		{
+			slog("failed to get name object in file '%s'", filename);
+			continue;
+		}
+
+		if (!sj_object_get_value_as_int(ijson, "count", &count))
+		{
+			slog("failed to get count object in file '%s'", filename);
+			continue;
+		}
+
+		for (j = 0; j < count; j++) inventory_add_item(inventory, name);
+
+		if (gfc_strlcmp(name, "tool_shuriken") == 0)
+		{
+			inventory_menu_update_shuriken(win, count);
+		}
+		else if (gfc_strlcmp(name, "tool_teleporter") == 0)
+		{
+			inventory_menu_update_teleport(win, count);
+		}
+		else if (gfc_strlcmp(name, "tool_smoke") == 0)
+		{
+			inventory_menu_update_smoke(win, count);
+		}
+		else if (gfc_strlcmp(name, "tool_jump") == 0)
+		{
+			inventory_menu_update_jump(win, count);
+		}
+	}
+}

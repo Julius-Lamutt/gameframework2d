@@ -38,7 +38,7 @@ Entity* drone_new(Entity* owner)
 		32,
 		32,
 		1,
-		0);
+		1);
 	self->frame = 0;
 	self->position = owner->position;
 	self->newPosition = self->position;

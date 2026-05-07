@@ -308,7 +308,7 @@ World *world_load(const char *filename)
 	}
 
 	background = sj_object_get_value_as_string(wjson, "background");
-	world->background = gf2d_sprite_load_image(background);
+	world->background = gf2d_sprite_load_all(background, 600, 323, 1, 1);
 
 	tileSet = sj_object_get_value_as_string(wjson, "tileSet");
 	sj_object_get_value_as_int(wjson, "frame_w", &frame_w);

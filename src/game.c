@@ -121,7 +121,6 @@ int main(int argc, char *argv[])
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     mouse_color = gfc_color8(200, 30, 30, 255);
     slog("press [escape] to quit");
-    inventory_purge_data("defs/inventory_data.json");
 
     /*main game loop*/
     while(!done)
@@ -157,6 +156,7 @@ void game_exit() {done = 1;}
 void game_new()
 {
     game_start();
+    inventory_purge_data("defs/inventory_data.json");
     inv = inventory_menu();
     level++;
     world = world_load("defs/maps/level_1.json"); //level_1
@@ -182,8 +182,16 @@ void game_next_level()
     entity_system_clear(NULL);
     window_free(inv);
 
-    if (level == 1) world = world_load("defs/maps/level_2.json");
-    else if (level == 2) world = world_load("defs/maps/level_3.json");
+    if (level == 1)
+    {
+        inv = inventory_menu();
+        world = world_load("defs/maps/level_2.json");
+    }
+    else if (level == 2)
+    {
+        inv = inventory_menu();
+        world = world_load("defs/maps/level_3.json");
+    }
     else
     {
         slog("oops messed up level transitioning somewhere");
@@ -194,12 +202,12 @@ void game_next_level()
     level++;
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
-    inv = inventory_menu();
 }
 
 void game_return_to_menu()
 {
     game_pause();
+    inventory_purge_data("defs/inventory_data.json");
     window_free(inv);
     level = 0;
     world_free(world);

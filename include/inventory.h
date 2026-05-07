@@ -66,10 +66,17 @@ void inventory_remove_item(Inventory *inventory, const char *name);
 void inventory_purge_data(const char *filename);
 
 /*
-* @breif saves inventory data for later retrieval
+* @brief saves inventory data for later retrieval
 * @param inventory: the inventory to save data for
 * @param filename: name of the inventory file to save to
 */
 void inventory_save_data(Inventory *inventory, const char *filename);
+
+/*
+* @brief load inventory data
+* @param inventory: the inventory to load data for
+* @param filename: name of the inventory file to load from
+*/
+void inventory_load_data(Inventory *inventory, const char *filename);
 
 #endif

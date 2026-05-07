@@ -33,7 +33,7 @@ Entity* bullet_new(Entity* owner, GFC_Vector2D pos)
 		32,
 		32,
 		1,
-		0);
+		1);
 	self->frame = 0;
 	self->position = pos;
 	self->range = 100;
