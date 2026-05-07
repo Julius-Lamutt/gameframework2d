@@ -91,6 +91,7 @@ static World *world;                        // current world
 static Uint8 level = 0;                     // current level (max of 3)
 
 static Window *win, *obj, *edit, *inv;      // windows
+static Mix_Music *menu_music, *level_music; // game music
 
 int main(int argc, char *argv[])
 {
@@ -108,17 +109,16 @@ int main(int argc, char *argv[])
     gfc_input_init("defs/config.json");
     items_init("defs/items.json");
     SDL_ShowCursor(SDL_DISABLE);
-
-    GFC_Sound *sound;
-    sound = gfc_sound_load("audio/menu_music.wav", 30, 2);
-    gfc_sound_play(sound, -1, 30, -1, -1);
     
     /*demo setup*/
     win = main_menu();
     obj = objectives_menu();
     obj->hidden = 1;
+    menu_music = gfc_sound_load_music("audio/menu_music.wav");
+    level_music = gfc_sound_load_music("audio/level_music.wav");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     mouse_color = gfc_color8(200, 30, 30, 255);
+    Mix_PlayMusic(menu_music, -1);
     slog("press [escape] to quit");
 
     /*main game loop*/
@@ -143,7 +143,6 @@ int main(int argc, char *argv[])
         //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
     }
     if (world) world_free(world);
-    if (sound) gfc_sound_free(sound);
 
     slog("---==== END ====---");
     return 0;
@@ -155,6 +154,7 @@ void game_exit() {done = 1;}
 
 void game_new()
 {
+    Mix_PlayMusic(level_music, -1);
     game_start();
     inventory_purge_data("defs/inventory_data.json");
     inv = inventory_menu();
@@ -186,11 +186,13 @@ void game_next_level()
     {
         inv = inventory_menu();
         world = world_load("defs/maps/level_2.json");
+        Mix_PlayMusic(level_music, -1);
     }
     else if (level == 2)
     {
         inv = inventory_menu();
         world = world_load("defs/maps/level_3.json");
+        Mix_PlayMusic(level_music, -1);
     }
     else
     {
@@ -206,6 +208,7 @@ void game_next_level()
 
 void game_return_to_menu()
 {
+    Mix_PlayMusic(menu_music, -1);
     game_pause();
     inventory_purge_data("defs/inventory_data.json");
     window_free(inv);
