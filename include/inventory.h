@@ -57,4 +57,19 @@ void inventory_add_item(Inventory *inventory, const char *name);
 */
 void inventory_remove_item(Inventory *inventory, const char *name);
 
+/*
+* @brief Purges a file containing inventory data. If file does not contain inventory data,
+* the function will short-circuit before any data is purged. NOTE: this is irreversible.
+* DO NOT USE WITHOUT DOUBLE CHECKING FILENAME!
+* @param filename: name of the inventory file to purge
+*/
+void inventory_purge_data(const char *filename);
+
+/*
+* @breif saves inventory data for later retrieval
+* @param inventory: the inventory to save data for
+* @param filename: name of the inventory file to save to
+*/
+void inventory_save_data(Inventory *inventory, const char *filename);
+
 #endif

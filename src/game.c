@@ -4,6 +4,7 @@
 #include "gf2d_sprite.h"
 #include "gfc_input.h"
 #include "items.h"
+#include "inventory.h"
 #include "font.h"
 #include "shadow_map.h"
 #include "physics.h"
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     mouse_color = gfc_color8(200, 30, 30, 255);
     slog("press [escape] to quit");
+    inventory_purge_data("defs/inventory_data.json");
 
     /*main game loop*/
     while(!done)
@@ -178,6 +180,7 @@ void game_next_level()
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);
+    window_free(inv);
 
     if (level == 1) world = world_load("defs/maps/level_2.json");
     else if (level == 2) world = world_load("defs/maps/level_3.json");
@@ -191,6 +194,7 @@ void game_next_level()
     level++;
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer);
+    inv = inventory_menu();
 }
 
 void game_return_to_menu()

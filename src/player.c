@@ -300,6 +300,7 @@ void player_free(Entity *self)
 
 	if ((!self) || (!self->data)) return;
 	data = (ClientData*) self->data;
+	inventory_save_data(&data->inventory, "defs/inventory_data.json");
 	inventory_close(&data->inventory);
 	free(data);
 }

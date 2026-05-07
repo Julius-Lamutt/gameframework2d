@@ -127,3 +127,58 @@ void inventory_remove_item(Inventory *inventory, const char *name)
 	}
 	return;
 }
+
+void inventory_purge_data(const char *filename)
+{
+	SJson *test, *json, *djson;
+
+	if (!filename) return;
+	test = sj_load(filename);
+	if (test)
+	{
+		if (!sj_object_get_value(test, "inventory_data"))
+		{
+			sj_free(test);
+			slog("cannot purge '%s': not an inventory_data file", filename);
+			return;
+		}
+	}
+
+	json = sj_object_new();
+	djson = sj_array_new();
+
+	sj_object_insert(json, "inventory_data", djson);
+	sj_save(json, filename);
+	free(json);
+	free(test);
+}
+
+void inventory_save_data(Inventory *inventory, const char *filename)
+{
+	int i, c;
+	SJson *json, *djson, *ijson, *temp;
+	Item *item;
+
+	if ((!inventory) || (!filename)) return;
+
+	json = sj_object_new();
+	djson = sj_array_new();
+	
+	c = gfc_list_get_count(inventory->itemList);
+	for (i = 0; i < c; i++)
+	{
+		item = gfc_list_get_nth(inventory->itemList, i);
+		if (!item) continue;
+
+		ijson = sj_object_new();
+		temp = sj_new_str(item->name);
+		sj_object_insert(ijson, "name", temp);
+		temp = sj_new_int(item->count);
+		sj_object_insert(ijson, "count", temp);
+		sj_array_append(djson, ijson);
+	}
+
+	sj_object_insert(json, "inventory_data", djson);
+	sj_save(json, filename);
+	free(json);
+}
