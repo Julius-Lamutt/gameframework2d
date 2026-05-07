@@ -2,6 +2,7 @@
 #include "simple_logger.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "gfc_audio.h"
 #include "gfc_input.h"
 #include "items.h"
 #include "inventory.h"
@@ -96,16 +97,10 @@ int main(int argc, char *argv[])
     /*program initializtion*/
     init_logger("gf2d.log",0);
     slog("---==== BEGIN ====---");
-    gf2d_graphics_initialize(
-        "gf2d",
-        1200,
-        720,
-        1200,
-        720,
-        gfc_vector4d(0,0,0,255),
-        0);
+    gf2d_graphics_initialize("gf2d", 1200, 720, 1200, 720, gfc_vector4d(0, 0, 0, 255), 0);
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
+    gfc_audio_init(128, 24, 12, 12, 1 , 0);
     font_init();
     window_system_init(64);
 	entity_system_init(1024);

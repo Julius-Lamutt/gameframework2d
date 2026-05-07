@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gfc_input.h"
+#include "gfc_audio.h"
 #include "element_label.h"
 #include "element_actor.h"
 #include "element_button.h"
@@ -275,6 +276,7 @@ void element_update_state(Element *element)
 {
 	int mx, my;
 	void *data;
+	GFC_Sound *sound;
 
 	if (!element) return;
 
@@ -285,7 +287,13 @@ void element_update_state(Element *element)
 
 		if (gfc_point_in_rect(gfc_vector2d(mx, my), element->bounds))
 		{
-			if (gfc_input_mouse_left_pressed() || gfc_input_mouse_right_held()) element->state = ES_ACTIVE;
+			if (gfc_input_mouse_left_pressed() || gfc_input_mouse_right_held())
+			{
+				sound = gfc_sound_load("audio/button_click.wav", 30, 1);
+				gfc_sound_play(sound, 0, 30, -1, -1);
+				gfc_sound_free(sound);
+				element->state = ES_ACTIVE;
+			}
 			else element->state = ES_HIGHLIGHT;
 		}
 		else element->state = ES_IDLE;
