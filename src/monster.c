@@ -56,7 +56,7 @@ static void monster_move(Entity *self);
 * @brief make the monster shoot
 * @param self: the monster to make shoot
 */
-static void monster_shoot(Entity *self)
+static void monster_shoot(Entity *self);
 
 /**
 * @brief get the monster's touch updates for this frame
@@ -300,7 +300,6 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 
 	// monster data
 	data->ai = ai;
-	ai->alert_status = AIAS_NORMAL;
 	ai->move_state = AIMS_IDLE;
 
 	return self;
@@ -437,6 +436,22 @@ static void monster_move(Entity *self)
 			if (self->move_state == EMS_GROUNDED) self->velocity.y = -data->jump_speed;
 			break;
 	}
+}
+
+static void monster_shoot(Entity *self)
+{
+	MonsterData *data;
+	MonsterAI *ai;
+	GFC_Action *action;
+
+	if (!self || !self->data) return;
+	data = (MonsterData*) self->data;
+
+	if (!data->ai) return;
+	ai = (MonsterAI*) data->ai;
+
+	action = gfc_action_list_get_action(data->actions, "shoot");
+	gfc_action_next_frame(action, &self->frame);
 }
 
 static void monster_get_touch_updates(Entity *self)

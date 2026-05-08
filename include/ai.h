@@ -15,20 +15,22 @@ typedef enum
 	AIMS_MAX
 } AIMoveState;
 
-typedef enum
-{
-	AIAS_IDLE,
-	AIAS_NORMAL,
-	AIAS_CAUTION,
-	AIAS_ALERT
-} AIAlertStatus;
-
 typedef struct
 {
-	Uint32			alert_status;
 	Uint32			move_state;
-	GFC_Vector2D	last_position;
 } MonsterAI;
+
+/*
+* @brief Initialize the level ai system.
+* Note: This must be initialized before loading a world for monsters to work!!
+*/
+void ai_init();
+
+/*
+* @brief Cleanup any information for the level ai system.
+* Note: This must be called every time a player leaves a loaded level!!
+*/
+void ai_cleanup();
 
 /*
 * @brief update the monster ai
