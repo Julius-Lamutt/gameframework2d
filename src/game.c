@@ -2,6 +2,7 @@
 #include "simple_logger.h"
 #include "gf2d_graphics.h"
 #include "gf2d_sprite.h"
+#include "gfc_actions.h"
 #include "gfc_audio.h"
 #include "gfc_input.h"
 #include "items.h"
@@ -76,7 +77,7 @@ static void game_update();
 static void game_render();
 
 // game flags
-const Bool f_collision_draw = false; // for collision debugging
+const Bool f_collision_draw = true; // for collision debugging
 
 // game variables
 static Uint8 done = 0;                      // closes the window
@@ -101,6 +102,7 @@ int main(int argc, char *argv[])
     gf2d_graphics_initialize("gf2d", 1200, 720, 1200, 720, gfc_vector4d(0, 0, 0, 255), 0);
     gf2d_graphics_set_frame_delay(16);
     gf2d_sprite_init(1024);
+    gfc_action_init(64);
     gfc_audio_init(128, 24, 12, 12, 1 , 0);
     font_init();
     window_system_init(64);
@@ -109,7 +111,7 @@ int main(int argc, char *argv[])
     gfc_input_init("defs/config.json");
     items_init("defs/items.json");
     SDL_ShowCursor(SDL_DISABLE);
-    
+
     /*demo setup*/
     win = main_menu();
     obj = objectives_menu();

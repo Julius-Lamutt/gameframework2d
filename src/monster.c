@@ -1,16 +1,21 @@
 #include "simple_logger.h"
 #include "collision.h"
 #include "physics.h"
+#include "ai.h"
 #include "monster.h"
 
 static Uint8 ignore_gravity = 0; // prevents falling due to gravity
 
 typedef struct
 {
+	MonsterAI	*ai;		// monster ai
 	Uint32		type;		// monster type
 	Uint16		health;		// monster health
 	Uint16		damage;		// monster damage
 	Uint16		light_rad;	// monster light radius
+	Uint8		walk_speed; // walk speed
+	Uint8		run_speed;	// run speed
+	Uint8		jump_speed; // jump speed
 	Light		*light;		// monster light
 } MonsterData;
 
@@ -40,6 +45,12 @@ static void monster_update(Entity *self);
 static void monster_free(Entity *self);
 
 /**
+* @brief move the monster
+* @param self: the monster to move
+*/
+static void monster_move(Entity *self);
+
+/**
 * @brief get the monster's touch updates for this frame
 * @param self: the monster to get touch updates for
 */
@@ -49,7 +60,7 @@ static Entity *monster_load(const char *obj_name)
 {
 	SJson *json, *ejson, *mjson, *array;
 	const char *name, *filename, *type;
-	int health, damage, light_rad, monster_type;
+	int health, damage, light_rad, monster_type, walk_speed, run_speed, jump_speed;
 	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
@@ -180,6 +191,27 @@ static Entity *monster_load(const char *obj_name)
 		return NULL;
 	}
 
+	if (!sj_object_get_value_as_int(mjson, "walk_speed", &walk_speed))
+	{
+		free(json);
+		slog("missing walk_speed object for monster entity");
+		return NULL;
+	}
+
+	if (!sj_object_get_value_as_int(mjson, "run_speed", &run_speed))
+	{
+		free(json);
+		slog("missing run_speed object for monster entity");
+		return NULL;
+	}
+
+	if (!sj_object_get_value_as_int(mjson, "jump_speed", &jump_speed))
+	{
+		free(json);
+		slog("missing jump_speed object for monster entity");
+		return NULL;
+	}
+
 	free(json);
 
 	// set monster basic info
@@ -207,6 +239,9 @@ static Entity *monster_load(const char *obj_name)
 	data->health = health;
 	data->damage = damage;
 	data->light_rad = light_rad;
+	data->walk_speed = walk_speed;
+	data->run_speed = run_speed;
+	data->jump_speed = jump_speed;
 	return self;
 }
 
@@ -214,11 +249,21 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 {
 	Entity *self;
 	MonsterData *data;
+	MonsterAI *ai;
 
 	// load config
 	self = monster_load(obj_name);
 	if (!self || !self->data) return NULL;
 	data = (MonsterData*) self->data;
+
+	// monster will not work without AI
+	ai = gfc_allocate_array(sizeof(MonsterAI), 1);
+	if (!ai)
+	{
+		slog("failed to allocate AI for monster");
+		entity_free(self);
+		return NULL;
+	}
 
 	// player defaults
 	self->layer = EL_MONSTER;
@@ -236,19 +281,31 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	self->think = monster_think;
 	self->update = monster_update;
 	self->free = monster_free;
+
+	// monster data
+	data->ai = ai;
+	ai->alert_status = AIAS_NORMAL;
+	ai->move_state = AIMS_IDLE;
+
 	return self;
 }
 
 static void monster_think(Entity *self)
 {
 	MonsterData *data;
+	MonsterAI *ai;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
 
+	if (!data->ai) return;
+	ai = (MonsterAI*) data->ai;
+
 	self->velocity.x = 0;
 
 	// TODO: IMPLEMENT BASIC MONSTER MOVEMENT/ACTIONS
+	monster_move(self);
+	self->move_state = 2; // reset move state
 
 	monster_get_touch_updates(self);
 
@@ -265,23 +322,83 @@ static void monster_think(Entity *self)
 static void monster_update(Entity *self)
 {
 	MonsterData *data;
+	MonsterAI *ai;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
+
+	if (!data->ai) return;
+	ai = (MonsterAI*) data->ai;
 	
 	// update physics
 	physics_update_move_state(self->box, &self->move_state);
 	self->position = self->newPosition;
 	ignore_gravity = 0;
+
+	// update ai
+	ai_update(ai);
 }
 
 static void monster_free(Entity *self)
 {
 	MonsterData *data;
+	MonsterAI *ai;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
+
+	if (data->ai)
+	{
+		ai = (MonsterAI*) data->ai;
+		free(ai);
+	}
+
 	free(data);
+}
+
+static void monster_move(Entity *self)
+{
+	MonsterData *data;
+	MonsterAI *ai;
+
+	if (!self || !self->data) return;
+	data = (MonsterData*) self->data;
+
+	if (!data->ai) return;
+	ai = (MonsterAI*) data->ai;
+
+	switch (ai->move_state)
+	{
+		case AIMS_IDLE:
+			return;
+
+		case AIMS_WALK_L:
+			self->velocity.x = -data->walk_speed;
+			break;
+
+		case AIMS_WALK_R:
+			self->velocity.x = data->walk_speed;
+			break;
+
+		case AIMS_RUN_L:
+			self->velocity.x = -data->run_speed;
+			break;
+
+		case AIMS_RUN_R:
+			self->velocity.x = data->run_speed;
+			break;
+
+		case AIMS_JUMP_L:
+			self->velocity.x = -2;
+			//slog("move state: %i", self->move_state);
+			if (self->move_state == EMS_GROUNDED) self->velocity.y = -data->jump_speed;
+			break;
+
+		case AIMS_JUMP_R:
+			self->velocity.x = 2;
+			if (self->move_state == EMS_GROUNDED) self->velocity.y = -data->jump_speed;
+			break;
+	}
 }
 
 static void monster_get_touch_updates(Entity *self)

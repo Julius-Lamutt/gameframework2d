@@ -251,7 +251,7 @@ static void player_think(Entity* self)
 
 	// handle all player input, including movement
 	player_get_input(self);
-	self->move_state = 2;
+	self->move_state = 2; // reset move state
 
 	player_get_touch_updates(self);
 
