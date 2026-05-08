@@ -56,7 +56,7 @@ static void monster_move(Entity *self);
 * @brief make the monster shoot
 * @param self: the monster to make shoot
 */
-static void monster_shoot(Entity *self)
+static void monster_shoot(Entity *self);
 
 /**
 * @brief get the monster's touch updates for this frame
