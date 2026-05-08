@@ -47,69 +47,78 @@ static void monster_get_touch_updates(Entity *self);
 
 static Entity *monster_load(const char *obj_name)
 {
-	SJson *json, *pjson, *array;
-	const char *name, *filename;
+	SJson *json, *ejson, *mjson, *array;
+	const char *name, *filename, *type;
+	int health, damage, light_rad, monster_type;
 	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
 	Entity *self;
+	MonsterData *data;
 
-	json = sj_load("defs/player.json");
+	json = sj_load("defs/monsters.json");
 	if (!json)
 	{
-		slog("failed to load player config file");
+		slog("failed to load monster config file");
 		return NULL;
 	}
-	pjson = sj_object_get_value(json, "player_entity");
-	if (!pjson)
+	ejson = sj_object_get_value(json, "monster_entity");
+	if (!ejson)
 	{
 		free(json);
-		slog("missing player entity object");
+		slog("missing monster entity object");
+		return NULL;
+	}
+	mjson = entity_object_get_by_name(ejson, obj_name);
+	if (!mjson)
+	{
+		free(json);
+		slog("failed to find monster object '%s'", obj_name);
 		return NULL;
 	}
 
-	name = sj_object_get_value_as_string(pjson, "name");
+	name = sj_object_get_value_as_string(mjson, "name");
 	if (!name)
 	{
 		free(json);
-		slog("missing player entity name");
+		slog("missing monster entity name");
 		return NULL;
 	}
 
-	array = sj_object_get_value(pjson, "box");
+	array = sj_object_get_value(mjson, "box");
 	if (!array)
 	{
 		free(json);
-		slog("missing box object for player entity");
+		slog("missing box object for monster entity");
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 2)
 	{
 		free(json);
-		slog("missing or extra box parameters for player entity");
+		slog("missing or extra box parameters for monster entity");
 		return NULL;
 	}
 	if (!sj_get_float_value(sj_array_get_nth(array, 0), &box_w) ||
 		!sj_get_float_value(sj_array_get_nth(array, 1), &box_h))
 	{
 		free(json);
-		slog("one or more box parameters are invalid for player entity");
+		slog("one or more box parameters are invalid for monster entity");
 		return NULL;
 	}
 	box = gfc_rect(0, 0, box_w, box_h);
 
-	array = sj_object_get_value(pjson, "sprite");
+	array = sj_object_get_value(mjson, "sprite");
 	if (!array)
 	{
 		free(json);
-		slog("missing sprite object for player entity");
+		slog("missing sprite object for monster entity");
 		return NULL;
 	}
 	if (sj_array_get_count(array) != 4)
 	{
 		free(json);
-		slog("missing or extra sprite parameters for player entity");
+		slog("missing or extra sprite parameters for monster entity");
 		return NULL;
 	}
 	filename = sj_get_string_value(sj_array_get_nth(array, 0));
@@ -119,30 +128,85 @@ static Entity *monster_load(const char *obj_name)
 		!sj_get_integer_value(sj_array_get_nth(array, 3), &frames_per_line))
 	{
 		free(json);
-		slog("one or more sprite parameters are invalid for player entity");
+		slog("one or more sprite parameters are invalid for monster entity");
 		return NULL;
 	}
 	sprite = gf2d_sprite_load_all(filename, frame_w, frame_h, frames_per_line, 1);
 
-	if (!sj_object_get_value_as_float(pjson, "fall_speed", &fall_speed))
+	if (!sj_object_get_value_as_float(mjson, "fall_speed", &fall_speed))
 	{
 		free(json);
-		slog("missing fall_speed object for player entity");
+		slog("missing fall_speed object for mosnter entity");
+		return NULL;
+	}
+
+	type = sj_object_get_value_as_string(mjson, "type");
+	if (!type)
+	{
+		free(json);
+		slog("missing type object for monster entity");
+		return NULL;
+	}
+	if (gfc_strlcmp(type, "officer") == 0) monster_type = MT_OFFICER;
+	else if (gfc_strlcmp(type, "soldier") == 0) monster_type = MT_SOLDIER;
+	else if (gfc_strlcmp(type, "swat") == 0) monster_type = MT_SWAT;
+	else if (gfc_strlcmp(type, "technician") == 0) monster_type = MT_TECHNICIAN;
+	else if (gfc_strlcmp(type, "ninja") == 0) monster_type = MT_NINJA;
+	else
+	{
+		free(json);
+		slog("invalid type object for monster entity: '%s'", type);
+		return NULL;
+	}
+
+	if (!sj_object_get_value_as_int(mjson, "health", &health))
+	{
+		free(json);
+		slog("missing health object for monster entity");
+		return NULL;
+	}
+
+	if (!sj_object_get_value_as_int(mjson, "damage", &damage))
+	{
+		free(json);
+		slog("missing damage object for mosnter entity");
+		return NULL;
+	}
+
+	if (!sj_object_get_value_as_int(mjson, "light_rad", &light_rad))
+	{
+		free(json);
+		slog("missing light_rad object for monster entity");
 		return NULL;
 	}
 
 	free(json);
 
+	// set monster basic info
 	self = entity_new();
 	if (!self)
 	{
-		slog("failed to spawn a player entity");
+		slog("failed to spawn a monster entity");
 		return NULL;
 	}
 	gfc_line_cpy(self->name, name);
 	self->box = box;
 	self->sprite = sprite;
 	self->fall_speed = fall_speed;
+
+	// set monster data
+	data = gfc_allocate_array(sizeof(MonsterData), 1);
+	if (!data)
+	{
+		entity_free(self);
+		slog("failed to allocate data for monster entity");
+		return NULL;
+	}
+	self->data = data;
+	data->type = monster_type;
+	data->health = health;
+	data->damage = damage;
+	data->light_rad = light_rad;
 	return self;
 }
 
@@ -151,8 +215,10 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	Entity *self;
 	MonsterData *data;
 
+	// load config
 	self = monster_load(obj_name);
-	if (!self) return NULL;
+	if (!self || !self->data) return NULL;
+	data = (MonsterData*) self->data;
 
 	// player defaults
 	self->layer = EL_MONSTER;
@@ -170,16 +236,6 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	self->think = monster_think;
 	self->update = monster_update;
 	self->free = monster_free;
-
-	// monster data
-	data = gfc_allocate_array(sizeof(MonsterData), 1);
-	if (data)
-	{
-		self->data = data;
-		data->health = 100;
-		data->damage = 30;
-		data->light_rad = 40;
-	}
 	return self;
 }
 

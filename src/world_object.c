@@ -301,6 +301,7 @@ Entity *world_object_load(const char *obj_name)
 	data = gfc_allocate_array(sizeof(WorldObjectData), 1);
 	if (!data)
 	{
+		entity_free(self);
 		slog("failed to allocate world object entity data");
 		return NULL;
 	}
