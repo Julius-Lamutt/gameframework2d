@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "gfc_actions.h"
 #include "collision.h"
 #include "physics.h"
 #include "ai.h"
@@ -8,15 +9,16 @@ static Uint8 ignore_gravity = 0; // prevents falling due to gravity
 
 typedef struct
 {
-	MonsterAI	*ai;		// monster ai
-	Uint32		type;		// monster type
-	Uint16		health;		// monster health
-	Uint16		damage;		// monster damage
-	Uint16		light_rad;	// monster light radius
-	Uint8		walk_speed; // walk speed
-	Uint8		run_speed;	// run speed
-	Uint8		jump_speed; // jump speed
-	Light		*light;		// monster light
+	MonsterAI			*ai;			// monster ai
+	GFC_ActionList		*actions;		// monster animations
+	Uint32				type;			// monster type
+	Uint16				health;			// monster health
+	Uint16				damage;			// monster damage
+	Uint16				light_rad;		// monster light radius
+	Uint8				walk_speed;		// walk speed
+	Uint8				run_speed;		// run speed
+	Uint8				jump_speed;		// jump speed
+	Light				*light;			// monster light
 } MonsterData;
 
 /**
@@ -49,6 +51,12 @@ static void monster_free(Entity *self);
 * @param self: the monster to move
 */
 static void monster_move(Entity *self);
+
+/**
+* @brief make the monster shoot
+* @param self: the monster to make shoot
+*/
+static void monster_shoot(Entity *self)
 
 /**
 * @brief get the monster's touch updates for this frame
@@ -251,10 +259,18 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	MonsterData *data;
 	MonsterAI *ai;
 
-	// load config
+	// load config files
 	self = monster_load(obj_name);
 	if (!self || !self->data) return NULL;
+
 	data = (MonsterData*) self->data;
+	data->actions = gfc_action_list_load("defs/actions/monster_actions.json");
+	if (!data->actions)
+	{
+		slog("failed to get monster animations");
+		entity_free(self);
+		return NULL;
+	}
 
 	// monster will not work without AI
 	ai = gfc_allocate_array(sizeof(MonsterAI), 1);
@@ -347,6 +363,8 @@ static void monster_free(Entity *self)
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
 
+	if (data->actions) gfc_action_list_free(data->actions);
+
 	if (data->ai)
 	{
 		ai = (MonsterAI*) data->ai;
@@ -360,6 +378,7 @@ static void monster_move(Entity *self)
 {
 	MonsterData *data;
 	MonsterAI *ai;
+	GFC_Action *action;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
@@ -370,31 +389,50 @@ static void monster_move(Entity *self)
 	switch (ai->move_state)
 	{
 		case AIMS_IDLE:
+			action = gfc_action_list_get_action(data->actions, "idle");
+			gfc_action_next_frame(action, &self->frame);
 			return;
 
 		case AIMS_WALK_L:
+			self->flip = 1;
+			action = gfc_action_list_get_action(data->actions, "walk");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = -data->walk_speed;
 			break;
 
 		case AIMS_WALK_R:
+			self->flip = 0;
+			action = gfc_action_list_get_action(data->actions, "walk");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = data->walk_speed;
 			break;
 
 		case AIMS_RUN_L:
+			self->flip = 1;
+			action = gfc_action_list_get_action(data->actions, "run");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = -data->run_speed;
 			break;
 
 		case AIMS_RUN_R:
+			self->flip = 0;
+			action = gfc_action_list_get_action(data->actions, "run");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = data->run_speed;
 			break;
 
 		case AIMS_JUMP_L:
+			self->flip = 1;
+			action = gfc_action_list_get_action(data->actions, "jump");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = -2;
-			//slog("move state: %i", self->move_state);
 			if (self->move_state == EMS_GROUNDED) self->velocity.y = -data->jump_speed;
 			break;
 
 		case AIMS_JUMP_R:
+			self->flip = 0;
+			action = gfc_action_list_get_action(data->actions, "jump");
+			gfc_action_next_frame(action, &self->frame);
 			self->velocity.x = 2;
 			if (self->move_state == EMS_GROUNDED) self->velocity.y = -data->jump_speed;
 			break;

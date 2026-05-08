@@ -106,6 +106,7 @@ Entity *entity_new()
 		//set defaults
 		_entity_manager.entity_list[i]._inuse = 1;
 		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
+		_entity_manager.entity_list[i].flip = 1;
 		_entity_manager.entity_list[i].fade = 0;
 		_entity_manager.entity_list[i].scale.x = 1;
 		_entity_manager.entity_list[i].scale.y = 1;
@@ -179,7 +180,7 @@ void entity_system_update()
 
 void entity_draw(Entity *self)
 {
-	GFC_Vector2D position, offset;
+	GFC_Vector2D position, offset, flip;
 	GFC_Color color;
 
 	if (!self) return;
@@ -192,7 +193,12 @@ void entity_draw(Entity *self)
 		// center collision box on the sprite's center
 		self->box = gfc_rect(position.x + ((self->sprite->frame_w - self->box.w) / 2),
 			position.y + ((self->sprite->frame_h - self->box.h) / 2), self->box.w, self->box.h);
+
+		// determine whether sprite should be flipped
+		if (self->flip == 1) flip = gfc_vector2d(1, 0);
+		else flip = gfc_vector2d(0, 0);
 		
+		// set color shift
 		color = gfc_color8(255, 255, 255, 255);
 		if (self->fade) color = gfc_color8(255, 255, 255, 125);
 
@@ -202,7 +208,7 @@ void entity_draw(Entity *self)
 			NULL,
 			NULL,
 			NULL,
-			NULL,
+			&flip,
 			&color,
 			NULL,
 			(Uint32)self->frame);

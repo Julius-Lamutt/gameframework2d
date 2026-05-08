@@ -50,6 +50,7 @@ typedef struct Entity_S
 	// rendering
 	Sprite			*sprite;			/* entity sprite */
 	GFC_Vector2D    scale;				/* sprite scale */
+	Uint8			flip;				/* if true, then flip sprite horizontally */
 	float           rotation;			/* sprite rotation */
 	int				fade;				/* enable/disable fade effect for sprite draws */
 	float			frame;				/* sprite sheet frame to be used for this render frame */

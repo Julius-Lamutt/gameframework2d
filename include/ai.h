@@ -1,7 +1,7 @@
 #ifndef __AI_H__
 #define __AI_H__
 
-#include <SDL.h>
+#include "gfc_vector.h"
 
 typedef enum
 {
@@ -25,8 +25,9 @@ typedef enum
 
 typedef struct
 {
-	Uint32 alert_status;
-	Uint32 move_state;
+	Uint32			alert_status;
+	Uint32			move_state;
+	GFC_Vector2D	last_position;
 } MonsterAI;
 
 /*
