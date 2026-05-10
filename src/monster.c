@@ -301,6 +301,9 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	// monster data
 	data->ai = ai;
 	ai->move_state = AIMS_IDLE;
+	ai->last_attack = 0;
+	ai->toggle = 1;
+	ai->count = 0;
 
 	return self;
 }
@@ -318,8 +321,10 @@ static void monster_think(Entity *self)
 
 	self->velocity.x = 0;
 
-	// TODO: IMPLEMENT BASIC MONSTER MOVEMENT/ACTIONS
-	monster_move(self);
+	// decide what to do next
+	if (ai->next_action == AINA_ATTACK) monster_shoot(self);
+	else if (ai->next_action == AINA_MOVE) monster_move(self);
+
 	self->move_state = 2; // reset move state
 
 	monster_get_touch_updates(self);
@@ -338,6 +343,8 @@ static void monster_update(Entity *self)
 {
 	MonsterData *data;
 	MonsterAI *ai;
+	GFC_Action *action;
+	Uint8 f_anim;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
@@ -350,8 +357,19 @@ static void monster_update(Entity *self)
 	self->position = self->newPosition;
 	ignore_gravity = 0;
 
-	// update ai
-	ai_update(ai);
+	// check if last shooting animation is finished
+	if (SDL_GetTicks() - 450 > ai->last_attack) f_anim = 1;
+	else f_anim = 0;
+
+	ai_update(ai); // update ai
+
+	// update shoting animation if needed
+	if (SDL_GetTicks() - 450 < ai->last_attack)
+	{
+		action = gfc_action_list_get_action(data->actions, "shoot");
+		gfc_action_next_frame(action, &self->frame);
+	}
+	if (f_anim && ai->next_action == AINA_ATTACK) self->frame = 0;
 }
 
 static void monster_free(Entity *self)
@@ -449,9 +467,6 @@ static void monster_shoot(Entity *self)
 
 	if (!data->ai) return;
 	ai = (MonsterAI*) data->ai;
-
-	action = gfc_action_list_get_action(data->actions, "shoot");
-	gfc_action_next_frame(action, &self->frame);
 }
 
 static void monster_get_touch_updates(Entity *self)

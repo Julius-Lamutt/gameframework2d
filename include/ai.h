@@ -5,6 +5,13 @@
 
 typedef enum
 {
+	AINA_NONE,
+	AINA_MOVE,
+	AINA_ATTACK
+} AINextAction;
+
+typedef enum
+{
 	AIMS_IDLE,
 	AIMS_WALK_L,
 	AIMS_WALK_R,
@@ -17,7 +24,12 @@ typedef enum
 
 typedef struct
 {
-	Uint32			move_state;
+	Uint32		next_action;	// what should the monster ai do next
+	Uint32		move_state;		// how should the monster ai move
+	Uint32		last_attack;	// time since last attack (monsters attack anim should last 1 second)
+	Uint32		last_move;		// time since last movement (monsters move anim should last 0.5 seconds)
+	Uint8		toggle;			// 0 = attack, 1 = move right
+	Uint8		count;
 } MonsterAI;
 
 /*
