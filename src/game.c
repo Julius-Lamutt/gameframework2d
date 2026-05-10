@@ -13,6 +13,7 @@
 #include "windows.h"
 #include "camera.h"
 #include "entity.h"
+#include "ai.h"
 #include "main_menu.h"
 #include "inventory_menu.h"
 #include "objectives_menu.h"
@@ -107,6 +108,7 @@ int main(int argc, char *argv[])
     font_init();
     window_system_init(64);
 	entity_system_init(1024);
+    ai_init();
     camera_set_size(gfc_vector2d(1200, 720));
     gfc_input_init("defs/config.json");
     items_init("defs/items.json");
@@ -179,6 +181,7 @@ void game_next_level()
         return;
     }
 
+    ai_cleanup();
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);
@@ -212,6 +215,7 @@ void game_return_to_menu()
 {
     Mix_PlayMusic(menu_music, -1);
     game_pause();
+    ai_cleanup();
     inventory_purge_data("defs/inventory_data.json");
     window_free(inv);
     level = 0;
