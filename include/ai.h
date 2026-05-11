@@ -28,8 +28,6 @@ typedef struct
 	Uint32		move_state;		// how should the monster ai move
 	Uint32		last_attack;	// time since last attack (monsters attack anim should last 1 second)
 	Uint32		last_move;		// time since last movement (monsters move anim should last 0.5 seconds)
-	Uint8		toggle;			// 0 = attack, 1 = move right
-	Uint8		count;
 } MonsterAI;
 
 /*
@@ -51,16 +49,19 @@ void ai_cleanup();
 void ai_set_player_id(Sint32 id);
 
 /*
-* @brief get the player id from the ai system
-* @return -1 if the ai does not have the player id, the player id otherwise
+* @brief Get the player pos from the ai system.
+* @return The player's position. If the player's position cannot be found,
+* {0, 0} will be returned instead.
 */
-Sint32 ai_get_player_id();
+GFC_Vector2D ai_get_player_pos();
 
 /*
 * @brief update the monster ai
 * @param ai: the ai to update
+* @param pos: the position of the monster
+* @param view_dir: the current view direction of the monster
 */
-void ai_update_monster(MonsterAI *ai);
+void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir);
 
 /*
 * @brief set the ai move state

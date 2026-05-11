@@ -39,11 +39,17 @@ void physics_get_velocity(GFC_Rect box, GFC_Vector2D *velocity, float *fall_spee
 * @param box: the bounding box of the entity
 * @param velocity: the velocity of the entity
 * @param fall_speed: the maximum fall speed
-* @param collision_type: whether an object falls (0), sticks (1), or bounces (2) during a collision
+* @param type: whether an object falls (0), sticks (1), or bounces (2) during a collision
+* @param made_contact: becomes 1 if collision occurs, 0 otherwise
 */
 void physics_get_velocity_based_on_collision(GFC_Rect box, GFC_Vector2D *velocity, float *fall_speed, Uint32 type, Uint8 *made_contact);
 
-// HACK: delete later
-GFC_Vector2D physics_collide_with_world(GFC_Rect box, GFC_Vector2D *velocity);
+/*
+* @brief determines if there is a wall between two points
+* @param a: the first point
+* @param b: the second point
+* @return 1 if there is a wall, 0 otherwise
+*/
+Uint8 physics_wall_between_points(GFC_Vector2D a, GFC_Vector2D b);
 
 #endif

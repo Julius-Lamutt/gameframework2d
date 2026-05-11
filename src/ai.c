@@ -1,8 +1,20 @@
 #include <string.h>
 #include "simple_logger.h"
+#include "entity.h"
 #include "ai.h"
 
+/*
+* @brief closes the ai system
+*/
 static void ai_close();
+
+/*
+* @brief determine whether a monster can see the player
+* @param ai: the ai to check for player sightings
+* @param pos: the position of the monster
+* @param view_dir: the viewing direction of the monster (left/right)
+*/
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir);
 
 typedef enum
 {
@@ -48,12 +60,16 @@ void ai_set_player_id(Sint32 id)
 	level_ai.player_id = id;
 }
 
-Sint32 ai_get_player_id()
+GFC_Vector2D ai_get_player_pos()
 {
-	return level_ai.player_id;
+	Entity *player;
+	
+	player = entity_get_by_id(level_ai.player_id);
+	if (!player) return gfc_vector2d(0, 0);
+	return player->position;
 }
 
-void ai_update_monster(MonsterAI *ai)
+void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 {
 	if (!ai) return;
 
@@ -66,29 +82,29 @@ void ai_update_monster(MonsterAI *ai)
 	// if in a moving animation, keep moving
 	else if (SDL_GetTicks() - ai->last_move < 250) return;
 	
-	if (ai->toggle == 0 && SDL_GetTicks() - ai->last_move > 2500)
+	if (ai_monster_can_see(ai, pos, view_dir))
 	{
 		ai->next_action = AINA_ATTACK;
 		ai->last_attack = SDL_GetTicks();
-		ai->toggle = 1;
 	}
-	else if (ai->toggle == 1)
-	{
-		ai->count++;
-		if (ai->count != 2)
-		{
-			ai->next_action = AINA_ATTACK;
-			ai->last_attack = SDL_GetTicks();
-		}
-		else
-		{
-			ai->next_action = AINA_MOVE;
-			ai->last_move = SDL_GetTicks();
-			ai_set_move_state(ai, AIMS_WALK_R);
-			ai->toggle = 0;
-			ai->count = 0;
-		}
-	}
+}
+
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
+{
+	GFC_Vector2D vec;
+	float dot;
+
+	if (!ai) return;
+
+
+
+	gfc_vector2d_sub(vec, pos, entity_get_by_id(level_ai.player_id)->position);
+
+	// determine if player is in monster's vision cone
+	gfc_vector2d_normalize(&vec);
+	dot = view_dir.x * vec.x + view_dir.y *vec.y;
+	if (dot > 0.6) return 1;
+	else return 0;
 }
 
 void ai_set_move_state(MonsterAI *ai, Uint32 move_state)

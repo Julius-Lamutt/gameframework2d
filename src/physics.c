@@ -78,7 +78,7 @@ void physics_get_velocity_based_on_collision(GFC_Rect box, GFC_Vector2D *velocit
 	}
 	else if (type == 1)
 	{
-		if (made_contact && *made_contact) velocity->x = velocity->y = *fall_speed = 0;
+		if (collision.x && collision.y) velocity->x = velocity->y = *fall_speed = 0;
 	}
 	else if (type == 2)
 	{
@@ -89,7 +89,7 @@ void physics_get_velocity_based_on_collision(GFC_Rect box, GFC_Vector2D *velocit
 	else slog("invalid collision type");
 }
 
-GFC_Vector2D physics_collide_with_world(GFC_Rect box, GFC_Vector2D *velocity)
+Uint8 physics_wall_between_points(GFC_Vector2D a, GFC_Vector2D b)
 {
-	return collide_with_world(physics_system.tile_count, physics_system.physics_layer, box, *velocity);
+
 }

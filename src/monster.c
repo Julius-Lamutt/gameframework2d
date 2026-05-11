@@ -20,6 +20,7 @@ typedef struct
 	Uint8				walk_speed;		// walk speed
 	Uint8				run_speed;		// run speed
 	Uint8				jump_speed;		// jump speed
+	Uint8				view_dir;		// 0 = left, 1, = right
 	Light				*light;			// monster light
 } MonsterData;
 
@@ -310,8 +311,6 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	data->ai = ai;
 	ai->move_state = AIMS_IDLE;
 	ai->last_attack = 0;
-	ai->toggle = 1;
-	ai->count = 0;
 
 	return self;
 }
@@ -352,6 +351,7 @@ static void monster_update(Entity *self)
 	MonsterData *data;
 	MonsterAI *ai;
 	GFC_Action *action;
+	GFC_Vector2D dir;
 	Uint8 f_anim;
 
 	if (!self || !self->data) return;
@@ -376,7 +376,10 @@ static void monster_update(Entity *self)
 	if (SDL_GetTicks() - 450 > ai->last_attack) f_anim = 1;
 	else f_anim = 0;
 
-	ai_update_monster(ai); // update ai
+	// update monster ai
+	if (self->flip) dir = gfc_vector2d(1, 0);
+	else dir = gfc_vector2d(-1, 0);
+	ai_update_monster(ai, self->position, dir);
 
 	// update shoting animation if needed
 	if (SDL_GetTicks() - 450 < ai->last_attack)
@@ -476,6 +479,7 @@ static void monster_shoot(Entity *self)
 	MonsterData *data;
 	MonsterAI *ai;
 	GFC_Vector2D dir;
+	GFC_Sound *sound;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
@@ -483,12 +487,12 @@ static void monster_shoot(Entity *self)
 	if (!data->ai) return;
 	ai = (MonsterAI*) data->ai;
 
-	if (ai_get_player_id() != -1)
-	{
-		gfc_vector2d_sub(dir, entity_get_by_id(ai_get_player_id())->position, self->position);
-		gfc_vector2d_normalize(&dir);
-		projectile_new(self, dir, "projectile_bullet");
-	}
+	gfc_vector2d_sub(dir, ai_get_player_pos(), self->position);
+	gfc_vector2d_normalize(&dir);
+	projectile_new(self, dir, "projectile_bullet");
+	sound = gfc_sound_load("audio/gunshot.wav", 30, 3);
+	gfc_sound_play(sound, 0, 30, -1, -1);
+	gfc_sound_free(sound);
 }
 
 static void monster_die(Entity *self)

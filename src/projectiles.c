@@ -197,7 +197,7 @@ Entity *projectile_new(Entity *owner, GFC_Vector2D dir, const char *proj_name)
 	self->position = owner->position;
 	if (gfc_strlcmp(self->name, "projectile_shuriken") == 0)
 	{
-		gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 30, dir.y * 30));
+		gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 35, 0));
 		gfc_vector2d_scale(self->velocity, dir, 12);
 	}
 	else if (gfc_strlcmp(self->name, "projectile_bullet") == 0)

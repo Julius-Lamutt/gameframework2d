@@ -78,7 +78,7 @@ static void game_update();
 static void game_render();
 
 // game flags
-const Bool f_collision_draw = false; // for collision debugging
+const Bool f_collision_draw = true; // for collision debugging
 
 // game variables
 static Uint8 done = 0;                      // closes the window

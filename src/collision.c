@@ -77,6 +77,11 @@ GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_
 	return gfc_vector2d(0, 0);
 }
 
+Uint8 collide_with_world_line(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Vector2D a, GFC_Vector2D b)
+{
+
+}
+
 Uint8 collide_with_world_floor_or_ceiling(Uint32 tile_count, GFC_Rect* physics_layer, GFC_Rect box)
 {
 	int i;
