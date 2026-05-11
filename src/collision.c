@@ -79,7 +79,36 @@ GFC_Vector2D collide_with_world(Uint32 tile_count, GFC_Rect *physics_layer, GFC_
 
 Uint8 collide_with_world_line(Uint32 tile_count, GFC_Rect *physics_layer, GFC_Vector2D a, GFC_Vector2D b)
 {
+	int i;
+	float m, step;
+	GFC_Rect tile;
+	GFC_Vector2D offset, p1, p2, p3, p4, p5;
 
+	offset = camera_get_offset();
+
+	// create line segments
+	m = (b.y - a.y) / (b.x - a.x);
+	step = (b.x - a.x) / 5;
+	p1 = gfc_vector2d(a.x + step, m * step + a.y);
+	p2 = gfc_vector2d(a.x + step * 2, m * step * 2 + a.y);
+	p3 = gfc_vector2d(a.x + step * 3, m * step * 3 + a.y);
+	p4 = gfc_vector2d(a.x + step * 4, m * step * 4 + a.y);
+	p5 = gfc_vector2d(a.x + step * 5, m * step * 5 + a.y);
+
+	for (i = 0; i < tile_count; i++)
+	{
+		tile.x = physics_layer[i].x;
+		tile.y = physics_layer[i].y;
+		tile.w = physics_layer[i].w;
+		tile.h = physics_layer[i].h;
+
+		if (gfc_point_in_rect(p1, tile) ||
+			gfc_point_in_rect(p2, tile) ||
+			gfc_point_in_rect(p3, tile) ||
+			gfc_point_in_rect(p4, tile) ||
+			gfc_point_in_rect(p5, tile)) return 1;
+	}
+	return 0;
 }
 
 Uint8 collide_with_world_floor_or_ceiling(Uint32 tile_count, GFC_Rect* physics_layer, GFC_Rect box)

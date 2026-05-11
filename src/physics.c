@@ -91,5 +91,12 @@ void physics_get_velocity_based_on_collision(GFC_Rect box, GFC_Vector2D *velocit
 
 Uint8 physics_wall_between_points(GFC_Vector2D a, GFC_Vector2D b)
 {
-
+	if (a.x < b.x)
+	{
+		return collide_with_world_line(physics_system.tile_count, physics_system.physics_layer, a, b);
+	}
+	else
+	{
+		collide_with_world_line(physics_system.tile_count, physics_system.physics_layer, b, a);
+	}
 }
