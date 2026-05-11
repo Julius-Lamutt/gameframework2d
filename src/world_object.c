@@ -529,7 +529,10 @@ void world_object_get_touch_updates(Entity *self)
 		}
 		else if (other->layer == EL_PROJECTILE)
 		{
-			if (data->trigger_type == WOTT_PROJECTILE) data->triggered = 1;
+			if (data->trigger_type == WOTT_PROJECTILE)
+			{
+				if (gfc_strlcmp(other->name, "projectile_shuriken") == 0) data->triggered = 1;
+			}
 		}
 	}
 }

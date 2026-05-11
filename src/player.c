@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
+#include "gfc_audio.h"
 #include "ai.h"
 #include "inventory_menu.h"
 #include "objectives_menu.h"
@@ -16,6 +17,7 @@
 #include "player.h"
 
 extern void game_next_level();
+extern void game_return_to_menu();
 
 static int item1 = 0;
 static int item2 = 0;
@@ -31,6 +33,7 @@ typedef struct
 	int				smoke_invis_start;
 	int				jump_anim;
 	int				jump_anim_start;
+	Sint16			health;
 } ClientData;
 
 Uint8 player_focus = 1; // should camera focus on player right now
@@ -66,6 +69,12 @@ static void player_free(Entity *self);
 * @param self: the player to handle inputs for
 */
 static void player_get_input(Entity *self);
+
+/**
+* @brief kill the player
+* @param self: the player to kill
+*/
+static void player_die(Entity *self);
 
 /**
 * @brief get the player's touch updates for this frame
@@ -209,6 +218,7 @@ Entity *player_new(GFC_Vector2D position)
 		data->active_drone = 0;
 		data->smoke_invis = 0;
 		data->jump_anim = 0;
+		data->health = 100;
 	}
 
 	// tell ai that the player exists
@@ -298,6 +308,8 @@ static void player_update(Entity* self)
 		item4 = 0;
 		item5 = 0;
 	}
+
+	if (data->health <= 0) player_die(self);
 }
 
 static void player_free(Entity *self)
@@ -402,6 +414,17 @@ static void player_get_input(Entity *self)
 	}
 }
 
+static void player_die(Entity *self)
+{
+	GFC_Sound *sound;
+
+	if (!self) return;
+	sound = gfc_sound_load("audio/player_die.wav", 30, 2);
+	gfc_sound_play(sound, 0, 30, -1, -1);
+	gfc_sound_free(sound);
+	game_return_to_menu();
+}
+
 static void player_get_touch_updates(Entity *self)
 {
 	int i, c;
@@ -471,6 +494,11 @@ static void player_get_touch_updates(Entity *self)
 			if (gfc_strlcmp(other->name, "projectile_shuriken") == 0)
 			{
 				inventory_add_item(&data->inventory, "tool_shuriken");
+				entity_free(other);
+			}
+			else if (gfc_strlcmp(other->name, "projectile_bullet") == 0)
+			{
+				data->health -= 20;
 				entity_free(other);
 			}
 		}

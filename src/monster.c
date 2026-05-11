@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "gfc_actions.h"
+#include "gfc_audio.h"
 #include "collision.h"
 #include "physics.h"
 #include "projectiles.h"
@@ -13,7 +14,7 @@ typedef struct
 	MonsterAI			*ai;			// monster ai
 	GFC_ActionList		*actions;		// monster animations
 	Uint32				type;			// monster type
-	Uint16				health;			// monster health
+	Sint16				health;			// monster health
 	Uint16				damage;			// monster damage
 	Uint16				light_rad;		// monster light radius
 	Uint8				walk_speed;		// walk speed
@@ -492,7 +493,12 @@ static void monster_shoot(Entity *self)
 
 static void monster_die(Entity *self)
 {
+	GFC_Sound *sound;
+
 	if (!self) return;
+	sound = gfc_sound_load("audio/monster_die.wav", 30, 2);
+	gfc_sound_play(sound, 0, 30, -1, -1);
+	gfc_sound_free(sound);
 	entity_free(self);
 }
 
@@ -531,6 +537,8 @@ static void monster_get_touch_updates(Entity *self)
 			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
+			else if (gfc_strlcmp(other->name, "object_bad_stalagmite_fall") == 0) monster_die(self);
+			else if (gfc_strlcmp(other->name, "object_light_fall") == 0) monster_die(self);
 			else
 			{
 				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);

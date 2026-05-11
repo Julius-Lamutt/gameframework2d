@@ -257,8 +257,16 @@ void projectile_update(Entity *self)
 	if (destroy_rope && destroy_stalagmite) objective_complete(win, 2);
 
 	// destroy projectile if certain conditions are met
-	if (data->distance >= self->range || data->proj_kill) entity_free(self);
-	if (gfc_strlcmp(self->name, "projectile_bullet") == 0 && data->made_contact) entity_free(self);
+	if (data->distance >= self->range || data->proj_kill)
+	{
+		entity_free(self);
+		return;
+	}
+	if (gfc_strlcmp(self->name, "projectile_bullet") == 0 && data->made_contact)
+	{
+		entity_free(self);
+		return;
+	}
 }
 
 void projectile_free(Entity *self)
