@@ -180,7 +180,7 @@ Entity *projectile_load(const char *proj_name)
 	return self;
 }
 
-Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
+Entity *projectile_new(Entity *owner, GFC_Vector2D dir, const char *proj_name)
 {
 	Entity* self;
 	ProjectileData* data;
@@ -195,9 +195,16 @@ Entity *projectile_new(Entity* owner, GFC_Vector2D dir, const char *proj_name)
 	self->frame = 0;
 
 	self->position = owner->position;
-	gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 30, dir.y * 30));
+	if (gfc_strlcmp(self->name, "projectile_shuriken") == 0)
+	{
+		gfc_vector2d_add(self->position, self->position, gfc_vector2d(dir.x * 30, dir.y * 30));
+		gfc_vector2d_scale(self->velocity, dir, 12);
+	}
+	else if (gfc_strlcmp(self->name, "projectile_bullet") == 0)
+	{
+		gfc_vector2d_scale(self->velocity, dir, 8);
+	}
 	self->newPosition = self->position;
-	gfc_vector2d_scale(self->velocity, dir, 12);
 
 	self->range = 1000;
 	self->owner = owner;
@@ -228,8 +235,7 @@ void projectile_think(Entity *self)
 	projectile_get_touch_updates(self);
 
 	// get current velocity, then get new position
-	float fall_speed = 4;
-	physics_get_velocity_based_on_collision(self->box, &self->velocity, &fall_speed, PCT_STICK, &data->made_contact);
+	physics_get_velocity_based_on_collision(self->box, &self->velocity, &self->fall_speed, PCT_STICK, &data->made_contact);
 	gfc_vector2d_add(self->newPosition, self->newPosition, self->velocity);
 }
 
@@ -252,6 +258,7 @@ void projectile_update(Entity *self)
 
 	// destroy projectile if certain conditions are met
 	if (data->distance >= self->range || data->proj_kill) entity_free(self);
+	if (gfc_strlcmp(self->name, "projectile_bullet") == 0 && data->made_contact) entity_free(self);
 }
 
 void projectile_free(Entity *self)

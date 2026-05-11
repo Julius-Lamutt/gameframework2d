@@ -45,10 +45,22 @@ void ai_init();
 void ai_cleanup();
 
 /*
+* @brief set the player id for the ai system
+* @param id: the id of the player
+*/
+void ai_set_player_id(Sint32 id);
+
+/*
+* @brief get the player id from the ai system
+* @return -1 if the ai does not have the player id, the player id otherwise
+*/
+Sint32 ai_get_player_id();
+
+/*
 * @brief update the monster ai
 * @param ai: the ai to update
 */
-void ai_update(MonsterAI *ai);
+void ai_update_monster(MonsterAI *ai);
 
 /*
 * @brief set the ai move state

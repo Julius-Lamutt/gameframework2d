@@ -2,6 +2,7 @@
 #include "gfc_actions.h"
 #include "collision.h"
 #include "physics.h"
+#include "projectiles.h"
 #include "ai.h"
 #include "monster.h"
 
@@ -57,6 +58,12 @@ static void monster_move(Entity *self);
 * @param self: the monster to make shoot
 */
 static void monster_shoot(Entity *self);
+
+/*
+* @brief kill the monster
+* @param self: the monster to kill
+*/
+static void monster_die(Entity *self);
 
 /**
 * @brief get the monster's touch updates for this frame
@@ -351,6 +358,13 @@ static void monster_update(Entity *self)
 
 	if (!data->ai) return;
 	ai = (MonsterAI*) data->ai;
+
+	// kill monster if it is out of health
+	if (data->health <= 0)
+	{
+		monster_die(self);
+		return;
+	}
 	
 	// update physics
 	physics_update_move_state(self->box, &self->move_state);
@@ -361,7 +375,7 @@ static void monster_update(Entity *self)
 	if (SDL_GetTicks() - 450 > ai->last_attack) f_anim = 1;
 	else f_anim = 0;
 
-	ai_update(ai); // update ai
+	ai_update_monster(ai); // update ai
 
 	// update shoting animation if needed
 	if (SDL_GetTicks() - 450 < ai->last_attack)
@@ -460,6 +474,35 @@ static void monster_shoot(Entity *self)
 {
 	MonsterData *data;
 	MonsterAI *ai;
+	GFC_Vector2D dir;
+
+	if (!self || !self->data) return;
+	data = (MonsterData*) self->data;
+
+	if (!data->ai) return;
+	ai = (MonsterAI*) data->ai;
+
+	if (ai_get_player_id() != -1)
+	{
+		gfc_vector2d_sub(dir, entity_get_by_id(ai_get_player_id())->position, self->position);
+		gfc_vector2d_normalize(&dir);
+		projectile_new(self, dir, "projectile_bullet");
+	}
+}
+
+static void monster_die(Entity *self)
+{
+	if (!self) return;
+	entity_free(self);
+}
+
+static void monster_get_touch_updates(Entity *self)
+{
+	int i, c;
+	Entity *other;
+	GFC_Vector2D collision;
+	MonsterData *data;
+	MonsterAI *ai;
 	GFC_Action *action;
 
 	if (!self || !self->data) return;
@@ -467,16 +510,6 @@ static void monster_shoot(Entity *self)
 
 	if (!data->ai) return;
 	ai = (MonsterAI*) data->ai;
-}
-
-static void monster_get_touch_updates(Entity *self)
-{
-	int i, c;
-	Entity *other;
-	
-	GFC_Vector2D collision;
-
-	if (!self) return;
 
 	entity_get_entity_touches(self); // get entities touched this frame
 
@@ -489,6 +522,7 @@ static void monster_get_touch_updates(Entity *self)
 		{
 			if (gfc_strlcmp(other->name, "projectile_shuriken") == 0)
 			{
+				data->health -= 100;
 				entity_free(other);
 			}
 		}

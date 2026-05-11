@@ -16,6 +16,7 @@ typedef struct
 {
 	Uint32			alert_status;	// current level AI alert status
 	GFC_Vector2D	last_position;	// last known position of the player
+	Sint32			player_id;		// the entity id of the current player (used to get player when needed)
 } LevelAI;
 
 static LevelAI level_ai = {0};
@@ -24,6 +25,7 @@ void ai_init()
 {
 	level_ai.alert_status = AIAS_NORMAL;
 	level_ai.last_position = gfc_vector2d(0, 0);
+	level_ai.player_id = -1;
 	atexit(ai_close);
 	slog("ai system initialized");
 }
@@ -38,9 +40,20 @@ void ai_cleanup()
 {
 	level_ai.alert_status = AIAS_NORMAL;
 	level_ai.last_position = gfc_vector2d(0, 0);
+	level_ai.player_id = -1;
 }
 
-void ai_update(MonsterAI *ai)
+void ai_set_player_id(Sint32 id)
+{
+	level_ai.player_id = id;
+}
+
+Sint32 ai_get_player_id()
+{
+	return level_ai.player_id;
+}
+
+void ai_update_monster(MonsterAI *ai)
 {
 	if (!ai) return;
 
