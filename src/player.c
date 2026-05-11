@@ -3,6 +3,7 @@
 #include "gfc_input.h"
 #include "gfc_shape.h"
 #include "gfc_vector.h"
+#include "ai.h"
 #include "inventory_menu.h"
 #include "objectives_menu.h"
 #include "physics.h"
@@ -209,6 +210,10 @@ Entity *player_new(GFC_Vector2D position)
 		data->smoke_invis = 0;
 		data->jump_anim = 0;
 	}
+
+	// tell ai that the player exists
+	ai_set_player_id(self->id);
+
 	return self;
 }
 
