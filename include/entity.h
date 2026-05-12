@@ -69,6 +69,9 @@ typedef struct Entity_S
 	struct Entity_S	*proj;				/* projectile entity */
 	struct Entity_S	*victim;			/* entity that was hit with the projectile */
 
+	// miscellaneous
+	Uint8			hidden;				/* 1 if other entities can see this entity, 0 otherwise */
+
 	// functions & custom data
 	void (*think)(struct Entity_S *self);
 	void (*update)(struct Entity_S *self);

@@ -204,6 +204,8 @@ Entity *player_new(GFC_Vector2D position)
 
 	self->proj = NULL;
 
+	self->hidden = 0;
+
 	self->think = player_think;
 	self->update = player_update;
 	self->free = player_free;
@@ -243,11 +245,13 @@ static void player_think(Entity* self)
 	mx += screen.x;
 	my += screen.y;
 
+	self->hidden = 0;
 	self->velocity.x = 0;
 
 	// check smoke state
 	if (data->smoke_invis)
 	{
+		self->hidden = 1;
 		if (SDL_GetTicks() - data->smoke_invis_start > 5000)
 		{
 			data->smoke_invis = 0;
@@ -504,7 +508,7 @@ static void player_get_touch_updates(Entity *self)
 		}
 		else if (other->layer == EL_WORLD)
 		{
-			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
+			if (gfc_strlcmp(other->name, "object_grass") == 0) self->hidden = 1;
 			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
 			else

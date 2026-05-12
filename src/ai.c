@@ -131,7 +131,7 @@ static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D vi
 	player = entity_get_by_id(level_ai.player_id);
 	if (!player) return 0;
 
-	// is player hidden
+	if (player->hidden) return 0;
 	if (!gfc_vector2d_distance_between_less_than(player->position, pos, level_ai.sight_distance)) return 0; // is player too far?
 	if (!physics_object_in_light(player->box)) return 0; // is player in the dark?
 	if (physics_wall_between_points(pos, player->position)) return 0; // any walls?
@@ -141,7 +141,7 @@ static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D vi
 	gfc_vector2d_normalize(&vec);
 	dot = view_dir.x * vec.x + view_dir.y *vec.y;
 	if (dot > level_ai.sight_cone) return 1;
-	else return 0;
+	return 0;
 }
 
 void ai_set_move_state(MonsterAI *ai, Uint32 move_state)

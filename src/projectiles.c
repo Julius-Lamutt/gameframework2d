@@ -298,7 +298,10 @@ void projectile_get_touch_updates(Entity *self)
 		if (!other) continue;
 		if (other->layer == EL_WORLD)
 		{
-			data->proj_kill = 1;
+			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
+			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
+			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
+			else data->proj_kill = 1;
 		}
 	}
 }

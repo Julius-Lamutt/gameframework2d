@@ -26,17 +26,6 @@ typedef struct
 World *world_load(const char *filename);
 
 /**
-* @brief save the current world state for future use
-*/
-void world_save();
-
-/**
-* @brief create a world config file
-* @param filename: the name of the createdconfig file
-*/
-void world_create(const char *filename);
-
-/**
  * @brief allocate a new empty world
  * @param width: how many tiles wide the map is
  * @param height: how many tiles tall the map is
