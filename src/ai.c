@@ -131,8 +131,9 @@ static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D vi
 	player = entity_get_by_id(level_ai.player_id);
 	if (!player) return 0;
 
-	// is player hidden?
+	// is player hidden
 	if (!gfc_vector2d_distance_between_less_than(player->position, pos, level_ai.sight_distance)) return 0; // is player too far?
+	if (!physics_object_in_light(player->box)) return 0; // is player in the dark?
 	if (physics_wall_between_points(pos, player->position)) return 0; // any walls?
 
 	// determine if player is in monster's vision cone

@@ -165,7 +165,7 @@ void game_new()
     level++;
     world = world_load("defs/maps/level_1.json"); //level_1
     world_setup_camera(world);
-    physics_update_world_data(world->tileCount, world->physicsLayer);
+    physics_update_world_data(world->tileCount, world->physicsLayer, world->shadowMap->lights);
 }
 
 void game_load(const char *filename)
@@ -182,6 +182,7 @@ void game_next_level()
     }
 
     ai_cleanup();
+    physics_cleanup();
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);
@@ -208,7 +209,7 @@ void game_next_level()
     }
     level++;
     world_setup_camera(world);
-    physics_update_world_data(world->tileCount, world->physicsLayer);
+    physics_update_world_data(world->tileCount, world->physicsLayer, world->shadowMap->lights);
 }
 
 void game_return_to_menu()
@@ -219,6 +220,7 @@ void game_return_to_menu()
     inventory_purge_data("defs/inventory_data.json");
     window_free(inv);
     level = 0;
+    physics_cleanup();
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);

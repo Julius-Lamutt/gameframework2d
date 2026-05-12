@@ -60,4 +60,12 @@ Uint8 collide_with_world_floor_or_ceiling(Uint32 tile_count, GFC_Rect *physics_l
 */
 Uint8 collide_with_object_floor_or_ceiling(GFC_Rect self_box, GFC_Rect other_box);
 
+/*
+* @brief test to see if entity is in light
+* @param light_physics: the collision circles representing light sources in the world
+* @param box: the boundin gbox of the entity
+* @return 1 if entity is in light, 0 otherwise
+*/
+Uint8 collide_with_light(GFC_Circle *light_physics, GFC_Rect box);
+
 #endif

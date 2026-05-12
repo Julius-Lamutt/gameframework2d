@@ -162,3 +162,25 @@ Uint8 collide_with_object_floor_or_ceiling(GFC_Rect self_box, GFC_Rect other_box
 	}
 	return 2; // falling
 }
+
+Uint8 collide_with_light(GFC_Circle *light_physics, GFC_Rect box)
+{
+	int i, c;
+	GFC_Circle *ptr, circle;
+	GFC_Vector2D offset;
+
+	offset = camera_get_offset();
+	box.x -= offset.x;
+	box.y -= offset.y;
+
+	c = gfc_list_get_count(light_physics);
+	for (i = 0; i < c; i++)
+	{
+		ptr = gfc_list_get_nth(light_physics, i);
+		if (!ptr) continue;
+		circle = *ptr;
+
+		if (gfc_circle_rect_overlap(circle, box)) return 1;
+	}
+	return 0;
+}

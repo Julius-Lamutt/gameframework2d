@@ -8,30 +8,60 @@ typedef struct
 {
 	Uint32		tile_count;
 	GFC_Rect	*physics_layer;
+	GFC_Circle	*light_physics;
 } PhysicsSystem;
 
 PhysicsSystem physics_system = {0};
 
 const float gravity = 0.13;
 
-/*
-* @brief cleanup the physics system
-*/
-void physics_cleanup();
-
 void physics_init()
 {
 	atexit(physics_cleanup);
 }
 
-void physics_update_world_data(Uint32 tile_count, GFC_Rect *physics_layer)
+void physics_update_world_data(Uint32 tile_count, GFC_Rect *physics_layer, Light *lights)
 {
+	int i, c;
+	GFC_List *light_physics;
+	Light *light;
+
+	if (!physics_layer || !lights) return;
+
+	light_physics = gfc_list_new();
+	if (!light_physics)
+	{
+		slog("failed to allocate a list for light physics");
+		return;
+	}
+
+	c = gfc_list_get_count(lights);
+	for (i = 0; i < c; i++)
+	{
+		GFC_Circle *circle = gfc_allocate_array(sizeof(GFC_Circle), 1);
+
+		light = gfc_list_get_nth(lights, i);
+		if (!light) continue;
+
+		circle->x = light->pos.x;
+		circle->y = light->pos.y;
+		circle->r = light->r1 * 64;
+		gfc_list_append(light_physics, circle);
+	}
+
 	physics_system.tile_count = tile_count;
 	physics_system.physics_layer = physics_layer;
+	physics_system.light_physics = light_physics;
 }
 
 void physics_cleanup()
 {
+	if (physics_system.light_physics)
+	{
+		gfc_list_foreach(physics_system.light_physics, (gfc_work_func*)free);
+		gfc_list_delete(physics_system.light_physics);
+	}
+
 	memset(&physics_system, 0, sizeof(PhysicsSystem));
 	slog("physics system closed");
 }
@@ -99,4 +129,9 @@ Uint8 physics_wall_between_points(GFC_Vector2D a, GFC_Vector2D b)
 	{
 		collide_with_world_line(physics_system.tile_count, physics_system.physics_layer, b, a);
 	}
+}
+
+Uint8 physics_object_in_light(GFC_Rect box)
+{
+	return collide_with_light(physics_system.light_physics, box);
 }
