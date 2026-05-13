@@ -68,6 +68,11 @@ void game_start_editor();
 void game_exit_editor();
 
 /*
+* @brief update current music if ai alert status changes
+*/
+static void game_update_music();
+
+/*
 * @brief update systems that require updates at fixed intervals
 */
 static void game_update();
@@ -94,6 +99,7 @@ static Uint8 level = 0;                     // current level (max of 3)
 
 static Window *win, *obj, *edit, *inv;      // windows
 static Mix_Music *menu_music, *level_music; // game music
+static Uint32 ai_status_temp;               // temp for ai status
 
 int main(int argc, char *argv[])
 {
@@ -119,7 +125,6 @@ int main(int argc, char *argv[])
     obj = objectives_menu();
     obj->hidden = 1;
     menu_music = gfc_sound_load_music("audio/menu_music.wav");
-    level_music = gfc_sound_load_music("audio/level_music.wav");
     mouse = gf2d_sprite_load_all("images/pointer.png",32,32,16,0);
     mouse_color = gfc_color8(200, 30, 30, 255);
     Mix_PlayMusic(menu_music, -1);
@@ -158,14 +163,19 @@ void game_exit() {done = 1;}
 
 void game_new()
 {
-    Mix_PlayMusic(level_music, -1);
     game_start();
+
     inventory_purge_data("defs/inventory_data.json");
     inv = inventory_menu();
+
     level++;
-    world = world_load("defs/maps/level_1.json"); //level_1
+    world = world_load("defs/maps/level_1.json");
     world_setup_camera(world);
     physics_update_world_data(world->tileCount, world->physicsLayer, world->shadowMap->lights);
+
+    level_music = gfc_sound_load_music("audio/level_music_normal.wav");
+    ai_status_temp = 1;
+    Mix_PlayMusic(level_music, -1);
 }
 
 void game_load(const char *filename)
@@ -192,12 +202,20 @@ void game_next_level()
     {
         inv = inventory_menu();
         world = world_load("defs/maps/level_2.json");
+
+        Mix_FreeMusic(level_music);
+        level_music = gfc_sound_load_music("audio/level_music_normal.wav");
+        ai_status_temp = 1;
         Mix_PlayMusic(level_music, -1);
     }
     else if (level == 2)
     {
         inv = inventory_menu();
         world = world_load("defs/maps/level_3.json");
+
+        Mix_FreeMusic(level_music);
+        level_music = gfc_sound_load_music("audio/level_music_normal.wav");
+        ai_status_temp = 1;
         Mix_PlayMusic(level_music, -1);
     }
     else
@@ -214,16 +232,22 @@ void game_next_level()
 
 void game_return_to_menu()
 {
-    Mix_PlayMusic(menu_music, -1);
     game_pause();
+
+    Mix_FreeMusic(level_music);
+    Mix_PlayMusic(menu_music, -1);
+
     ai_cleanup();
+
     inventory_purge_data("defs/inventory_data.json");
     window_free(inv);
+
     level = 0;
     physics_cleanup();
     world_free(world);
     world = NULL;
     entity_system_clear(NULL);
+
     win = main_menu();
 }
 
@@ -238,6 +262,32 @@ void game_exit_editor()
     win = main_menu();
 }
 
+static void game_update_music()
+{
+    Uint32 status = ai_get_alert_state();
+
+    if (ai_status_temp != status)
+    {
+        Mix_FreeMusic(level_music);
+        if (status == 1)
+        {
+            level_music = gfc_sound_load_music("audio/level_music_normal.wav");
+            Mix_PlayMusic(level_music, -1);
+        }
+        else if (status == 2)
+        {
+            level_music = gfc_sound_load_music("audio/level_music_caution.wav");
+            Mix_PlayMusic(level_music, -1);
+        }
+        else if (status == 3)
+        {
+            level_music = gfc_sound_load_music("audio/level_music_alert.wav");
+            Mix_PlayMusic(level_music, -1);
+        }
+        ai_status_temp = status;
+    }
+}
+
 static void game_update()
 {
     font_cleanup(); // clean the font cache
@@ -249,6 +299,7 @@ static void game_update()
     if (mf >= 16.0) mf = 0;
 
     if (game) ai_update(); // update level ai system
+    if (game) game_update_music(); // update music based on ai alert status
 
     // update entity information
     if (game) entity_system_think();
