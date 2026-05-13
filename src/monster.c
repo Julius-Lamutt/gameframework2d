@@ -179,7 +179,7 @@ static Entity *monster_load(const char *obj_name)
 	else if (gfc_strlcmp(type, "soldier") == 0) monster_type = MT_SOLDIER;
 	else if (gfc_strlcmp(type, "swat") == 0) monster_type = MT_SWAT;
 	else if (gfc_strlcmp(type, "technician") == 0) monster_type = MT_TECHNICIAN;
-	else if (gfc_strlcmp(type, "ninja") == 0) monster_type = MT_NINJA;
+	else if (gfc_strlcmp(type, "sentry") == 0) monster_type = MT_SENTRY;
 	else
 	{
 		free(json);
@@ -334,7 +334,7 @@ static void monster_think(Entity *self)
 
 	// decide what to do next
 	if (ai->next_action == AINA_ATTACK) monster_shoot(self);
-	else if (ai->next_action == AINA_MOVE) monster_move(self);
+	else if (ai->next_action == AINA_MOVE && data->type != MT_SENTRY) monster_move(self);
 
 	self->move_state = 2; // reset move state
 

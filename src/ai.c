@@ -155,6 +155,14 @@ void ai_cleanup()
 
 void ai_update()
 {
+	if (level_ai.alert_status == AIAS_ALERT)
+	{
+		if (level_ai.last_alert && SDL_GetTicks() - level_ai.last_alert > 5000)
+		{
+			level_ai.alert_status = AIAS_CAUTION;
+			level_ai.last_caution = SDL_GetTicks();
+		}
+	}
 	if (level_ai.alert_status == AIAS_CAUTION)
 	{
 		if (level_ai.last_caution && SDL_GetTicks() - level_ai.last_caution > 10000)

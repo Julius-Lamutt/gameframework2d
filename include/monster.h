@@ -9,7 +9,7 @@ typedef enum
 	MT_SOLDIER,
 	MT_SWAT,
 	MT_TECHNICIAN,
-	MT_NINJA
+	MT_SENTRY
 } MonsterType;
 
 /**
