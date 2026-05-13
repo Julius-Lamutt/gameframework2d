@@ -2,6 +2,7 @@
 #include "gfc_input.h"
 #include "shadow_map.h"
 #include "physics.h"
+#include "ai.h"
 #include "world_object.h"
 
 typedef enum
@@ -40,6 +41,8 @@ typedef struct
 	float		move_speed;
 	Uint32		move_time;
 	Uint16		move_dis;
+	Uint8		light_on;
+	Uint8		force_trigger;
 } WorldObjectData;
 
 /**
@@ -360,12 +363,17 @@ Entity *world_object_new(World *world, GFC_Vector2D position, const char *obj_na
 	else if (gfc_strlcmp(self->name, "object_lamp") == 0)
 	{
 		self->layer = EL_NONE;
+		data->moving = 0;
+		data->light_on = 1;
+		data->force_trigger = 0;
 		data->linked_ent = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
 		if (world)
 		{
 			shadow_map_add_light(world->shadowMap, data->linked_ent);
 		}
 		else slog("missing world for light world object creation");
+
+		ai_add_light_id(self->id);
 	}
 	return self;
 }
@@ -471,6 +479,10 @@ void world_object_update(Entity *self)
 						else slog("missing world for light world object creation");
 						data->linked_ent = NULL;
 					}
+
+					if (data->light_on) data->light_on = 0;
+					else data->light_on = 1;
+
 					break;
 
 				case WOUT_DELETE:
@@ -535,4 +547,36 @@ void world_object_get_touch_updates(Entity *self)
 			}
 		}
 	}
+
+	// handle force trigger
+	if (gfc_strlcmp(self->name, "object_lamp") == 0)
+	{
+		if (data->force_trigger)
+		{
+			data->force_trigger = 0;
+			data->triggered = 1;
+		}
+	}
+}
+
+Uint8 *world_object_light_on(Entity *self)
+{
+	WorldObjectData *data;
+
+	if (!self || !self->data) return 2;
+	data = (WorldObjectData*) self->data;
+
+	if (gfc_strlcmp(self->name, "object_lamp") != 0) return 2;
+	return data->light_on;
+}
+
+void world_object_light_trigger(Entity *self)
+{
+	WorldObjectData *data;
+
+	if (!self || !self->data) return;
+	data = (WorldObjectData*) self->data;
+
+	if (gfc_strlcmp(self->name, "object_lamp") != 0) return;
+	data->force_trigger = 1;
 }

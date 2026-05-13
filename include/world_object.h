@@ -13,4 +13,18 @@
 */
 Entity *world_object_new(World *world, GFC_Vector2D position, const char *object_name);
 
+/*
+* @brief tell whether light world object is on
+* @param self: the world object to check
+* @return 0 if off, 1 if on, and 2 if not light world object
+*/
+Uint8 *world_object_light_on(Entity *self);
+
+/*
+* @brief trigger the light world object
+* @note: will not do anything to non-light world_objects
+* @param self: the world object to check
+*/
+void world_object_light_trigger(Entity *self);
+
 #endif

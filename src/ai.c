@@ -1,6 +1,7 @@
 #include <string.h>
 #include "simple_logger.h"
 #include "entity.h"
+#include "world_object.h"
 #include "physics.h"
 #include "ai.h"
 
@@ -31,6 +32,13 @@ static void ai_monster_chase(MonsterAI *ai, GFC_Vector2D pos);
 */
 static void ai_monster_search(MonsterAI *ai, GFC_Vector2D pos);
 
+/*
+* @brief investigate the area if anything is suspicous
+* @param ai: the ai to investigate
+* @param pos: the position of the monster
+*/
+static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos);
+
 typedef enum
 {
 	AIAS_IDLE,
@@ -48,6 +56,7 @@ typedef struct
 	Sint32			player_id;		// the entity id of the current player (used to get player when needed)
 	Uint16			sight_distance; // max distance monsters can see from
 	float			sight_cone;		// how big monsters' sight cones are (from 0-1 where 0 is big and 1 is small)
+	Uint32			*lights;		// entity ids of lights that the ai will look for changes in
 } LevelAI;
 
 static LevelAI level_ai = {0};
@@ -65,24 +74,34 @@ void ai_init()
 		return;
 	}
 	ajson = sj_object_get_value(json, "ai");
-	if (!json)
+	if (!ajson)
 	{
+		sj_free(json);
 		slog("failed to load ai object for ai system");
 		return;
 	}
 	if (!sj_object_get_value_as_int(ajson, "sight_distance", &sight_distance))
 	{
+		sj_free(json);
 		slog("failed to load sight_distance object for ai system");
 		return;
 	}
 	if (!sj_object_get_value_as_float(ajson, "sight_cone", &sight_cone))
 	{
+		sj_free(json);
 		slog("failed to load sight_cone object for ai system");
 		return;
 	}
-
+	sj_free(json);
 	level_ai.sight_distance = sight_distance;
 	level_ai.sight_cone = sight_cone;
+
+	level_ai.lights = gfc_list_new();
+	if (!level_ai.lights)
+	{
+		slog("failed to allocate a light list");
+		return;
+	}
 
 	// set defaults
 	level_ai.alert_status = AIAS_NORMAL;
@@ -97,6 +116,17 @@ void ai_init()
 
 static void ai_close()
 {
+	int i, c;
+	Uint32 *id;
+
+	c = gfc_list_get_count(level_ai.lights);
+	for (i = 0; i < c; i++)
+	{
+		id = gfc_list_get_nth(level_ai.lights, i);
+		if (id) free(id);
+	}
+
+	gfc_list_delete(level_ai.lights);
 	memset(&level_ai, 0, sizeof(LevelAI));
 	slog("ai system closed");
 }
@@ -108,6 +138,8 @@ void ai_cleanup()
 	level_ai.player_id = -1;
 	level_ai.last_alert = 0;
 	level_ai.last_caution = 0;
+	gfc_list_foreach(level_ai.lights, (gfc_work_func*)free);
+	gfc_list_clear(level_ai.lights);
 }
 
 void ai_update()
@@ -150,6 +182,16 @@ GFC_Vector2D ai_get_player_pos()
 	return player->position;
 }
 
+void ai_add_light_id(Uint32 id)
+{
+	Uint32 *new_id;
+
+	new_id = gfc_allocate_array(sizeof(Uint32), 1);
+	*new_id = id;
+
+	gfc_list_append(level_ai.lights, new_id);
+}
+
 void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 {
 	if (!ai) return;
@@ -190,10 +232,11 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 		ai->next_action = AINA_MOVE;
 		ai_monster_search(ai, pos);
 	}
+	// me no worried, me investigate
 	else if (level_ai.alert_status == AIAS_NORMAL)
 	{
 		ai->next_action = AINA_MOVE;
-		ai->move_state = AIMS_IDLE;
+		ai_monster_investigate(ai, pos);
 	}
 }
 
@@ -272,6 +315,61 @@ static void ai_monster_search(MonsterAI *ai, GFC_Vector2D pos)
 	else if (random == 4)
 	{
 		ai_set_move_state(ai, AIMS_IDLE);
+	}
+}
+
+static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
+{
+	int i, c;
+	Uint32 *id;
+	Entity *entity, *closest = NULL;
+	float distance;
+
+	ai->move_state = AIMS_IDLE;
+
+	c = gfc_list_get_count(level_ai.lights);
+	for (i = 0; i < c; i++)
+	{
+		id = gfc_list_get_nth(level_ai.lights, i);
+		if (!id) continue;
+		
+		entity = entity_get_by_id(*id);
+		if (!entity) continue;
+		if (!gfc_vector2d_distance_between_less_than(entity->position, pos, level_ai.sight_distance)) continue;
+		if (!closest)
+		{
+			closest = entity;
+			distance = gfc_vector2d_magnitude_between(entity->position, pos);
+		}
+		else if (gfc_vector2d_distance_between_less_than(entity->position, pos, distance))
+		{
+			closest = entity;
+			distance = gfc_vector2d_magnitude_between(entity->position, pos);
+		}
+	}
+	if (!closest || !closest->data) return;
+	if (world_object_light_on(closest) == 1) return;
+	else if (world_object_light_on(closest) == 2)
+	{
+		slog("not a world light object: abort investigation");
+		return;
+	}
+	else
+	{
+		if (abs(pos.x - closest->position.x) < 32) // at the light
+		{
+			world_object_light_trigger(closest);
+		}
+		else if (pos.x < closest->position.x) // light is towards the right
+		{
+			ai_set_move_state(ai, AIMS_WALK_R);
+			if (physics_wall_between_points(pos, gfc_vector2d(pos.x + 20, pos.y))) ai_set_move_state(ai, AIMS_JUMP_R);
+		}
+		else if (pos.x > closest->position.x) // light is towards the left
+		{
+			ai_set_move_state(ai, AIMS_WALK_L);
+			if (physics_wall_between_points(pos, gfc_vector2d(pos.x - 20, pos.y))) ai_set_move_state(ai, AIMS_JUMP_L);
+		}
 	}
 }
 

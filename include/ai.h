@@ -68,6 +68,12 @@ Uint32 ai_get_caution_timer();
 void ai_set_player_id(Sint32 id);
 
 /*
+* @brief add to list of light object ids
+* @param id: the id of the light
+*/
+void ai_add_light_id(Uint32 id);
+
+/*
 * @brief Get the player pos from the ai system.
 * @return The player's position. If the player's position cannot be found,
 * {0, 0} will be returned instead.
