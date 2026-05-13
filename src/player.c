@@ -14,6 +14,7 @@
 #include "bullet.h"
 #include "drone.h"
 #include "collision.h"
+#include "monster.h"
 #include "player.h"
 
 extern void game_next_level();
@@ -267,6 +268,8 @@ static void player_think(Entity* self)
 
 	self->hidden = 0;
 	self->velocity.x = 0;
+	self->glow = 0;
+	data->takedown = 0;
 
 	// check smoke state
 	if (data->smoke_invis)
@@ -278,7 +281,6 @@ static void player_think(Entity* self)
 			self->fade = 0;
 		}
 	}
-
 	// check jump state
 	if (data->jump_anim)
 	{
@@ -440,6 +442,11 @@ static void player_get_input(Entity *self)
 			self->fade = 1;
 		}
 	}
+	// takedown
+	if (gfc_input_command_pressed("takedown") && player_focus)
+	{
+		data->takedown = 1;
+	}
 }
 
 static void player_die(Entity *self)
@@ -553,7 +560,11 @@ static void player_get_touch_updates(Entity *self)
 		}
 		else if (other->layer == EL_MONSTER)
 		{
-
+			if (ai_get_alert_state() == 1)
+			{
+				self->glow = 1;
+				if (data->takedown) monster_damage(other, 1000);
+			}
 		}
 	}
 }

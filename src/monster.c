@@ -574,3 +574,13 @@ static void monster_get_touch_updates(Entity *self)
 	}
 }
 
+void monster_damage(Entity *self, Uint32 damage)
+{
+	MonsterData *data;
+
+	if (!self || !self->data) return;
+	data = (MonsterData*) self->data;
+
+	data->health -= damage;
+}
+

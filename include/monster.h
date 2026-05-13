@@ -20,4 +20,11 @@ typedef enum
 **/
 Entity *monster_new(GFC_Vector2D position, const char *obj_name);
 
+/*
+* @brief damage a monster
+* @param self: the monster to damage
+* @param damage: the amount of damage to deal
+*/
+void monster_damage(Entity *self, Uint32 damage);
+
 #endif
