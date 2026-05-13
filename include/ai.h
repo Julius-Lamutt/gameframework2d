@@ -24,11 +24,14 @@ typedef enum
 
 typedef struct
 {
-	Uint32		next_action;	// what should the monster ai do next
-	Uint32		move_state;		// how should the monster ai move
-	Uint32		last_attack;	// time since last attack (monsters attack anim should last 1 second)
-	Uint32		last_move;		// time since last movement (monsters move anim should last 0.5 seconds)
-	Uint32		last_search;	// time since last search movement
+	Uint32			next_action;	// what should the monster ai do next
+	Uint32			move_state;		// how should the monster ai move
+	Uint32			last_attack;	// time since last attack (monsters attack anim should last 1 second)
+	Uint32			last_move;		// time since last movement (monsters move anim should last 0.5 seconds)
+	Uint32			last_search;	// time since last search movement
+	Uint32			patrol_time;	// monster ai will move based on their patrol time
+	Uint8			at_patrol;		// monster ai is at patrol (don't worry about returning to start position)
+	GFC_Vector2D	start_pos;		// start position for returning to patrol
 } MonsterAI;
 
 /*

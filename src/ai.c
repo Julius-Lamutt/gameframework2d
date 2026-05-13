@@ -36,8 +36,16 @@ static void ai_monster_search(MonsterAI *ai, GFC_Vector2D pos);
 * @brief investigate the area if anything is suspicous
 * @param ai: the ai to investigate
 * @param pos: the position of the monster
+* @return 0 if nothing suspicous, 1 otherwise
 */
-static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos);
+static Uint8 ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos);
+
+/*
+* @brief normal patrolling (move right - pause - move left - pause - repeat)
+* @param ai: the ai to patrol
+* @param pos: the position of the monster
+*/
+static void ai_monster_patrol(MonsterAI *ai, GFC_Vector2D pos);
 
 typedef enum
 {
@@ -213,6 +221,9 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 	{
 		if (level_ai.alert_status != AIAS_ALERT) level_ai.alert_status = AIAS_ALERT;
 
+		ai->at_patrol = 0;
+		ai->patrol_time = 0;
+
 		level_ai.last_alert = SDL_GetTicks();
 		level_ai.last_caution = 0;
 
@@ -239,7 +250,11 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 	else if (level_ai.alert_status == AIAS_NORMAL)
 	{
 		ai->next_action = AINA_MOVE;
-		ai_monster_investigate(ai, pos);
+		if (!ai_monster_investigate(ai, pos))
+		{
+			// me no see nothing, me patrol
+			ai_monster_patrol(ai, pos);
+		}
 	}
 }
 
@@ -279,12 +294,12 @@ static void ai_monster_chase(MonsterAI *ai, GFC_Vector2D pos)
 	else if (pos.x < level_ai.last_position.x) // player went right
 	{
 		ai_set_move_state(ai, AIMS_RUN_R);
-		if (physics_wall_between_points(pos, gfc_vector2d(pos.x + 20, pos.y))) ai_set_move_state(ai, AIMS_JUMP_R);
+		if (physics_wall_between_points(pos, gfc_vector2d(pos.x + 32, pos.y))) ai_set_move_state(ai, AIMS_JUMP_R);
 	}
 	else if (pos.x > level_ai.last_position.x) // player went left
 	{
 		ai_set_move_state(ai, AIMS_RUN_L);
-		if (physics_wall_between_points(pos, gfc_vector2d(pos.x - 20, pos.y))) ai_set_move_state(ai, AIMS_JUMP_L);
+		if (physics_wall_between_points(pos, gfc_vector2d(pos.x - 32, pos.y))) ai_set_move_state(ai, AIMS_JUMP_L);
 	}
 }
 
@@ -321,14 +336,14 @@ static void ai_monster_search(MonsterAI *ai, GFC_Vector2D pos)
 	}
 }
 
-static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
+static Uint8 ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 {
 	int i, c;
 	Uint32 *id;
 	Entity *entity, *closest = NULL;
 	float distance;
 
-	ai->move_state = AIMS_IDLE;
+	if (!ai) return 0;
 
 	c = gfc_list_get_count(level_ai.lights);
 	for (i = 0; i < c; i++)
@@ -350,18 +365,21 @@ static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 			distance = gfc_vector2d_magnitude_between(entity->position, pos);
 		}
 	}
-	if (!closest || !closest->data) return;
+	if (!closest || !closest->data) return 0;
 
 	//slog("light on is: %i", world_object_light_on(closest));
-	if (world_object_light_on(closest) == 1) return;
+	if (world_object_light_on(closest) == 1) return 0;
 	else if (world_object_light_on(closest) == 2)
 	{
 		slog("not a world light object: abort investigation");
-		return;
+		return 0;
 	}
 	else
 	{
-		if (physics_wall_between_points(pos, closest->position)) return;
+		if (physics_wall_between_points(pos, closest->position)) return 0;
+
+		ai->patrol_time = 0;
+		ai->at_patrol = 0;
 
 		if (abs(pos.x - closest->position.x) < 32) // at the light
 		{
@@ -381,6 +399,42 @@ static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 			ai_set_move_state(ai, AIMS_WALK_L);
 			if (physics_wall_between_points(pos, gfc_vector2d(pos.x - 20, pos.y))) ai_set_move_state(ai, AIMS_JUMP_L);
 		}
+	}
+	return 1;
+}
+
+static void ai_monster_patrol(MonsterAI *ai, GFC_Vector2D pos)
+{
+	Uint32 interval;
+
+	if (!ai) return;
+
+	if (ai->at_patrol || abs(pos.x - ai->start_pos.x) < 32) // back to normal patrol
+	{
+		if (!ai->at_patrol) ai->at_patrol = 1;
+
+		if (ai->patrol_time == 0)
+		{
+			ai_set_move_state(ai, AIMS_WALK_L);
+			ai->patrol_time = SDL_GetTicks();
+		}
+
+		interval = SDL_GetTicks() - ai->patrol_time;
+		if (interval < 3000) ai_set_move_state(ai, AIMS_IDLE);
+		else if (interval < 7000) ai_set_move_state(ai, AIMS_WALK_R);
+		else if (interval < 10000) ai_set_move_state(ai, AIMS_IDLE);
+		else if (interval < 14000) ai_set_move_state(ai, AIMS_WALK_L);
+		else ai->patrol_time = SDL_GetTicks();
+	}
+	else if (!ai->at_patrol && pos.x < ai->start_pos.x) // patrol is to the right
+	{
+		ai_set_move_state(ai, AIMS_RUN_R);
+		if (physics_wall_between_points(pos, gfc_vector2d(pos.x + 32, pos.y))) ai_set_move_state(ai, AIMS_JUMP_R);
+	}
+	else if (!ai->at_patrol && pos.x > ai->start_pos.x) // patrol is to the left
+	{
+		ai_set_move_state(ai, AIMS_RUN_L);
+		if (physics_wall_between_points(pos, gfc_vector2d(pos.x - 32, pos.y))) ai_set_move_state(ai, AIMS_JUMP_L);
 	}
 }
 

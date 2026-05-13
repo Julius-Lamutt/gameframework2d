@@ -312,6 +312,9 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	ai->move_state = AIMS_IDLE;
 	ai->last_attack = 0;
 	ai->last_search = 0;
+	ai->patrol_time = 0;
+	ai->at_patrol = 1;
+	ai->start_pos = self->position;
 
 	return self;
 }
