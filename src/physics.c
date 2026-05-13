@@ -39,6 +39,11 @@ void physics_update_world_data(Uint32 tile_count, GFC_Rect *physics_layer, Light
 	for (i = 0; i < c; i++)
 	{
 		GFC_Circle *circle = gfc_allocate_array(sizeof(GFC_Circle), 1);
+		if (!circle)
+		{
+			slog("failed to allocate a circle for light physics");
+			return;
+		}
 
 		light = gfc_list_get_nth(lights, i);
 		if (!light) continue;
@@ -64,6 +69,48 @@ void physics_cleanup()
 
 	memset(&physics_system, 0, sizeof(PhysicsSystem));
 	slog("physics system closed");
+}
+
+void physics_add_light_physics(GFC_Vector2D pos, float r)
+{
+	GFC_Circle *circle;
+	
+	circle = gfc_allocate_array(sizeof(GFC_Circle), 1);
+	if (!circle)
+	{
+		slog("failed to allocate a circle for light physics");
+		return;
+	}
+	r *= 64;
+	circle->x = pos.x;
+	circle->y = pos.y;
+	circle->r = r;
+	//slog("add circle.x: %f, circle.y: %f, circle.r: %f", circle->x, circle->y, circle->r);
+	gfc_list_append(physics_system.light_physics, circle);
+}
+
+void physics_remove_light_physics(GFC_Vector2D pos, float r)
+{
+	int i, c;
+
+	r *= 64;
+
+	c = gfc_list_get_count(physics_system.light_physics);
+	for (i = 0; i < c; i++)
+	{
+		GFC_Circle *circle;
+
+		circle = gfc_list_get_nth(physics_system.light_physics, i);
+		if (!circle) continue;
+
+		//slog("remove circle.x: %f, circle.y: %f, circle.r: %f", circle->x, circle->y, circle->r);
+		//slog("pos.x: %f, pos.y: %f, r: %f", pos.x, pos.y, r);
+		if (circle->x == pos.x && circle->y == pos.y && circle->r == r)
+		{
+			free(circle);
+			gfc_list_delete_nth(physics_system.light_physics, i);
+		}
+	}
 }
 
 void physics_update_move_state(GFC_Rect box, Uint32 *move_state)

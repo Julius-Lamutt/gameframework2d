@@ -25,6 +25,20 @@ void physics_cleanup();
 void physics_update_world_data(Uint32 tile_count, GFC_Rect *physics_layer, Light *lights);
 
 /*
+* @brief add a light to the light physics
+* @param pos: the position of the light circle physics to add
+* @param r: the radius of the light circle physics to add
+*/
+void physics_add_light_physics(GFC_Vector2D pos, float r);
+
+/*
+* @brief remove a light from the light physics
+* @param pos: the position of the light circle physics to remove
+* @param r: the radius of the light circle physics to remvoe
+*/
+void physics_remove_light_physics(GFC_Vector2D pos, float r);
+
+/*
 * @brief update an entity's move state
 * @param tile_count: the number of tiles to check collisions for
 * @param physics_layer: the tiles for collision testing

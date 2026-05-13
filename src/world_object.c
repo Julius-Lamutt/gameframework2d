@@ -37,6 +37,7 @@ typedef struct
 	GFC_List	*update_list;
 	Entity		*linked_ent;
 	Entity      *linked_ent2;
+	Light		*light;
 	Uint8		moving;
 	float		move_speed;
 	Uint32		move_time;
@@ -366,10 +367,10 @@ Entity *world_object_new(World *world, GFC_Vector2D position, const char *obj_na
 		data->moving = 0;
 		data->light_on = 1;
 		data->force_trigger = 0;
-		data->linked_ent = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
+		data->light = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
 		if (world)
 		{
-			shadow_map_add_light(world->shadowMap, data->linked_ent);
+			shadow_map_add_light(world->shadowMap, data->light);
 		}
 		else slog("missing world for light world object creation");
 
@@ -461,12 +462,16 @@ void world_object_update(Entity *self)
 					break;
 
 				case WOUT_LIGHT:
-					if (!data->linked_ent)
+					if (!data->light)
 					{
-						data->linked_ent = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
+						data->light = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
 						if (data->world)
 						{
-							shadow_map_add_light(data->world->shadowMap, data->linked_ent);
+							shadow_map_add_light(data->world->shadowMap, data->light);
+							if (data->light)
+							{
+								physics_add_light_physics(data->light->pos, data->light->r1);
+							}
 						}
 						else slog("missing world for light world object creation");
 					}
@@ -474,10 +479,11 @@ void world_object_update(Entity *self)
 					{
 						if (data->world)
 						{
-							shadow_map_remove_light(data->world->shadowMap, data->linked_ent);
+							shadow_map_remove_light(data->world->shadowMap, data->light);
+							physics_remove_light_physics(gfc_vector2d(self->position.x, self->position.y - 20), 2);
 						}
 						else slog("missing world for light world object creation");
-						data->linked_ent = NULL;
+						data->light = NULL;
 					}
 
 					if (data->light_on) data->light_on = 0;

@@ -356,6 +356,8 @@ static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 	}
 	else
 	{
+		if (physics_wall_between_points(pos, closest->position)) return;
+
 		if (abs(pos.x - closest->position.x) < 32) // at the light
 		{
 			world_object_light_trigger(closest);
