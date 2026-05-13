@@ -248,6 +248,8 @@ static void game_update()
     mf += 0.1;
     if (mf >= 16.0) mf = 0;
 
+    if (game) ai_update(); // update level ai system
+
     // update entity information
     if (game) entity_system_think();
     if (game) entity_system_update();

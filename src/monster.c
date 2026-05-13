@@ -311,6 +311,7 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name)
 	data->ai = ai;
 	ai->move_state = AIMS_IDLE;
 	ai->last_attack = 0;
+	ai->last_search = 0;
 
 	return self;
 }
@@ -541,8 +542,16 @@ static void monster_get_touch_updates(Entity *self)
 			if (gfc_strlcmp(other->name, "object_grass") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
-			else if (gfc_strlcmp(other->name, "object_bad_stalagmite_fall") == 0) monster_die(self);
-			else if (gfc_strlcmp(other->name, "object_light_fall") == 0) monster_die(self);
+			else if (gfc_strlcmp(other->name, "object_bad_stalagmite_fall") == 0)
+			{
+				monster_die(self);
+				return;
+			}
+			else if (gfc_strlcmp(other->name, "object_light_fall") == 0)
+			{
+				monster_die(self);
+				return;
+			}
 			else
 			{
 				collision = collide_with_entity_vector(self->box, self->velocity, other->box, other->velocity);

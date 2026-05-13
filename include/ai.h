@@ -28,6 +28,7 @@ typedef struct
 	Uint32		move_state;		// how should the monster ai move
 	Uint32		last_attack;	// time since last attack (monsters attack anim should last 1 second)
 	Uint32		last_move;		// time since last movement (monsters move anim should last 0.5 seconds)
+	Uint32		last_search;	// time since last search movement
 } MonsterAI;
 
 /*
@@ -41,6 +42,11 @@ void ai_init();
 * Note: This must be called every time a player leaves a loaded level!!
 */
 void ai_cleanup();
+
+/*
+* @brief update the level ai
+*/
+void ai_update();
 
 /*
 * @brief set the player id for the ai system
