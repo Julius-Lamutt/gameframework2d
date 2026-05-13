@@ -34,6 +34,7 @@ typedef struct
 	int				jump_anim;
 	int				jump_anim_start;
 	Sint16			health;
+	Uint8			takedown;
 } ClientData;
 
 Uint8 player_focus = 1; // should camera focus on player right now
@@ -86,11 +87,13 @@ static Entity *player_load()
 {
 	SJson *json, *pjson, *array;
 	const char *name, *filename;
+	int health;
 	float box_w, box_h, fall_speed;
 	GFC_Rect box;
 	Sint32 frame_w, frame_h, frames_per_line;
 	Sprite *sprite;
 	Entity *self;
+	ClientData *data;
 
 	json = sj_load("defs/player.json");
 	if (!json)
@@ -168,6 +171,13 @@ static Entity *player_load()
 		return NULL;
 	}
 
+	if (!sj_object_get_value_as_int(pjson, "health", &health))
+	{
+		free(json);
+		slog("missing health object for player entity");
+		return NULL;
+	}
+
 	free(json);
 
 	self = entity_new();
@@ -180,6 +190,17 @@ static Entity *player_load()
 	self->box = box;
 	self->sprite = sprite;
 	self->fall_speed = fall_speed;
+
+	data = gfc_allocate_array(sizeof(ClientData), 1);
+	if (!data)
+	{
+		entity_free(self);
+		slog("failed to allocate client data for player");
+		return NULL;
+	}
+	self->data = data;
+	data->health = health;
+
 	return self;
 }
 
@@ -189,7 +210,7 @@ Entity *player_new(GFC_Vector2D position)
 	ClientData *data;
 
 	self = player_load();
-	if (!self) return NULL;
+	if (!self || !self->data) return NULL;
 
 	// player defaults
 	self->layer = EL_PLAYER;
@@ -211,16 +232,15 @@ Entity *player_new(GFC_Vector2D position)
 	self->free = player_free;
 
 	// client data
-	data = gfc_allocate_array(sizeof(ClientData), 1);
+	data = (ClientData*) self->data;
 	if (data)
 	{
-		self->data = data;
 		inventory_init(&data->inventory);
 		inventory_load_data(&data->inventory, "defs/inventory_data.json");
 		data->active_drone = 0;
 		data->smoke_invis = 0;
 		data->jump_anim = 0;
-		data->health = 100;
+		data->takedown = 0;
 	}
 
 	// tell ai that the player exists
@@ -313,7 +333,11 @@ static void player_update(Entity* self)
 		item5 = 0;
 	}
 
-	if (data->health <= 0) player_die(self);
+	// update hud
+	win = window_find_by_name("inventory");
+	inventory_menu_update_health(win, data->health);
+
+	if (data->health <= 0) player_die(self); // if no health, kill player
 }
 
 static void player_free(Entity *self)
@@ -526,6 +550,10 @@ static void player_get_touch_updates(Entity *self)
 					self->velocity.y = other->velocity.y;
 				}
 			}
+		}
+		else if (other->layer == EL_MONSTER)
+		{
+
 		}
 	}
 }

@@ -52,7 +52,8 @@ typedef struct Entity_S
 	GFC_Vector2D    scale;				/* sprite scale */
 	Uint8			flip;				/* if true, then flip sprite horizontally */
 	float           rotation;			/* sprite rotation */
-	int				fade;				/* enable/disable fade effect for sprite draws */
+	Uint8			fade;				/* enable/disable fade effect for sprite draws */
+	Uint8			glow;				/* enable/disable glow effect for sprite draws */
 	float			frame;				/* sprite sheet frame to be used for this render frame */
 
 	// physics

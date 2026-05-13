@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "ai.h"
+#include "player.h"
 #include "inventory.h"
 #include "elements.h"
 #include "inventory_menu.h"
@@ -13,6 +14,7 @@ typedef struct
 	Uint8	smoke;		/* inventory number of smokes */
 	Uint8	jump;		/* inventory number of jumps */
 	Uint8	drone;		/* whether drone has focus or not */
+	Sint16	health;		/* the amount of health left */
 } InvMenuData;
 
 /*
@@ -85,12 +87,24 @@ void inventory_menu_update_drone(Window *win)
 {
 	InvMenuData *data;
 
-	if (!win) return 0;
+	if (!win) return;
 	data = (InvMenuData*)win->data;
-	if (!data) return 0;
+	if (!data) return;
 
 	if (data->drone == 0) data->drone = 1;
 	else data->drone = 0;
+}
+
+void inventory_menu_update_health(Window *win, Sint16 count)
+{
+	InvMenuData *data;
+
+	if (!win) return;
+	data = (InvMenuData*)win->data;
+	if (!data) return;
+
+	if (count < 0) data->health = 0;
+	else data->health = count;
 }
 
 int inventory_menu_update(Window *win, GFC_List *updates)
@@ -143,6 +157,13 @@ int inventory_menu_update(Window *win, GFC_List *updates)
 				_itoa(time, &buffer, 10);
 				element_update_label(element, buffer, NULL);
 			}
+		}
+		else if (gfc_strlcmp(element->name, "label_health_number") == 0)
+		{
+			GFC_TextWord buffer;
+
+			_itoa((int)data->health, &buffer, 10);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_shuriken") == 0)
 		{
@@ -229,5 +250,6 @@ Window *inventory_menu()
 	data->smoke = 0;
 	data->jump = 0;
 	data->drone = 0;
+	data->health = 0;
 	return win;
 }

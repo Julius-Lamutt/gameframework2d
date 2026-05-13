@@ -108,6 +108,7 @@ Entity *entity_new()
 		_entity_manager.entity_list[i].id = ++_entity_manager.entity_pool;
 		_entity_manager.entity_list[i].flip = 1;
 		_entity_manager.entity_list[i].fade = 0;
+		_entity_manager.entity_list[i].glow = 0;
 		_entity_manager.entity_list[i].scale.x = 1;
 		_entity_manager.entity_list[i].scale.y = 1;
 		return &_entity_manager.entity_list[i];
@@ -201,6 +202,7 @@ void entity_draw(Entity *self)
 		// set color shift
 		color = gfc_color8(255, 255, 255, 255);
 		if (self->fade) color = gfc_color8(255, 255, 255, 125);
+		else if (self->glow) color = gfc_color8(255, 255, 0, 255);
 
 		gf2d_sprite_render(
 			self->sprite,
