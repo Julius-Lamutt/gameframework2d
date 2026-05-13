@@ -122,6 +122,20 @@ void ai_update()
 	}
 }
 
+Uint32 ai_get_alert_state()
+{
+	return level_ai.alert_status;
+}
+
+Uint32 ai_get_caution_timer()
+{
+	if (level_ai.last_caution && SDL_GetTicks() - level_ai.last_caution < 10000)
+	{
+		return 10000 - (SDL_GetTicks() - level_ai.last_caution);
+	}
+	else return 0;
+}
+
 void ai_set_player_id(Sint32 id)
 {
 	level_ai.player_id = id;
@@ -155,6 +169,7 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 		if (level_ai.alert_status != AIAS_ALERT) level_ai.alert_status = AIAS_ALERT;
 
 		level_ai.last_alert = SDL_GetTicks();
+		level_ai.last_caution = 0;
 
 		level_ai.last_position = ai_get_player_pos();
 		if (!(level_ai.last_position.x == 0 && level_ai.last_position.y == 0))

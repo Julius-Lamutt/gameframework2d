@@ -1,4 +1,5 @@
 #include "simple_logger.h"
+#include "ai.h"
 #include "inventory.h"
 #include "elements.h"
 #include "inventory_menu.h"
@@ -108,33 +109,68 @@ int inventory_menu_update(Window *win, GFC_List *updates)
 	{
 		element = gfc_list_get_nth(win->elements, i);
 		if (!element) continue;
-		if (gfc_strlcmp(element->name, "label_shuriken") == 0)
+		if (gfc_strlcmp(element->name, "label_ai_status") == 0)
+		{
+			Uint32 status;
+			GFC_Color color;
+
+			status = ai_get_alert_state();
+			if (status == 1)
+			{
+				color = gfc_color8(20, 220, 20, 255);
+				element_update_label(element, "Normal", &color);
+			}
+			else if (status == 2)
+			{
+				color = gfc_color8(220, 220, 20, 255);
+				element_update_label(element, "Caution", &color);
+			}
+			else if (status == 3)
+			{
+				color = gfc_color8(220, 20, 20, 255);
+				element_update_label(element, "Alert", &color);
+			}
+		}
+		else if (gfc_strlcmp(element->name, "label_ai_time") == 0)
+		{
+			GFC_TextWord buffer;
+			int time;
+
+			time = ai_get_caution_timer() / 1000;
+			if (time == 0) element_update_label(element, " ", NULL);
+			else
+			{
+				_itoa(time, &buffer, 10);
+				element_update_label(element, buffer, NULL);
+			}
+		}
+		else if (gfc_strlcmp(element->name, "label_shuriken") == 0)
 		{
 			GFC_TextWord buffer;
 
 			_itoa((int)data->shuriken, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_teleport") == 0)
 		{
 			GFC_TextWord buffer;
 
 			_itoa((int)data->teleport, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_smoke") == 0)
 		{
 			GFC_TextWord buffer;
 
 			_itoa((int)data->smoke, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_jump") == 0)
 		{
 			GFC_TextWord buffer;
 
 			_itoa((int)data->jump, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "actor_drone") == 0)
 		{

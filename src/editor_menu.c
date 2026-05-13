@@ -75,31 +75,31 @@ int editor_menu_update(Window *win, GFC_List *updates)
 		{
 			GFC_TextWord buffer;
 			_itoa((int)data->editor->pos.x, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_y_number") == 0)
 		{
 			GFC_TextWord buffer;
 			_itoa((int)data->editor->pos.y, &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_width_number") == 0)
 		{
 			GFC_TextWord buffer;
 			_itoa(level_editor_get_width(data->editor), &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_height_number") == 0)
 		{
 			GFC_TextWord buffer;
 			_itoa(level_editor_get_height(data->editor), &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_light_number") == 0)
 		{
 			GFC_TextWord buffer;
 			_itoa(level_editor_get_light(data->editor), &buffer, 10);
-			element_update_label(element, buffer);
+			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "actor_entity") == 0)
 		{

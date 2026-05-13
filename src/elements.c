@@ -311,9 +311,10 @@ void element_update_state(Element *element)
 	}
 }
 
-void element_update_label(Element *element, const char* text)
+void element_update_label(Element *element, const char* text, GFC_Color *color_shift)
 {
 	LabelElement* data;
+	GFC_Color color;
 
 	if (!element) return;
 	if (element->type != ET_LABEL)
@@ -323,6 +324,11 @@ void element_update_label(Element *element, const char* text)
 	}
 	data = (LabelElement*)element->data;
 	gfc_line_cpy(data->text, text);
+	if (color_shift)
+	{
+		color = *color_shift;
+		data->color = color;
+	}
 }
 
 void element_update_actor(Element *element, Sprite *sprite, Uint8 frame, GFC_Color *color_shift)

@@ -69,8 +69,9 @@ void element_update_state(Element *element);
 * @brief update the text for a label
 * @param element: the element to update
 * @param text: the new text for the label
+* @param color_shift: the new text color for the label
 */
-void element_update_label(Element *element, const char *text);
+void element_update_label(Element *element, const char *text, GFC_Color *color_shift);
 
 /*
 * @brief update the sprite for an actor

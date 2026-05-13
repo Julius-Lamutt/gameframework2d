@@ -49,6 +49,19 @@ void ai_cleanup();
 void ai_update();
 
 /*
+* @brief get the current ai alert state
+* @return the ai alert state
+*/
+Uint32 ai_get_alert_state();
+
+/*
+* @brief get the current ai caution timer
+* @return the ai caution timer (in milliseconds)
+* note: will return 0 if not in caution phase
+*/
+Uint32 ai_get_caution_timer();
+
+/*
 * @brief set the player id for the ai system
 * @param id: the id of the player
 */

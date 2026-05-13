@@ -66,15 +66,15 @@ int objectives_menu_update(Window *win, GFC_List *elements)
 		if (!element) continue;
 		if (gfc_strlcmp(element->name, "label_objective_1") == 0)
 		{
-			if (data->item_pickup) element_update_label(element, "Completed!!");
+			if (data->item_pickup) element_update_label(element, "Completed!!", NULL);
 		}
 		if (gfc_strlcmp(element->name, "label_objective_2") == 0)
 		{
-			if (data->environment_used) element_update_label(element, "Completed!!");
+			if (data->environment_used) element_update_label(element, "Completed!!", NULL);
 		}
 		if (gfc_strlcmp(element->name, "label_objective_3") == 0)
 		{
-			if (data->diamond_stolen) element_update_label(element, "Completed!!");
+			if (data->diamond_stolen) element_update_label(element, "Completed!!", NULL);
 		}
 	}
 	return 1;
