@@ -52,6 +52,7 @@ typedef struct
 	Uint32			alert_status;	// current level AI alert status
 	Uint32			last_alert;		// last time a monster saw the player
 	Uint32			last_caution;	// last time the level was in caution phase
+	Uint32			last_light;		// last time monster flicked a light switch
 	GFC_Vector2D	last_position;	// last known position of the player
 	Sint32			player_id;		// the entity id of the current player (used to get player when needed)
 	Uint16			sight_distance; // max distance monsters can see from
@@ -109,6 +110,7 @@ void ai_init()
 	level_ai.player_id = -1;
 	level_ai.last_alert = 0;
 	level_ai.last_caution = 0;
+	level_ai.last_light = 0;
 
 	atexit(ai_close);
 	slog("ai system initialized");
@@ -138,6 +140,7 @@ void ai_cleanup()
 	level_ai.player_id = -1;
 	level_ai.last_alert = 0;
 	level_ai.last_caution = 0;
+	level_ai.last_light = 0;
 	gfc_list_foreach(level_ai.lights, (gfc_work_func*)free);
 	gfc_list_clear(level_ai.lights);
 }
@@ -348,6 +351,8 @@ static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 		}
 	}
 	if (!closest || !closest->data) return;
+
+	//slog("light on is: %i", world_object_light_on(closest));
 	if (world_object_light_on(closest) == 1) return;
 	else if (world_object_light_on(closest) == 2)
 	{
@@ -360,7 +365,11 @@ static void ai_monster_investigate(MonsterAI *ai, GFC_Vector2D pos)
 
 		if (abs(pos.x - closest->position.x) < 32) // at the light
 		{
-			world_object_light_trigger(closest);
+			if (SDL_GetTicks() - level_ai.last_light > 1000)
+			{
+				world_object_light_trigger(closest);
+				level_ai.last_light = SDL_GetTicks();
+			}
 		}
 		else if (pos.x < closest->position.x) // light is towards the right
 		{

@@ -464,6 +464,7 @@ void world_object_update(Entity *self)
 				case WOUT_LIGHT:
 					if (!data->light)
 					{
+						data->light_on = 1;
 						data->light = light_new(gfc_vector2d(self->position.x, self->position.y - 20), 2, 2);
 						if (data->world)
 						{
@@ -477,6 +478,7 @@ void world_object_update(Entity *self)
 					}
 					else
 					{
+						data->light_on = 0;
 						if (data->world)
 						{
 							shadow_map_remove_light(data->world->shadowMap, data->light);
@@ -485,9 +487,6 @@ void world_object_update(Entity *self)
 						else slog("missing world for light world object creation");
 						data->light = NULL;
 					}
-
-					if (data->light_on) data->light_on = 0;
-					else data->light_on = 1;
 
 					break;
 
