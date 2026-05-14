@@ -21,7 +21,6 @@ typedef struct
 	Uint8				run_speed;		// run speed
 	Uint8				jump_speed;		// jump speed
 	Uint8				view_dir;		// 0 = left, 1, = right
-	Light				*light;			// monster light
 } MonsterData;
 
 /**
@@ -333,7 +332,7 @@ static void monster_think(Entity *self)
 	self->velocity.x = 0;
 
 	// decide what to do next
-	if (ai->next_action == AINA_ATTACK) monster_shoot(self);
+	if (ai->next_action == AINA_ATTACK && data->type != MT_TECHNICIAN) monster_shoot(self);
 	else if (ai->next_action == AINA_MOVE && data->type != MT_SENTRY) monster_move(self);
 
 	self->move_state = 2; // reset move state
@@ -384,8 +383,9 @@ static void monster_update(Entity *self)
 	if (self->flip) dir = gfc_vector2d(1, 0);
 	else dir = gfc_vector2d(-1, 0);
 
-	if (data->type == MT_SOLDIER) ai_update_monster(ai, self->position, dir, 1);
-	else ai_update_monster(ai, self->position, dir, 0);
+	if (data->type == MT_SOLDIER) ai_update_monster(ai, self->position, dir, 1, 0);
+	else if (data->type == MT_TECHNICIAN) ai_update_monster(ai, self->position, dir, 0, 1);
+	else ai_update_monster(ai, self->position, dir, 0, 0);
 
 	// update shoting animation if needed
 	if (SDL_GetTicks() - 450 < ai->last_attack)
@@ -590,4 +590,3 @@ void monster_damage(Entity *self, Uint32 damage, Uint8 heavy)
 	if (heavy) data->health -= damage;
 	else if (data->type != MT_SWAT) data->health -= damage;
 }
-

@@ -89,8 +89,9 @@ GFC_Vector2D ai_get_player_pos();
 * @param pos: the position of the monster
 * @param view_dir: the current view direction of the monster
 * @param night_vision: if true, monster can see in the dark (but not in the light)
+* @param heat_vision: if true, monster can see hidden players
 */
-void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision);
+void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision, Uint8 heat_vision);
 
 /*
 * @brief set the ai move state

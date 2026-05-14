@@ -16,8 +16,9 @@ static void ai_close();
 * @param pos: the position of the monster
 * @param view_dir: the viewing direction of the monster (left/right)
 * @param night_vision: if true, monster can see in the dark (but not in the light)
+* @param heat_vision: if true, monster can see hidden players
 */
-static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision);
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision, Uint8 heat_vision);
 
 /*
 * @brief move towards player's last known position
@@ -212,7 +213,7 @@ void ai_add_light_id(Uint32 id)
 	gfc_list_append(level_ai.lights, new_id);
 }
 
-void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision)
+void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision, Uint8 heat_vision)
 {
 	if (!ai) return;
 
@@ -226,7 +227,7 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, U
 	else if (SDL_GetTicks() - ai->last_move < 250) return;
 	
 	// me see player, me attack player
-	if (ai_monster_can_see(ai, pos, view_dir, night_vision))
+	if (ai_monster_can_see(ai, pos, view_dir, night_vision, heat_vision))
 	{
 		if (level_ai.alert_status != AIAS_ALERT) level_ai.alert_status = AIAS_ALERT;
 
@@ -267,7 +268,7 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, U
 	}
 }
 
-static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision)
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision, Uint8 heat_vision)
 {
 	GFC_Vector2D vec;
 	Entity *player;
@@ -277,7 +278,10 @@ static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D vi
 	player = entity_get_by_id(level_ai.player_id);
 	if (!player) return 0;
 
-	if (player->hidden && level_ai.alert_status != AIAS_ALERT) return 0; // is player hidden?
+	if (player->hidden && level_ai.alert_status != AIAS_ALERT) // is player hidden?
+	{
+		if (!heat_vision) return 0; // can't see hidden players without heat vision
+	}
 
 	if (!gfc_vector2d_distance_between_less_than(player->position, pos, level_ai.sight_distance)) return 0; // is player too far?
 
