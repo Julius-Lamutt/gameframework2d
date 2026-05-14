@@ -42,10 +42,9 @@ void game_exit();
 void game_new();
 
 /*
-* @brief load the game using save data
-* @param filename: name of the save file
+* @brief load the game's custom-made level
 */
-void game_load(const char *filename);
+void game_load();
 
 /*
 * @brief transition to the next level
@@ -178,9 +177,21 @@ void game_new()
     Mix_PlayMusic(level_music, -1);
 }
 
-void game_load(const char *filename)
+void game_load()
 {
+    game_start();
 
+    inventory_purge_data("defs/inventory_data.json");
+    inv = inventory_menu();
+
+    level = 3;
+    world = world_load("defs/maps/world.json");
+    world_setup_camera(world);
+    physics_update_world_data(world->tileCount, world->physicsLayer, world->shadowMap->lights);
+
+    level_music = gfc_sound_load_music("audio/level_music_normal.wav");
+    ai_status_temp = 1;
+    Mix_PlayMusic(level_music, -1);
 }
 
 void game_next_level()

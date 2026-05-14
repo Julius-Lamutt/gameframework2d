@@ -5,6 +5,7 @@
 extern void game_start();
 extern void game_exit();
 extern void game_new();
+extern void game_load();
 extern void game_start_editor();
 
 typedef struct
@@ -54,6 +55,12 @@ int main_menu_update(Window *win, GFC_List *updates)
 		{
 			window_free(win);
 			game_new();
+			return 1;
+		}
+		else if (gfc_strlcmp(element->name, "button_load_game") == 0)
+		{
+			window_free(win);
+			game_load();
 			return 1;
 		}
 		else if (gfc_strlcmp(element->name, "button_editor") == 0)
