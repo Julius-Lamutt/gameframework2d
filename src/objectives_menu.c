@@ -8,9 +8,12 @@ typedef struct
 {
 	Window	*win;				/* the current window */
 	Uint8	selected;			/* true if window is currently selected */
-	int		item_pickup;
-	int		environment_used;
-	int		diamond_stolen;
+	Uint8	item_pickup;
+	Uint8	environment_used;
+	Uint8	diamond_stolen;
+	Uint8	swat;
+	Uint8	takedowns;
+	Uint8	coin;
 } ObjectivesMenuData;
 
 /*
@@ -44,8 +47,11 @@ void objective_complete(Window *win, int objective)
 	data = win->data;
 
 	if (objective == 1) data->item_pickup = 1;
-	if (objective == 2) data->environment_used = 1;
-	if (objective == 3) data->diamond_stolen = 1;
+	else if (objective == 2) data->environment_used = 1;
+	else if (objective == 3) data->diamond_stolen = 1;
+	else if (objective == 4) data->swat = 1;
+	else if (objective == 5) data->takedowns = 1;
+	else if (objective == 6) data->coin = 1;
 }
 
 int objectives_menu_update(Window *win, GFC_List *elements)
@@ -68,13 +74,25 @@ int objectives_menu_update(Window *win, GFC_List *elements)
 		{
 			if (data->item_pickup) element_update_label(element, "Completed!!", NULL);
 		}
-		if (gfc_strlcmp(element->name, "label_objective_2") == 0)
+		else if (gfc_strlcmp(element->name, "label_objective_2") == 0)
 		{
 			if (data->environment_used) element_update_label(element, "Completed!!", NULL);
 		}
-		if (gfc_strlcmp(element->name, "label_objective_3") == 0)
+		else if (gfc_strlcmp(element->name, "label_objective_3") == 0)
 		{
 			if (data->diamond_stolen) element_update_label(element, "Completed!!", NULL);
+		}
+		else if (gfc_strlcmp(element->name, "label_side_quest_1") == 0)
+		{
+			if (data->swat) element_update_label(element, "Completed!!", NULL);
+		}
+		else if (gfc_strlcmp(element->name, "label_side_quest_2") == 0)
+		{
+			if (data->takedowns) element_update_label(element, "Completed!!", NULL);
+		}
+		else if (gfc_strlcmp(element->name, "label_side_quest_3") == 0)
+		{
+			if (data->coin) element_update_label(element, "Completed!!", NULL);
 		}
 	}
 	return 1;
@@ -119,6 +137,9 @@ Window *objectives_menu()
 	data->item_pickup = 0;
 	data->environment_used = 0;
 	data->diamond_stolen = 0;
+	data->swat = 0;
+	data->takedowns = 0;
+	data->coin = 0;
 	data->selected = 1;
 	return win;
 }

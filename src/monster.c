@@ -1,6 +1,7 @@
 #include "simple_logger.h"
 #include "gfc_actions.h"
 #include "gfc_audio.h"
+#include "objectives_menu.h"
 #include "collision.h"
 #include "physics.h"
 #include "projectiles.h"
@@ -520,12 +521,15 @@ static void monster_get_touch_updates(Entity *self)
 	MonsterData *data;
 	MonsterAI *ai;
 	GFC_Action *action;
+	Window *win;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
 
 	if (!data->ai) return;
 	ai = (MonsterAI*) data->ai;
+
+	win = window_find_by_name("objectives_menu");
 
 	entity_get_entity_touches(self); // get entities touched this frame
 
@@ -553,11 +557,13 @@ static void monster_get_touch_updates(Entity *self)
 			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_bad_stalagmite_fall") == 0)
 			{
+				if (win && data->type == MT_SWAT) objective_complete(win, 4);
 				monster_die(self);
 				return;
 			}
 			else if (gfc_strlcmp(other->name, "object_light_fall") == 0)
 			{
+				if (win && data->type == MT_SWAT) objective_complete(win, 4);
 				monster_die(self);
 				return;
 			}

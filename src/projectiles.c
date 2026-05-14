@@ -302,6 +302,9 @@ void projectile_get_touch_updates(Entity *self)
 			else if (gfc_strlcmp(other->name, "object_elevator") == 0) continue;
 			else if (gfc_strlcmp(other->name, "object_lamp") == 0) continue;
 			else data->proj_kill = 1;
+
+			if (gfc_strlcmp(other->name, "object_rope") == 0) destroy_rope = 1;
+			if (gfc_strlcmp(other->name, "object_bad_stalagmite") == 0) destroy_stalagmite = 1;
 		}
 	}
 }

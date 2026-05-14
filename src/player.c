@@ -25,6 +25,7 @@ static int item2 = 0;
 static int item3 = 0;
 static int item4 = 0;
 static int item5 = 0;
+static Uint32 takedown_count = 0;
 
 typedef struct
 {
@@ -36,6 +37,7 @@ typedef struct
 	int				jump_anim_start;
 	Sint16			health;
 	Uint8			takedown;
+	Uint32			cash;
 } ClientData;
 
 Uint8 player_focus = 1; // should camera focus on player right now
@@ -242,6 +244,7 @@ Entity *player_new(GFC_Vector2D position)
 		data->smoke_invis = 0;
 		data->jump_anim = 0;
 		data->takedown = 0;
+		data->cash = 0;
 	}
 
 	// tell ai that the player exists
@@ -333,6 +336,12 @@ static void player_update(Entity* self)
 		item3 = 0;
 		item4 = 0;
 		item5 = 0;
+	}
+
+	// update side quest 2
+	if (takedown_count == 2)
+	{
+		objective_complete(win, 5);
 	}
 
 	// update hud
@@ -518,10 +527,16 @@ static void player_get_touch_updates(Entity *self)
 			}
 			if (gfc_strlcmp(other->name, "pickup_diamond") == 0)
 			{
-				inventory_add_item(&data->inventory, "diamond");
+				//inventory_add_item(&data->inventory, "diamond");
 				entity_free(other);
 				if (win) objective_complete(win, 3);
 				game_next_level();
+			}
+			if (gfc_strlcmp(other->name, "pickup_coin") == 0)
+			{
+				entity_free(other);
+				if (win) objective_complete(win, 6);
+				//if (win) objective_complete(win, 3);
 			}
 		}
 		else if (other->layer == EL_PROJECTILE)
@@ -563,7 +578,11 @@ static void player_get_touch_updates(Entity *self)
 			if (ai_get_alert_state() == 1)
 			{
 				self->glow = 1;
-				if (data->takedown) monster_damage(other, 1000, 0);
+				if (data->takedown)
+				{
+					monster_damage(other, 1000, 0);
+					if (gfc_strlcmp(other->name, "monster_swat") != 0) takedown_count++;
+				}
 			}
 		}
 	}
