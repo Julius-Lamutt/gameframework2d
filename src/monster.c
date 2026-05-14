@@ -383,7 +383,9 @@ static void monster_update(Entity *self)
 	// update monster ai
 	if (self->flip) dir = gfc_vector2d(1, 0);
 	else dir = gfc_vector2d(-1, 0);
-	ai_update_monster(ai, self->position, dir);
+
+	if (data->type == MT_SOLDIER) ai_update_monster(ai, self->position, dir, 1);
+	else ai_update_monster(ai, self->position, dir, 0);
 
 	// update shoting animation if needed
 	if (SDL_GetTicks() - 450 < ai->last_attack)

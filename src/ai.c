@@ -15,8 +15,9 @@ static void ai_close();
 * @param ai: the ai to check for player sightings
 * @param pos: the position of the monster
 * @param view_dir: the viewing direction of the monster (left/right)
+* @param night_vision: if true, monster can see in the dark (but not in the light)
 */
-static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir);
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision);
 
 /*
 * @brief move towards player's last known position
@@ -211,7 +212,7 @@ void ai_add_light_id(Uint32 id)
 	gfc_list_append(level_ai.lights, new_id);
 }
 
-void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
+void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision)
 {
 	if (!ai) return;
 
@@ -225,7 +226,7 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 	else if (SDL_GetTicks() - ai->last_move < 250) return;
 	
 	// me see player, me attack player
-	if (ai_monster_can_see(ai, pos, view_dir))
+	if (ai_monster_can_see(ai, pos, view_dir, night_vision))
 	{
 		if (level_ai.alert_status != AIAS_ALERT) level_ai.alert_status = AIAS_ALERT;
 
@@ -266,7 +267,7 @@ void ai_update_monster(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
 	}
 }
 
-static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir)
+static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D view_dir, Uint8 night_vision)
 {
 	GFC_Vector2D vec;
 	Entity *player;
@@ -277,8 +278,15 @@ static Uint8 ai_monster_can_see(MonsterAI *ai, GFC_Vector2D pos, GFC_Vector2D vi
 	if (!player) return 0;
 
 	if (player->hidden && level_ai.alert_status != AIAS_ALERT) return 0; // is player hidden?
+
 	if (!gfc_vector2d_distance_between_less_than(player->position, pos, level_ai.sight_distance)) return 0; // is player too far?
-	if (!physics_object_in_light(player->box)) return 0; // is player in the dark?
+
+	if (!physics_object_in_light(player->box)) // is player in the dark?
+	{
+		if (!night_vision) return 0; // can't see in the dark without night vision
+	}
+	else if (night_vision) return 0; // can't see in the light with night vision
+
 	if (physics_wall_between_points(pos, player->position)) return 0; // any walls?
 
 	// determine if player is in monster's vision cone
