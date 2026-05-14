@@ -26,6 +26,7 @@ int item3 = 0;
 int item4 = 0;
 int item5 = 0;
 Uint32 takedown_count = 0;
+int cash = 0;
 
 typedef struct
 {
@@ -37,7 +38,6 @@ typedef struct
 	int				jump_anim_start;
 	Sint16			health;
 	Uint8			takedown;
-	Uint32			cash;
 } ClientData;
 
 Uint8 player_focus = 1; // should camera focus on player right now
@@ -244,7 +244,6 @@ Entity *player_new(GFC_Vector2D position)
 		data->smoke_invis = 0;
 		data->jump_anim = 0;
 		data->takedown = 0;
-		data->cash = 0;
 	}
 
 	// tell ai that the player exists
@@ -328,7 +327,7 @@ static void player_update(Entity* self)
 	if (player_focus) camera_center_on(self->position);
 
 	// update objective 1 completion
-	if (item1 && item2 && item3 && item4 && item5)
+	if (item1 || item2 || item3 || item4 || item5)
 	{
 		objective_complete(win, 1);
 		item1 = 0;

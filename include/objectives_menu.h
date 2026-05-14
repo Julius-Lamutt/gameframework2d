@@ -17,4 +17,11 @@ Window *objectives_menu();
 */
 void objective_complete(Window *win, int objective);
 
+/*
+* @brief tell game when main objectives are done
+* @param win: the window to get objectives from
+* @return 1 if objectives are done, 0 otherwise
+*/
+Uint8 objective_main(Window *win);
+
 #endif

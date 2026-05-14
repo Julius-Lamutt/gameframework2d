@@ -5,6 +5,8 @@
 #include "elements.h"
 #include "inventory_menu.h"
 
+extern int cash;
+
 typedef struct
 {
 	Window	*win;		/* the current window */
@@ -163,6 +165,13 @@ int inventory_menu_update(Window *win, GFC_List *updates)
 			GFC_TextWord buffer;
 
 			_itoa((int)data->health, &buffer, 10);
+			element_update_label(element, buffer, NULL);
+		}
+		else if (gfc_strlcmp(element->name, "label_money_amount") == 0)
+		{
+			GFC_TextWord buffer;
+
+			_itoa((int)cash, &buffer, 10);
 			element_update_label(element, buffer, NULL);
 		}
 		else if (gfc_strlcmp(element->name, "label_shuriken") == 0)

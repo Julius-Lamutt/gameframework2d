@@ -254,7 +254,7 @@ void projectile_update(Entity *self)
 	self->position = self->newPosition;
 
 	// update objective #2
-	if (destroy_rope && destroy_stalagmite) objective_complete(win, 2);
+	if (destroy_rope || destroy_stalagmite) objective_complete(win, 2);
 
 	// destroy projectile if certain conditions are met
 	if (data->distance >= self->range || data->proj_kill)

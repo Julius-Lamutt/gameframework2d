@@ -21,7 +21,7 @@
 #include "level.h"
 #include "world.h"
 
-extern int item1, item2, item3, item4, item5, destroy_stalagmite, destroy_rope;
+extern int item1, item2, item3, item4, item5, destroy_stalagmite, destroy_rope, cash;
 extern Uint32 takedown_count;
 
 /*
@@ -253,6 +253,7 @@ void game_next_level()
 
 void game_return_to_menu()
 {
+    cash = 0;
     game_pause();
     game_reset_objectives();
 
@@ -339,6 +340,11 @@ static void game_update()
     if (game) entity_system_update();
 
     window_system_update(); // update window and element states
+
+    if (game)
+    {
+        if (objective_main(obj)) game_next_level();
+    }
 }
 
 static void game_render()

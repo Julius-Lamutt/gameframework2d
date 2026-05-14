@@ -5,6 +5,7 @@
 #include "objectives_menu.h"
 
 extern void game_next_level();
+extern int cash;
 
 typedef struct
 {
@@ -40,6 +41,18 @@ int objectives_menu_draw(Window *win);
 */
 int objectives_menu_free(Window *win);
 
+Uint8 objective_main(Window *win)
+{
+	ObjectivesMenuData *data;
+
+	if (!win) return 0;
+	if (!win->data) return 0;
+	data = win->data;
+
+	if (data->item_pickup && data->environment_used && data->diamond_stolen) return 1;
+	return 0;
+}
+
 void objective_complete(Window *win, int objective)
 {
 	ObjectivesMenuData *data;
@@ -48,12 +61,21 @@ void objective_complete(Window *win, int objective)
 	if (!win->data) return 0;
 	data = win->data;
 
+	if (objective == 4 && !data->swat) cash += 500;
+	if (objective == 5 && !data->takedowns) cash += 500;
+	if (objective == 6 && !data->coin) cash += 500;
+
 	if (objective == 1) data->item_pickup = 1;
 	else if (objective == 2) data->environment_used = 1;
 	else if (objective == 3) data->diamond_stolen = 1;
 	else if (objective == 4) data->swat = 1;
 	else if (objective == 5) data->takedowns = 1;
 	else if (objective == 6) data->coin = 1;
+
+	if (objective == 1 || objective == 2 || objective == 3)
+	{
+		if (data->item_pickup == 1 && data->environment_used == 1 && data->diamond_stolen == 1) cash += 500;
+	}
 }
 
 int objectives_menu_update(Window *win, GFC_List *elements)
@@ -98,7 +120,7 @@ int objectives_menu_update(Window *win, GFC_List *elements)
 		}
 	}
 
-	if (data->item_pickup && data->environment_used && data->diamond_stolen) game_next_level();
+	//if (data->item_pickup && data->environment_used && data->diamond_stolen) game_next_level();
 	return 1;
 }
 
