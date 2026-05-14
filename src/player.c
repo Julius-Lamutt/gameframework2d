@@ -20,12 +20,12 @@
 extern void game_next_level();
 extern void game_return_to_menu();
 
-static int item1 = 0;
-static int item2 = 0;
-static int item3 = 0;
-static int item4 = 0;
-static int item5 = 0;
-static Uint32 takedown_count = 0;
+int item1 = 0;
+int item2 = 0;
+int item3 = 0;
+int item4 = 0;
+int item5 = 0;
+Uint32 takedown_count = 0;
 
 typedef struct
 {
@@ -495,6 +495,8 @@ static void player_get_touch_updates(Entity *self)
 				inventory_add_item(&data->inventory, "tool_shuriken");
 				inventory_add_item(&data->inventory, "tool_shuriken");
 				inventory_add_item(&data->inventory, "tool_shuriken");
+				inventory_add_item(&data->inventory, "tool_shuriken");
+				inventory_add_item(&data->inventory, "tool_shuriken");
 				entity_free(other);
 				item1 = 1;
 			}
@@ -530,7 +532,6 @@ static void player_get_touch_updates(Entity *self)
 				//inventory_add_item(&data->inventory, "diamond");
 				entity_free(other);
 				if (win) objective_complete(win, 3);
-				game_next_level();
 			}
 			if (gfc_strlcmp(other->name, "pickup_coin") == 0)
 			{

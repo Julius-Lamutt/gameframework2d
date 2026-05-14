@@ -21,6 +21,9 @@
 #include "level.h"
 #include "world.h"
 
+extern int item1, item2, item3, item4, item5, destroy_stalagmite, destroy_rope;
+extern Uint32 takedown_count;
+
 /*
 * @brief start running the main game loop
 */
@@ -65,6 +68,11 @@ void game_start_editor();
 * @brief leave the editor and return to the main menu
 */
 void game_exit_editor();
+
+/*
+* @brief reset game objectives
+*/
+static void game_reset_objectives();
 
 /*
 * @brief update current music if ai alert status changes
@@ -211,9 +219,11 @@ void game_next_level()
 
     if (level == 1)
     {
+        game_reset_objectives();
         inv = inventory_menu();
         world = world_load("defs/maps/level_2.json");
 
+        game_reset_objectives();
         Mix_FreeMusic(level_music);
         level_music = gfc_sound_load_music("audio/level_music_normal.wav");
         ai_status_temp = 1;
@@ -244,6 +254,7 @@ void game_next_level()
 void game_return_to_menu()
 {
     game_pause();
+    game_reset_objectives();
 
     Mix_FreeMusic(level_music);
     Mix_PlayMusic(menu_music, -1);
@@ -271,6 +282,17 @@ void game_exit_editor()
 {
     mouse_color = gfc_color8(220, 30, 30, 255);
     win = main_menu();
+}
+
+static void game_reset_objectives()
+{
+    item1 = item2 = item3 = item4 = item5 = 0;
+    takedown_count = 0;
+    destroy_stalagmite = destroy_rope = 0;
+
+    window_free(obj);
+    obj = objectives_menu();
+    obj->hidden = 1;
 }
 
 static void game_update_music()

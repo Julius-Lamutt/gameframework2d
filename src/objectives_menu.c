@@ -4,6 +4,8 @@
 #include "font.h"
 #include "objectives_menu.h"
 
+extern void game_next_level();
+
 typedef struct
 {
 	Window	*win;				/* the current window */
@@ -95,6 +97,8 @@ int objectives_menu_update(Window *win, GFC_List *elements)
 			if (data->coin) element_update_label(element, "Completed!!", NULL);
 		}
 	}
+
+	if (data->item_pickup && data->environment_used && data->diamond_stolen) game_next_level();
 	return 1;
 }
 

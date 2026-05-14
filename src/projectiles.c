@@ -7,8 +7,8 @@
 #include "projectiles.h"
 
 extern const float gravity;
-static int destroy_stalagmite = 0;
-static int destroy_rope = 0;
+int destroy_stalagmite = 0;
+int destroy_rope = 0;
 
 typedef enum
 {
