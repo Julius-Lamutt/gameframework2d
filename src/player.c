@@ -563,7 +563,7 @@ static void player_get_touch_updates(Entity *self)
 			if (ai_get_alert_state() == 1)
 			{
 				self->glow = 1;
-				if (data->takedown) monster_damage(other, 1000);
+				if (data->takedown) monster_damage(other, 1000, 0);
 			}
 		}
 	}

@@ -24,7 +24,8 @@ Entity *monster_new(GFC_Vector2D position, const char *obj_name);
 * @brief damage a monster
 * @param self: the monster to damage
 * @param damage: the amount of damage to deal
+* @param heavy: if true, then swat monsters can get damaged too
 */
-void monster_damage(Entity *self, Uint32 damage);
+void monster_damage(Entity *self, Uint32 damage, Uint8 heavy);
 
 #endif

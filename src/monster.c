@@ -538,7 +538,11 @@ static void monster_get_touch_updates(Entity *self)
 		{
 			if (gfc_strlcmp(other->name, "projectile_shuriken") == 0)
 			{
-				data->health -= 100;
+				if (data->type != MT_SWAT)
+				{
+					if (ai_get_alert_state() == 1) data->health -= 1000;
+					else data->health -= 10;
+				}
 				entity_free(other);
 			}
 		}
@@ -576,13 +580,14 @@ static void monster_get_touch_updates(Entity *self)
 	}
 }
 
-void monster_damage(Entity *self, Uint32 damage)
+void monster_damage(Entity *self, Uint32 damage, Uint8 heavy)
 {
 	MonsterData *data;
 
 	if (!self || !self->data) return;
 	data = (MonsterData*) self->data;
 
-	data->health -= damage;
+	if (heavy) data->health -= damage;
+	else if (data->type != MT_SWAT) data->health -= damage;
 }
 
